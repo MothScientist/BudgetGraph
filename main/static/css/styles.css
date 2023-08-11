@@ -1,0 +1,97 @@
+.button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  height: 350px;
+  margin: 100px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.header_1 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.header_2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.link-button {
+  background-image: linear-gradient(to right, #ff0000, #0000ff);
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 0.7% 2.3%;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.clear-button {
+  margin: 20px auto;
+  display: block;
+  background-color: #ffbb00;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+footer {
+  position: relative;
+  height: 100px;
+  background-color: white;
+}
+
+#gradient-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(to right, red, yellow, green, blue);
+  background-size: 800% 100%;
+  animation: gradientAnimation 8s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0 0; }
+  100% { background-position: 100% 0; }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}

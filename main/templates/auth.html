@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Кнопка ссылка с картинкой -->
+  <a href="/">
+    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="button">
+  </a>
+
+  <!-- Основной контейнер -->
+  <div class="container">
+    <!-- Первая часть -->
+    <div>
+      <div class="header_1">Login</div>
+      <input type="text" placeholder="Your name">
+      <input type="password" placeholder="Token">
+      <input type="password" placeholder="Password">
+      <button class="link-button">Войти</button>
+    </div>
+
+    <!-- Вторая часть -->
+    <div>
+      <div class="header_2">Registration</div>
+      <input type="text" placeholder="Your name">
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Token (if you are adding to an existing family)">
+      <button class="link-button">Регистрация</button>
+    </div>
+  </div>
+
+  <!-- Кнопка "Очистить" -->
+  <button class="clear-button">Очистить</button>
+
+  <footer>
+    <div id="gradient-line"></div>
+    <div class="content">
+        <p>Icon made by Gajah Mada from <a href="https://www.flaticon.com">www.flaticon.com</a></p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
