@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import os
 from dotenv import load_dotenv
 
@@ -16,8 +16,10 @@ def index():
     return render_template("index.html", title="Budget control - Home page")
 
 
-@app.route('/auth')
+@app.route('/auth', methods=["GET"])  # send password in POST request
 def auth():
+    if request.method == "GET":
+        print(request.args)  # request.args - GET, request.form - POST
     return render_template("auth.html", title="Budget control - Authorization")
 
 

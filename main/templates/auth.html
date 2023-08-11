@@ -6,34 +6,34 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <!-- Кнопка ссылка с картинкой -->
   <a href="/">
     <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="button">
   </a>
 
-  <!-- Основной контейнер -->
+  <!-- main container -->
   <div class="container">
-    <!-- Первая часть -->
+    <!-- first part -->
     <div>
       <div class="header_1">Login</div>
-      <input type="text" placeholder="Your name">
-      <input type="password" placeholder="Token">
-      <input type="password" placeholder="Password">
-      <button class="link-button">Войти</button>
+      <form action="/auth" method="get">
+        <input type="text" name="name" placeholder="Your name">
+        <input type="password" name="token" placeholder="Token">
+        <input type="password" name="password" placeholder="Password">
+        <button type="submit" class="link-button">Sign in!</button>
+      </form>
     </div>
 
-    <!-- Вторая часть -->
+    <!-- second part -->
     <div>
       <div class="header_2">Registration</div>
       <input type="text" placeholder="Your name">
       <input type="password" placeholder="Password">
       <input type="password" placeholder="Token (if you are adding to an existing family)">
-      <button class="link-button">Регистрация</button>
+      <button class="link-button">Sign up!</button>
     </div>
   </div>
 
-  <!-- Кнопка "Очистить" -->
-  <button class="clear-button">Очистить</button>
+  <button class="clear-button">Clear</button>
 
   <footer>
     <div id="gradient-line"></div>
