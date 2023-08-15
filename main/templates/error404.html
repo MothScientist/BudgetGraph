@@ -3,8 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/line_auth.js') }}"></script>
 </head>
-<body>
-    404, PAGE NOT FOUND.
+<body class="page404">
+    <div class="text_404_1">
+        Are you lost?
+    </div>
+
+    <div class="text_404_2">
+        It's dangerous here.
+    </div>
+
+    <div class="text_404_3">
+        Better run <a class="link_back_404" href="\">back</a>!
+    </div>
+
+    <footer>
+    <div id="gradient-line"></div>
+    <div class="content">
+        <p>Background from <a href="https://bogatyr.club/">bogatyr.club</a></p>
+    </div>
+  </footer>
 </body>
 </html>

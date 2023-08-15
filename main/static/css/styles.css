@@ -68,9 +68,12 @@ input[type="password"] {
 }
 
 footer {
-  position: relative;
-  height: 100px;
-  background-color: white;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 150px;
+  width: 100%;
+  background-color: transparent;
 }
 
 #gradient-line {
@@ -95,3 +98,47 @@ footer {
   justify-content: center;
   height: 100%;
 }
+
+.page404 {
+  background-image: url("../img/dark_404.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+}
+
+.text_404_1{
+  font-size: 36px;
+  position: fixed;
+  left: 150px;
+  top: 150px;
+}
+
+.text_404_2{
+  font-size: 36px;
+  position: fixed;
+  left: 300px;
+  top: 300px;
+}
+
+.text_404_3{
+  font-size: 36px;
+  position: fixed;
+  left: 450px;
+  top: 450px;
+}
+
+.link_back_404{
+  color: greenyellow;
+}
+
+a:hover {
+  background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet, red, orange, yellow);
+  background-size: 500%;
+  animation: rainbow 3s linear infinite;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
