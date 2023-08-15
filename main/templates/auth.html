@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
 <body>
   <a href="/">
@@ -15,7 +15,7 @@
     <!-- first part -->
     <div>
       <div class="header_1">Login</div>
-      <form action="/auth" method="get">
+      <form action="/auth" method="POST">
         <input type="text" name="name" placeholder="Your name">
         <input type="password" name="token" placeholder="Token">
         <input type="password" name="password" placeholder="Password">
@@ -26,10 +26,12 @@
     <!-- second part -->
     <div>
       <div class="header_2">Registration</div>
-      <input type="text" placeholder="Your name">
-      <input type="password" placeholder="Password">
-      <input type="password" placeholder="Token (if you are adding to an existing family)">
-      <button class="link-button">Sign up!</button>
+      <form action="/auth" method="POST">
+        <input type="text" name="name" placeholder="Your name">
+        <input type="password" name="password" placeholder="Password">
+        <input type="password" name="token" placeholder="Token (if you are adding to an existing family)">
+        <button type="submit" class="link-button">Sign up!</button>
+      </form>
     </div>
   </div>
 
@@ -42,6 +44,6 @@
     </div>
   </footer>
 
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/line_auth.js') }}"></script>
 </body>
 </html>
