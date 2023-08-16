@@ -1,6 +1,8 @@
 .env
+!create_db.sql
 ### Databases ###
 *.sqlite3
+*.sqlite
 db.sqlite3
 db.sqlite3-journal
 *.accdb

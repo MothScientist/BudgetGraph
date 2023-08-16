@@ -1,0 +1,163 @@
+.button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.container_1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  height: 150px;
+  margin: 100px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.container_2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  height: 200px;
+  margin: 100px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.header_1 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
+
+.header_2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
+
+.form{
+  margin-left: -10px;
+}
+
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+#clear-button {
+  position: fixed;
+  left: 50%;
+  bottom: 500px;
+  transform: translateX(-50%);
+  background-color: #ffbb00;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.link-button {
+  background-image: linear-gradient(to right, #ff0000, #0000ff);
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 0.7% 2.3%;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 150px;
+  width: 100%;
+  background-color: transparent;
+}
+
+#gradient-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(to right, red, yellow, green, blue);
+  background-size: 800% 100%;
+  animation: gradientAnimation 8s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0 0; }
+  100% { background-position: 100% 0; }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.page404 {
+  background-image: url("../img/dark_404.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+}
+
+.text_404_1{
+  font-size: 36px;
+  position: fixed;
+  left: 150px;
+  top: 150px;
+}
+
+.text_404_2{
+  font-size: 36px;
+  position: fixed;
+  left: 300px;
+  top: 300px;
+}
+
+.text_404_3{
+  font-size: 36px;
+  position: fixed;
+  left: 450px;
+  top: 450px;
+}
+
+.link_back_404{
+  color: greenyellow;
+}
+
+a:hover {
+  background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet, red, orange, yellow);
+  background-size: 500%;
+  animation: rainbow 3s linear infinite;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+

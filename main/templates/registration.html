@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/line.js') }}"></script>
+</head>
+<body>
+  <a href="/">
+    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="button">
+  </a>
+
+  <!-- main container -->
+  <div class="container_2">
+    <div class="form">
+      <div class="header_2">Registration</div>
+      <form action="/login" method="POST">
+        <input id="username" type="text" name="username" placeholder="Your name">
+        <input id="tg_link" type="text" name="tg_link" placeholder="Link to your telegram (https://t.me/username)">
+        <input id="password" type="password" name="password" placeholder="Password">
+        <input id="token" type="password" name="token" placeholder="Token (if you are adding to an existing family)">
+        <button type="submit" class="link-button">Sign up!</button>
+        <button id="clear-button" type="reset">Clear</button>
+      </form>
+    </div>
+  </div>
+
+
+  <footer>
+    <div id="gradient-line"></div>
+    <div class="content">
+        <p>Icon made by Gajah Mada from <a href="https://www.flaticon.com">www.flaticon.com</a></p>
+    </div>
+  </footer>
+</body>
+</html>
