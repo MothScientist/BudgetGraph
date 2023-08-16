@@ -1,18 +1,26 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
-import sqlite3
+from database import get_db, close_db
 import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Get API token value from environment variable
-token = os.getenv("BOT_TOKEN")
-secret_key_users = os.getenv("SECRET_KEY_USERS_DB")
-secret_key_families = os.getenv("SECRET_KEY_FAMILIES_DB")
+# Get values from environment variable
+TOKEN = os.getenv("BOT_TOKEN")
+DATABASE = "database.sqlite3"
+DEBUG = True
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config.from_object(__name__)
+
+# Get the secret key to encrypt the Flask session from an environment variable
+app.config["SECRET_KEY"] = SECRET_KEY
+
+app.config.update(dict(DATABASE=os.path.join(app.root_path, "database.sqlite3")))
+
+app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
 
 
 @app.route('/')
@@ -28,7 +36,7 @@ def registration():
 
 
 @app.route('/login', methods=["GET", "POST"])  # send password in POST request
-def auth():
+def login():
     if "userLogged" in session:  # If the client has logged in before
         return redirect(url_for("household", username=session["userLogged"]))
 
