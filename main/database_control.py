@@ -1,7 +1,7 @@
 from flask import g
 import sqlite3
 
-DATABASE = "database.sqlite3"
+DATABASE = "db.sqlite3"
 DEBUG = True
 
 SQL_FILE = "create_db.sql"

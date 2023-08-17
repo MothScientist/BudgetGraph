@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
-from database import get_db, close_db
+from database_control import get_db, close_db
 import os
 from dotenv import load_dotenv
 
@@ -8,7 +8,7 @@ load_dotenv()
 
 # Get values from environment variable
 TOKEN = os.getenv("BOT_TOKEN")
-DATABASE = "database.sqlite3"
+DATABASE = "db.sqlite3"
 DEBUG = True
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -18,7 +18,7 @@ app.config.from_object(__name__)
 # Get the secret key to encrypt the Flask session from an environment variable
 app.config["SECRET_KEY"] = SECRET_KEY
 
-app.config.update(dict(DATABASE=os.path.join(app.root_path, "database.sqlite3")))
+app.config.update(dict(DATABASE=os.path.join(app.root_path, "db.sqlite3")))
 
 app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
 
