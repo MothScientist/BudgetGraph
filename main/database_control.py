@@ -1,8 +1,6 @@
 from flask import g
 import sqlite3
 
-DEBUG = True
-
 
 def connect_db():
     conn = sqlite3.connect("db.sqlite3")

@@ -10,12 +10,16 @@
   <a href="/">
     <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="button">
   </a>
-
+  {% for category, messages in get_flashed_messages(True) %}
+  <div class="flash {{ category }}">
+    {{ messages }}<br>
+  </div>
+  {% endfor %}
   <!-- main container -->
   <div class="container_2">
     <div class="form">
       <div class="header_2">Registration</div>
-      <form action="/login" method="POST">
+      <form action="/registration" method="POST">
         <input id="username" type="text" name="username" placeholder="Your name">
         <input id="tg_link" type="text" name="tg_link" placeholder="Link to your telegram (https://t.me/username)">
         <input id="password" type="password" name="password" placeholder="Password">

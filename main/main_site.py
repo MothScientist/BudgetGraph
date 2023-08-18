@@ -1,15 +1,15 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
-from database_control import get_db, close_db
 import os
 from dotenv import load_dotenv
+from database_control import get_db, close_db
+from token_generation import get_token
+from validators.registration import registration_validator, token_validator
+
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Get values from environment variable
-TOKEN = os.getenv("BOT_TOKEN")
-
-DEBUG = True
+# TOKEN = os.getenv("BOT_TOKEN")
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -30,7 +30,32 @@ def homepage():
 @app.route('/registration', methods=["GET", "POST"])
 def registration():
     if request.method == "POST":
-        print(request.form)
+
+        # If the token field is empty
+        if len(request.form['token']) == 0:  # user creates a new group
+            if registration_validator(
+                    request.form["username"], request.form["password"], request.form["tg_link"]
+            ):
+                user_token = get_token()
+                flash("Registration completed successfully!", category="success")
+                flash(f"{request.form['username']}, "
+                      f"your token: {user_token}", category="success_token")
+                print(request.form)
+            else:
+                flash("ERROR", category="error")
+                print(request.form)
+
+        # User is added to an existing group
+        if len(request.form["token"]) == 32:
+            if (registration_validator(
+                        request.form["username"], request.form["password"], request.form["tg_link"]) and
+                    token_validator(request.form["token"])):
+                flash("Registration completed successfully!", category="success")
+
+        # User made a mistake when entering the token
+        else:
+            flash("token-ERROR", category="error")
+
     return render_template("registration.html", title="Budget control - Registration")
 
 
