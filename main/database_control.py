@@ -1,14 +1,11 @@
 from flask import g
 import sqlite3
 
-DATABASE = "db.sqlite3"
 DEBUG = True
-
-SQL_FILE = "create_db.sql"
 
 
 def connect_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect("db.sqlite3")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -17,7 +14,7 @@ def create_db():
     conn = connect_db()
     cursor = conn.cursor()
 
-    with open(SQL_FILE, 'r') as file:
+    with open("create_db.sql", 'r') as file:
         cursor.executescript(file.read())
 
     conn.commit()

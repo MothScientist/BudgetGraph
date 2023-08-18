@@ -8,15 +8,14 @@ load_dotenv()
 
 # Get values from environment variable
 TOKEN = os.getenv("BOT_TOKEN")
-DATABASE = "db.sqlite3"
+
 DEBUG = True
-SECRET_KEY = os.getenv("SECRET_KEY")
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 
 # Get the secret key to encrypt the Flask session from an environment variable
-app.config["SECRET_KEY"] = SECRET_KEY
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 app.config.update(dict(DATABASE=os.path.join(app.root_path, "db.sqlite3")))
 
