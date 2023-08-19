@@ -8,9 +8,13 @@
 </head>
 <body>
   <a href="/">
-    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="button">
+    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home_button">
   </a>
-
+  {% for category, messages in get_flashed_messages(True) %}
+  <div class="flash {{ category }}">
+    {{ messages }}<br>
+  </div>
+  {% endfor %}
   <!-- main container -->
   <div class="container_1">
     <div class="form">
@@ -23,11 +27,12 @@
           <button id="clear-button" type="reset">Clear</button>
       </form>
     </div>
+    </div>
 
   <footer>
     <div id="gradient-line"></div>
     <div class="content">
-        <p>Icon made by Gajah Mada from <a href="https://www.flaticon.com">www.flaticon.com</a></p>
+        <p><a href="https://www.flaticon.com/free-icons/back" title="back icons">Back icons created by Freepik - Flaticon</a></p>
     </div>
   </footer>
 </body>

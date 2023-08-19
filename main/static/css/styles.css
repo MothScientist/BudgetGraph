@@ -1,4 +1,14 @@
-.button {
+header {
+  background-color: transparent;
+  padding: 30px;
+  text-align: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.home_button {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -8,6 +18,43 @@
   width: 3%;
   height: auto;
 }
+
+.sign_up_button{
+  position: absolute;
+  top: 10px;
+  right: 70px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.sign_in_button{
+  position: absolute;
+  top: 8px;
+  right: 150px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.tg_button{
+  position: absolute;
+  top: 8px;
+  right: 235px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.paragraph {
+    margin-bottom: 10px;
+  }
 
 .container_1 {
   display: flex;
@@ -113,6 +160,7 @@ footer {
 
 .content {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -192,8 +240,34 @@ a:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 55px;
+  width: 600px;
   padding: 5px;
   border: 1px solid #FF4343;
   background: #FF9C9C;
 }
+
+.logo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: inline-block;
+  z-index: 9999;
+}
+
+.logo-text {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: deepskyblue;
+}
+
+.logo:hover .logo-text {
+  animation: flash 1.0s infinite;
+}
+
+@keyframes flash {
+  0% { color: blue; }
+  50% { color: transparent; }
+  100% { color: rebeccapurple; }
+}
+

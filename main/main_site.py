@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from database_control import get_db, close_db
 from token_generation import get_token
 from validators.registration import registration_validator, token_validator
+from validators.login import login_validator
 
 
 # Load environment variables from .env file
@@ -42,8 +43,7 @@ def registration():
                       f"your token: {user_token}", category="success_token")
                 print(request.form)
             else:
-                flash("ERROR", category="error")
-                print(request.form)
+                flash("Error - check the correctness of the entered data", category="error")
 
         # User is added to an existing group
         if len(request.form["token"]) == 32:
@@ -51,10 +51,12 @@ def registration():
                         request.form["username"], request.form["password"], request.form["tg_link"]) and
                     token_validator(request.form["token"])):
                 flash("Registration completed successfully!", category="success")
+            else:
+                flash("Error - check the correctness of the entered data", category="error")
 
         # User made a mistake when entering the token
         else:
-            flash("token-ERROR", category="error")
+            flash("Error - token length must be 32 characters", category="error")
 
     return render_template("registration.html", title="Budget control - Registration")
 
@@ -65,9 +67,12 @@ def login():
         return redirect(url_for("household", username=session["userLogged"]))
 
     # here the POST request is checked and the presence of the user in the database is checked
-    if request.method == "POST" and request.form.get("username") == "username":  # OK
-        session["userLogged"] = request.form["username"]
-        return redirect(url_for("household", username=session["userLogged"]))
+    if request.method == "POST":
+        if login_validator(request.form["username"], request.form["password"], request.form["token"]):
+            session["userLogged"] = request.form["username"]
+            return redirect(url_for("household", username=session["userLogged"]))
+        else:
+            flash("Error - the user with the entered data does not exist", category="error")
         # print(request.form)  # request.args - GET, request.form - POST
 
     return render_template("login.html", title="Budget control - Login")
