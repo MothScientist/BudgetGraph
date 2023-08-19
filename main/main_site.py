@@ -43,7 +43,7 @@ def registration():
                       f"your token: {user_token}", category="success_token")
                 print(request.form)
             else:
-                flash("Error - check the correctness of the entered data", category="error")
+                pass  # the flash function is called inside the validator
 
         # User is added to an existing group
         if len(request.form["token"]) == 32:
@@ -52,10 +52,10 @@ def registration():
                     token_validator(request.form["token"])):
                 flash("Registration completed successfully!", category="success")
             else:
-                flash("Error - check the correctness of the entered data", category="error")
+                pass  # the flash function is called inside the validator
 
         # User made a mistake when entering the token
-        else:
+        if len(request.form["token"]) > 0 and len(request.form["token"]) != 32:
             flash("Error - token length must be 32 characters", category="error")
 
     return render_template("registration.html", title="Budget control - Registration")
@@ -72,7 +72,7 @@ def login():
             session["userLogged"] = request.form["username"]
             return redirect(url_for("household", username=session["userLogged"]))
         else:
-            flash("Error - the user with the entered data does not exist", category="error")
+            pass
         # print(request.form)  # request.args - GET, request.form - POST
 
     return render_template("login.html", title="Budget control - Login")
