@@ -1,14 +1,28 @@
 from flask import g
 import sqlite3
 
-DATABASE = "database.sqlite3"
-DEBUG = True
 
-SQL_FILE = "create_db.sql"
+class FDataBase:
+    def __init__(self, db):
+        self.__db = db
+        self.__cur = db.cursor()
+
+    def get_users(self):
+        sql = """SELECT * FROM Users"""
+
+        try:
+            self.__cur.execute(sql)
+            res = self.__cur.fetchall()
+
+            if res:
+                return res
+        except:
+            print('database read error')
+        return []
 
 
 def connect_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect("db.sqlite3")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -17,7 +31,7 @@ def create_db():
     conn = connect_db()
     cursor = conn.cursor()
 
-    with open(SQL_FILE, 'r') as file:
+    with open("create_db.sql", 'r') as file:
         cursor.executescript(file.read())
 
     conn.commit()

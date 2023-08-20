@@ -3,8 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/line.js') }}"></script>
 </head>
 <body>
+  <header>
+      <div class="logo">
+        <span class="logo-text">Budget Control project</span>
+      </div>
 
+      <a href="/registration">
+        <img src="{{ url_for('static', filename='img/sign-up.png') }}" alt="Sign up" class="sign_up_button">
+      </a>
+
+      <a href="/login">
+        <img src="{{ url_for('static', filename='img/sign-in.png') }}" alt="Sign in" class="sign_in_button">
+      </a>
+
+      <a href="https://t.me/budget_control1bot">
+        <img src="{{ url_for('static', filename='img/telegram.png') }}" alt="Telegram_bot" class="tg_button">
+      </a>
+  </header>
+
+  <h1>Users:</h1>
+    <ul>
+        {% for user in users %}
+            <li>{{ user.username }}</li>
+        {% endfor %}
+    </ul>
+
+  <footer>
+      <div id="gradient-line"></div>
+      <div class="content">
+          <p><a href="https://www.flaticon.com/free-icons/register" title="register icons">Register icons created by Prosymbols - Flaticon</a></p>
+          <p><a href="https://www.flaticon.com/free-icons/sign-up" title="sign up icons">Sign up icons created by Freepik - Flaticon</a></p>
+          <p><a href="https://www.flaticon.com/free-icons/telegram" title="telegram icons">Telegram icons created by Pixel perfect - Flaticon</a></p>
+      </div>
+  </footer>
 </body>
 </html>

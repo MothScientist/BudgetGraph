@@ -8,17 +8,21 @@
 </head>
 <body>
   <a href="/">
-    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="button">
+    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home_button">
   </a>
-
+  {% for category, messages in get_flashed_messages(True) %}
+  <div class="flash {{ category }}">
+    {{ messages }}<br>
+  </div>
+  {% endfor %}
   <!-- main container -->
   <div class="container_2">
     <div class="form">
       <div class="header_2">Registration</div>
-      <form action="/login" method="POST">
-        <input id="username" type="text" name="username" placeholder="Your name">
+      <form action="/registration" method="POST">
+        <input id="username" type="text" name="username" placeholder="Your name (3-20 characters)">
         <input id="tg_link" type="text" name="tg_link" placeholder="Link to your telegram (https://t.me/username)">
-        <input id="password" type="password" name="password" placeholder="Password">
+        <input id="password" type="password" name="password" placeholder="Password (4-128 characters)">
         <input id="token" type="password" name="token" placeholder="Token (if you are adding to an existing family)">
         <button type="submit" class="link-button">Sign up!</button>
         <button id="clear-button" type="reset">Clear</button>
@@ -30,7 +34,7 @@
   <footer>
     <div id="gradient-line"></div>
     <div class="content">
-        <p>Icon made by Gajah Mada from <a href="https://www.flaticon.com">www.flaticon.com</a></p>
+        <p><a href="https://www.flaticon.com/free-icons/back" title="back icons">Back icons created by Freepik - Flaticon</a></p>
     </div>
   </footer>
 </body>
