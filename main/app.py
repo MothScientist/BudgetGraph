@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 from dotenv import load_dotenv
-from database_control import get_db, close_db
+from database_control import get_db, close_db, FDataBase
 from token_generation import get_token
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
@@ -25,7 +25,9 @@ app.teardown_appcontext(close_db)  # Disconnects the database connection after a
 
 @app.route('/')
 def homepage():
-    return render_template("homepage.html", title="Budget control - Home page")
+    db = get_db()
+    dbase = FDataBase(db)
+    return render_template("homepage.html", title="Budget control - Home page", users=dbase.get_users())
 
 
 @app.route('/registration', methods=["GET", "POST"])
