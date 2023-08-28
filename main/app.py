@@ -5,6 +5,7 @@ from database_control import get_db, close_db, FDataBase
 from token_generation import get_token
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
+from password_hashing import generate_hash
 
 
 # Load environment variables from .env file
@@ -25,9 +26,7 @@ app.teardown_appcontext(close_db)  # Disconnects the database connection after a
 
 @app.route('/')
 def homepage():
-    db = get_db()
-    dbase = FDataBase(db)
-    return render_template("homepage.html", title="Budget control - Home page", users=dbase.get_users())
+    return render_template("homepage.html", title="Budget control - Home page")
 
 
 @app.route('/registration', methods=["GET", "POST"])
@@ -70,7 +69,7 @@ def login():
 
     # here the POST request is checked and the presence of the user in the database is checked
     if request.method == "POST":
-        if login_validator(request.form["username"], request.form["password"], request.form["token"]):
+        if login_validator(request.form["username"], generate_hash(request.form["password"]), request.form["token"]):
             session["userLogged"] = request.form["username"]
             return redirect(url_for("household", username=session["userLogged"]))
         else:
