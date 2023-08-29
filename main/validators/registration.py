@@ -12,7 +12,7 @@ def registration_validator(username: str, password: str, tg_link: str):
         if 4 <= len(password) <= 128:
             if 18 <= len(tg_link) <= 45 and tg_link.startswith("https://t.me/"):
                 return True
-            else:
+            else:  # each error has its own flash message so that the user knows where he made a mistake
                 flash("Error - invalid telegram link.", category="error")
         else:
             flash("Error - invalid password format. Use 4 to 128 characters.", category="error")

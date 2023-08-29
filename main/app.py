@@ -43,8 +43,6 @@ def registration():
                 flash(f"{request.form['username']}, "
                       f"your token: {user_token}", category="success_token")
                 print(request.form)
-            else:
-                pass  # the flash function is called inside the validator
 
         # User is added to an existing group
         if len(request.form["token"]) == 32:
@@ -52,8 +50,6 @@ def registration():
                         request.form["username"], request.form["password"], request.form["tg_link"]) and
                     token_validator(request.form["token"])):
                 flash("Registration completed successfully!", category="success")
-            else:
-                pass  # the flash function is called inside the validator
 
         # User made a mistake when entering the token
         if len(request.form["token"]) > 0 and len(request.form["token"]) != 32:
@@ -62,7 +58,7 @@ def registration():
     return render_template("registration.html", title="Budget control - Registration")
 
 
-@app.route('/login', methods=["GET", "POST"])  # send password in POST request
+@app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
 def login():
     if "userLogged" in session:  # If the client has logged in before
         return redirect(url_for("household", username=session["userLogged"]))

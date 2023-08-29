@@ -20,36 +20,26 @@ class FDataBase:
     #     return False
 
     def auth_by_username(self, username: str, psw_hash: str, token: str):
-        # The first stage of verification: we check the presence of the given username in the database
-        sql = """SELECT * FROM Users WHERE username = ?"""
+        # The first stage of verification: using username, we verify the password and get the user's group id
+        sql = """SELECT password_hash, group_id FROM Users WHERE username = ?"""
         try:
             self.__cur.execute(sql, (username,))
             res = self.__cur.fetchall()
-            if res:  # if a user with such username exists
+            if res:  # if data for such username exists
+                psw, group = res[0]  # get password_hash и group_id from database
+                if compare_digest(psw, psw_hash):  # if the password matches / safe string comparison
+                    psw = "EMPTY"  # overwriting a variable for safety
 
-                # The second stage of verification: using username, we verify the password and get the user's group id
-                sql = """SELECT password_hash, group_id FROM Users WHERE username = ?"""
-                try:
-                    self.__cur.execute(sql, (username,))
-                    res = self.__cur.fetchall()
-                    if res:  # if data for such username exists
-                        psw, group = res[0]  # get password_hash и group_id from database
-                        if compare_digest(psw, psw_hash):  # if the password matches / safe string comparison
-                            psw = "EMPTY"  # overwriting a variable for safety
-
-                            # The third stage of verification: we verify the token by the group id
-                            sql = """SELECT token FROM Groups WHERE id = ?"""
-                            try:
-                                self.__cur.execute(sql, (group,))
-                                res = self.__cur.fetchone()
-                                if res:
-                                    if compare_digest(res[0], token):  # safe string comparison
-                                        return True  # if the token matches the group token
-                            except sqlite3.Error as e:
-                                print(str(e))
-
-                except sqlite3.Error as e:
-                    print(str(e))
+                    # The second stage of verification: we verify the token by the group id
+                    sql = """SELECT token FROM Groups WHERE id = ?"""
+                    try:
+                        self.__cur.execute(sql, (group,))
+                        res = self.__cur.fetchone()
+                        if res:
+                            if compare_digest(res[0], token):  # safe string comparison
+                                return True  # if the token matches the group token
+                    except sqlite3.Error as e:
+                        print(str(e))
 
         except sqlite3.Error as e:
             print(str(e))
