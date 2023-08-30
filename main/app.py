@@ -43,17 +43,24 @@ def registration():
                 flash(f"{request.form['username']}, "
                       f"your token: {user_token}", category="success_token")
                 print(request.form)
-            else:
-                pass  # the flash function is called inside the validator
 
         # User is added to an existing group
         if len(request.form["token"]) == 32:
-            if (registration_validator(
-                        request.form["username"], request.form["password"], request.form["tg_link"]) and
-                    token_validator(request.form["token"])):
-                flash("Registration completed successfully!", category="success")
-            else:
-                pass  # the flash function is called inside the validator
+            if registration_validator(request.form["username"], request.form["password"], request.form["tg_link"]):
+                if group_id := token_validator(request.form["token"]):
+                    db = get_db()
+                    dbase = FDataBase(db)
+                    if dbase.add_user_to_group(request.form["username"], generate_hash(request.form["password"]),
+                                               group_id, request.form["tg_link"]):
+                        # redirecting the user to a personal account (he already has a group token)
+                        session["userLogged"] = request.form["username"]
+                        return redirect(url_for("household", username=session["userLogged"]))
+                    else:
+                        flash("Error creating user. Please try again and if the problem persists, "
+                              "contact technical support.", category="error")
+                else:
+                    flash("There is no group with this token, please check the correctness of the entered data!",
+                          category="error")
 
         # User made a mistake when entering the token
         if len(request.form["token"]) > 0 and len(request.form["token"]) != 32:
@@ -62,7 +69,7 @@ def registration():
     return render_template("registration.html", title="Budget control - Registration")
 
 
-@app.route('/login', methods=["GET", "POST"])  # send password in POST request
+@app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
 def login():
     if "userLogged" in session:  # If the client has logged in before
         return redirect(url_for("household", username=session["userLogged"]))
