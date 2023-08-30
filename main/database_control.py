@@ -1,6 +1,7 @@
 from flask import g
 import sqlite3
 from hmac import compare_digest
+from datetime import datetime
 
 
 class FDataBase:
@@ -8,22 +9,30 @@ class FDataBase:
         self.__db = db
         self.__cur = db.cursor()
 
-    # def check_user_by_username(self, username):
-    #     sql = """SELECT * FROM Users WHERE username = ?"""
-    #     try:
-    #         self.__cur.execute(sql, (username,))
-    #         res = self.__cur.fetchall()
-    #         if res:
-    #             return True
-    #     except sqlite3.Error as e:
-    #         print(str(e))
-    #     return False
+    def token_verification(self, token: str):
+        try:
+            self.__cur.execute("""SELECT id FROM Groups WHERE token = ?""", (token,))
+            res = self.__cur.fetchone()
+            if res:
+                return res[0]
+        except sqlite3.Error as e:
+            print(str(e))
+
+    def user_exist(self, tg_link: str):
+        try:
+            self.__cur.execute("""SELECT id FROM Users WHERE telegram_link = ?""", (tg_link,))
+            res = self.__cur.fetchone()
+            if res:  # res[0] = None if the user with this link does not exist
+                return True
+        except sqlite3.Error as e:
+            print(str(e))
+
+        return False
 
     def auth_by_username(self, username: str, psw_hash: str, token: str):
         # The first stage of verification: using username, we verify the password and get the user's group id
-        sql = """SELECT password_hash, group_id FROM Users WHERE username = ?"""
         try:
-            self.__cur.execute(sql, (username,))
+            self.__cur.execute("""SELECT password_hash, group_id FROM Users WHERE username = ?""", (username,))
             res = self.__cur.fetchall()
             if res:  # if data for such username exists
                 psw, group = res[0]  # get password_hash и group_id from database
@@ -31,9 +40,8 @@ class FDataBase:
                     psw = "EMPTY"  # overwriting a variable for safety
 
                     # The second stage of verification: we verify the token by the group id
-                    sql = """SELECT token FROM Groups WHERE id = ?"""
                     try:
-                        self.__cur.execute(sql, (group,))
+                        self.__cur.execute("""SELECT token FROM Groups WHERE id = ?""", (group,))
                         res = self.__cur.fetchone()
                         if res:
                             if compare_digest(res[0], token):  # safe string comparison
@@ -43,6 +51,18 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+
+    def add_user_to_group(self, username: str, psw_hash: str, group_id: int, tg_link: str):
+        try:
+            self.__cur.execute("INSERT INTO Users VALUES(NULL, ?, ?, ?, ?, ?)",
+                               (username, psw_hash, group_id, tg_link, datetime.now().strftime("%d-%m-%Y %H:%M"),))
+            self.__db.commit()
+
+        except sqlite3.Error as e:
+            print(str(e))
+            return False
+
+        return True
 
 
 def connect_db():
@@ -84,4 +104,3 @@ def close_db(error):
 
 if __name__ == '__main__':
     create_db()
-    # insert_data()

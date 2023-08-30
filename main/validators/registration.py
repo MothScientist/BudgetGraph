@@ -1,17 +1,23 @@
 from flask import flash
+from database_control import get_db, FDataBase
 
 
-def registration_validator(username: str, password: str, tg_link: str):
+def registration_validator(username: str, password: str, tg_link: str) -> bool:
     """
     :param username: 3 to 15 characters
     :param password: 4 to 128 characters
-    :param tg_link: https://t.me/{username} - username: 18 to 45 characters
+    :param tg_link: https://t.me/{username} - username: 18 to 45 characters (unique)
     :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
     """
     if 3 <= len(username) <= 20:
         if 4 <= len(password) <= 128:
             if 18 <= len(tg_link) <= 45 and tg_link.startswith("https://t.me/"):
-                return True
+                db = get_db()
+                dbase = FDataBase(db)
+                if not dbase.user_exist(tg_link):
+                    return True
+                else:
+                    flash("Error - check the link you entered.", category="error")
             else:  # each error has its own flash message so that the user knows where he made a mistake
                 flash("Error - invalid telegram link.", category="error")
         else:
@@ -21,9 +27,12 @@ def registration_validator(username: str, password: str, tg_link: str):
     return False
 
 
-def token_validator(token: str):
+def token_validator(token: str) -> int:
+    db = get_db()
+    dbase = FDataBase(db)
     """
     :param token: checking if the token exists in the database
-    :return: True if such a token exists and the user can be added to the group
+    :return: 0 - if there is no group with this token
+             x - if the group exists (x - group id)
     """
-    return True
+    return dbase.token_verification(token)

@@ -46,10 +46,21 @@ def registration():
 
         # User is added to an existing group
         if len(request.form["token"]) == 32:
-            if (registration_validator(
-                        request.form["username"], request.form["password"], request.form["tg_link"]) and
-                    token_validator(request.form["token"])):
-                flash("Registration completed successfully!", category="success")
+            if registration_validator(request.form["username"], request.form["password"], request.form["tg_link"]):
+                if group_id := token_validator(request.form["token"]):
+                    db = get_db()
+                    dbase = FDataBase(db)
+                    if dbase.add_user_to_group(request.form["username"], generate_hash(request.form["password"]),
+                                               group_id, request.form["tg_link"]):
+                        # redirecting the user to a personal account (he already has a group token)
+                        session["userLogged"] = request.form["username"]
+                        return redirect(url_for("household", username=session["userLogged"]))
+                    else:
+                        flash("Error creating user. Please try again and if the problem persists, "
+                              "contact technical support.", category="error")
+                else:
+                    flash("There is no group with this token, please check the correctness of the entered data!",
+                          category="error")
 
         # User made a mistake when entering the token
         if len(request.form["token"]) > 0 and len(request.form["token"]) != 32:
