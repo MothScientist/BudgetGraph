@@ -14,7 +14,7 @@ def registration_validator(username: str, password: str, tg_link: str) -> bool:
             if 18 <= len(tg_link) <= 45 and tg_link.startswith("https://t.me/"):
                 db = get_db()
                 dbase = FDataBase(db)
-                if not dbase.user_exist(tg_link):
+                if not dbase.user_exist_by_tg_link(tg_link):
                     return True
                 else:
                     flash("Error - check the link you entered.", category="error")
