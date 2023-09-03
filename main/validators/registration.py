@@ -12,8 +12,7 @@ def registration_validator(username: str, password: str, tg_link: str) -> bool:
     if 3 <= len(username) <= 20:
         if 4 <= len(password) <= 128:
             if 18 <= len(tg_link) <= 45 and tg_link.startswith("https://t.me/"):
-                db = get_db()
-                dbase = FDataBase(db)
+                dbase = FDataBase(get_db())
                 if not dbase.user_exist_by_tg_link(tg_link):
                     return True
                 else:
@@ -28,8 +27,7 @@ def registration_validator(username: str, password: str, tg_link: str) -> bool:
 
 
 def token_validator(token: str) -> int:
-    db = get_db()
-    dbase = FDataBase(db)
+    dbase = FDataBase(get_db())
     """
     :param token: checking if the token exists in the database
     :return: 0 - if there is no group with this token
