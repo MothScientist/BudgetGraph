@@ -2,33 +2,42 @@ import telebot
 from telebot import types
 import os
 from dotenv import load_dotenv
-from validators.registration import registration_validator, token_validator
-
 
 load_dotenv()  # Load environment variables from .env file
 BOT_TOKEN = os.getenv("BOT_TOKEN")  # Get the bot token from an environment variable
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+def check_user_by_link(link: str) -> bool:
+    return False
+
+
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup_2 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 
     btn1 = types.KeyboardButton("❓ Help")
     btn2 = types.KeyboardButton("🏆 Link to project github")
     btn3 = types.KeyboardButton("💻 My Telegram link")
-    btn4 = types.KeyboardButton("🤡 I want to register/login to my account")
+    btn4 = types.KeyboardButton("🤡 I want to register")
 
-    markup.add(btn1, btn2, btn3, btn4)
+    markup_1.add(btn1, btn2, btn3, btn4)
+    markup_2.add(btn1, btn2)
 
-    bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name} {message.from_user.last_name}!\n"
-                                      f"Are you a new user or contributor to the project?", reply_markup=markup)
+    # check user in our project
+    if check_user_by_link("https://t.me/" + message.from_user.username):
+        bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name} {message.from_user.last_name}!\n."
+                                          f"We recognized you. Welcome!", reply_markup=markup_2)
+    else:
+        bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name} {message.from_user.last_name}!\n."
+                                          f"We didn't recognize you. Would you like to register in the project?",
+                         reply_markup=markup_1)
 
 
 @bot.message_handler(commands=['help'])
 def help(message):
-    bot.send_message(message.chat.id, f"{message.from_user.first_name} {message.from_user.last_name},"
-                                      f" Here is a list of commands to help you ->")
+    bot.send_message(message.chat.id, f"{message}")
 
 
 @bot.message_handler(commands=['my_link'])
@@ -44,25 +53,6 @@ def project_github(message):
 
 
 @bot.message_handler(content_types=['text'])
-def choice_login_registration(message):
-    markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-
-    btn1 = types.KeyboardButton("🌚 I`m a new user")
-    btn2 = types.KeyboardButton("🌝 I`m already registered")
-
-    markup_1.add(btn1, btn2)
-
-    if message.text == "🤡 I want to register/login to my account":
-        bot.send_message(message.chat.id, "Choose the right option", reply_markup=markup_1)
-
-    if message.text == "🌚 I`m a new user":
-        login(message)
-
-    elif message.text == "🌝 I`m already registered":
-        registration(message)
-
-
-@bot.message_handler(content_types=['text'])
 def text(message):
     if message.text == "❓ Help":
         help(message)
@@ -73,16 +63,8 @@ def text(message):
     elif message.text == "💻 My Telegram link":
         my_link(message)
 
-    elif message.text == "🤡 I want to register/login to my account":
-        choice_login_registration(message)
-
-
-def login(message):
-    pass
-
-
-def registration(message):
-    pass
+    elif message.text == "🤡 I want to register":
+        pass
 
 
 bot.polling(none_stop=True)
