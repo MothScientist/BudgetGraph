@@ -2,16 +2,12 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 import os
 from dotenv import load_dotenv
 from database_control import get_db, close_db, FDataBase
-from token_generation import get_token
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
 from password_hashing import generate_hash
 
 
-# Load environment variables from .env file
-load_dotenv()
-
-# TOKEN = os.getenv("BOT_TOKEN")
+load_dotenv()  # Load environment variables from .env file
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -38,8 +34,7 @@ def registration():
             if registration_validator(
                     request.form["username"], request.form["password"], request.form["tg_link"]
             ):
-                db = get_db()
-                dbase = FDataBase(db)
+                dbase = FDataBase(get_db())
                 if user_token := dbase.create_group(request.form["tg_link"]):
                     group_id = token_validator(user_token)
                     if dbase.add_user_to_group(request.form["username"], generate_hash(request.form["password"]),
@@ -52,8 +47,7 @@ def registration():
         if len(request.form["token"]) == 32:
             if registration_validator(request.form["username"], request.form["password"], request.form["tg_link"]):
                 if group_id := token_validator(request.form["token"]):  # new variable "group_id" (int)
-                    db = get_db()
-                    dbase = FDataBase(db)
+                    dbase = FDataBase(get_db())
                     if dbase.add_user_to_group(request.form["username"], generate_hash(request.form["password"]),
                                                group_id, request.form["tg_link"]):
                         # redirecting the user to a personal account (he already has a group token)
@@ -84,8 +78,8 @@ def login():
             session["userLogged"] = request.form["username"]
             return redirect(url_for("household", username=session["userLogged"]))
         else:
-            pass
-        # print(request.form)  # request.args - GET, request.form - POST
+            flash("Error. Please try again and if the problem persists, contact technical support.", category="error")
+        # request.args - GET, request.form - POST
 
     return render_template("login.html", title="Budget control - Login")
 
