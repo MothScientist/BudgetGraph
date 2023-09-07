@@ -37,8 +37,8 @@ def registration():
                 dbase = FDataBase(get_db())
                 if user_token := dbase.create_group(request.form["tg_link"]):
                     group_id = token_validator(user_token)
-                    if dbase.add_user_to_group(request.form["username"], generate_hash(request.form["password"]),
-                                               group_id, request.form["tg_link"]):
+                    if dbase.add_user_to_db(request.form["username"], generate_hash(request.form["password"]),
+                                            group_id, request.form["tg_link"]):
                         flash("Registration completed successfully!", category="success")
                         flash(f"{request.form['username']}, "
                               f"your token: {user_token}", category="success_token")
@@ -48,8 +48,8 @@ def registration():
             if registration_validator(request.form["username"], request.form["password"], request.form["tg_link"]):
                 if group_id := token_validator(request.form["token"]):  # new variable "group_id" (int)
                     dbase = FDataBase(get_db())
-                    if dbase.add_user_to_group(request.form["username"], generate_hash(request.form["password"]),
-                                               group_id, request.form["tg_link"]):
+                    if dbase.add_user_to_db(request.form["username"], generate_hash(request.form["password"]),
+                                            group_id, request.form["tg_link"]):
                         # redirecting the user to a personal account (he already has a group token)
                         session["userLogged"] = request.form["username"]
                         return redirect(url_for("household", username=session["userLogged"]))

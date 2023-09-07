@@ -65,12 +65,12 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def add_user_to_group(self, username: str, psw_hash: str, group_id: int, tg_link: str):
+    def add_user_to_db(self, username: str, psw_hash: str, group_id: int, tg_link: str):
         """
         adding a new user to the Users table
         """
         try:
-            self.__cur.execute("INSERT INTO Users VALUES(NULL, ?, ?, ?, ?, ?)",
+            self.__cur.execute("INSERT INTO Users VALUES(NULL, ?, NULL, ?, ?, ?, ?)",
                                (username, psw_hash, group_id, tg_link, datetime.now().strftime("%d-%m-%Y %H:%M"),))
             self.__db.commit()
 
@@ -100,20 +100,28 @@ class FDataBase:
 
 
 def connect_db():
-    conn = sqlite3.connect("db.sqlite3")
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect("db.sqlite3")
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    except sqlite3.Error as e:
+        print(str(e))
 
 
 def create_db():
-    conn = connect_db()
-    cursor = conn.cursor()
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
 
-    with open("create_db.sql", 'r') as file:
-        cursor.executescript(file.read())
+        with open("create_db.sql", 'r') as file:
+            cursor.executescript(file.read())
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+
+    except sqlite3.Error as e:
+        print(str(e))
 
 
 def create_table_group(table_name):
@@ -168,4 +176,6 @@ def close_db(error):
 
 
 if __name__ == '__main__':
-    create_table_group("budget_77")
+    pass
+    # create_db()
+    # create_table_group("budget_1")
