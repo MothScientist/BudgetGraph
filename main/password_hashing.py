@@ -1,7 +1,7 @@
 import hashlib
 
 
-def generate_hash(secure_key: str, iterations=512, key_length=32, hash_algorithm="sha256", salt=""):
+def generate_hash(secure_key: str, salt="", iterations=512, key_length=32, hash_algorithm="sha256"):
 
     """
     :param secure_key: your password

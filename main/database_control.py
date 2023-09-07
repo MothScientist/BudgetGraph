@@ -3,6 +3,7 @@ import sqlite3
 from hmac import compare_digest
 from datetime import datetime
 from token_generation import get_token
+from validators.table_name import table_name_validator
 
 
 class FDataBase:
@@ -115,12 +116,43 @@ def create_db():
     conn.close()
 
 
+def create_table_group(table_name):
+    """
+    table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
+    :param table_name: "budget_?"
+    :return: nothing OR error
+    """
+    try:
+        if not table_name_validator(table_name):
+            raise ValueError("Possible SQL injection attempt")
+
+        conn = sqlite3.connect("db.sqlite3")
+        cursor = conn.cursor()
+
+        query = (f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY AUTOINCREMENT, "
+                 f"total text NOT NULL, "
+                 f"username text NOT NULL, "
+                 f"transfer text NOT NULL, "
+                 f"date_time text NOT NULL, "
+                 f"description text NOT NULL);")
+        cursor.execute(query)
+
+        conn.commit()
+        conn.close()
+
+    except sqlite3.Error as e:
+        print(str(e))
+
+    except ValueError as e:
+        print(str(e))
+
 # def insert_data():
 #     conn = create_connection()
 #     cursor = conn.cursor()
 #     cursor.execute("INSERT INTO table_name (column1, column2, ...) VALUES (?, ?)", ('value1', 'value2'))
 #     conn.commit()
 #     conn.close()
+
 
 def get_db():
     if not hasattr(g, "link_db"):
@@ -136,4 +168,4 @@ def close_db(error):
 
 
 if __name__ == '__main__':
-    create_db()
+    create_table_group("budget_77")
