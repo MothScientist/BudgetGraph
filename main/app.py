@@ -76,6 +76,8 @@ def login():
     if request.method == "POST":
         if login_validator(request.form["username"], generate_hash(request.form["password"]), request.form["token"]):
             session["userLogged"] = request.form["username"]
+            dbase = FDataBase(get_db())
+            dbase.update_user_last_login(request.form["username"])
             return redirect(url_for("household", username=session["userLogged"]))
         else:
             flash("Error. Please try again and if the problem persists, contact technical support.", category="error")

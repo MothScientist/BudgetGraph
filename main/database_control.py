@@ -1,7 +1,6 @@
 from flask import g
 import sqlite3
 from hmac import compare_digest
-from datetime import datetime
 from token_generation import get_token
 from validators.table_name import table_name_validator
 
@@ -70,8 +69,9 @@ class FDataBase:
         adding a new user to the Users table
         """
         try:
-            self.__cur.execute("INSERT INTO Users VALUES(NULL, ?, NULL, ?, ?, ?, ?)",
-                               (username, psw_hash, group_id, tg_link, datetime.now().strftime("%d-%m-%Y %H:%M"),))
+            self.__cur.execute("INSERT INTO Users "
+                               "VALUES(NULL, ?, NULL, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'))",
+                               (username, psw_hash, group_id, tg_link,))
             self.__db.commit()
 
         except sqlite3.Error as e:
@@ -88,8 +88,7 @@ class FDataBase:
         """
         try:
             token = get_token()
-            self.__cur.execute("INSERT INTO Groups VALUES(NULL, ?, ?)",
-                               (owner, token,))
+            self.__cur.execute("INSERT INTO Groups VALUES(NULL, ?, ?)", (owner, token,))
             self.__db.commit()
 
         except sqlite3.Error as e:
@@ -97,6 +96,20 @@ class FDataBase:
             return False
 
         return token
+
+    def update_user_last_login(self, username: str) -> None:
+        """
+        changes the user's last login time in the last_login column in the Users table
+        :param username:
+        :return: None
+        """
+        try:
+            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime') 
+            WHERE username = ?""", (username,))
+            self.__db.commit()
+
+        except sqlite3.Error as e:
+            print(str(e))
 
 
 def connect_db():
@@ -124,11 +137,11 @@ def create_db():
         print(str(e))
 
 
-def create_table_group(table_name):
+def create_table_group(table_name) -> None:
     """
     table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
-    :return: nothing OR error
+    :return: None
     """
     try:
         if not table_name_validator(table_name):
