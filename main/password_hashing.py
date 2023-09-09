@@ -20,7 +20,3 @@ def generate_hash(secure_key: str, salt: str, iterations=512, key_length=32, has
     :return: hash in hex format
     """
     return hashlib.pbkdf2_hmac(hash_algorithm, secure_key.encode('utf-8'), salt.encode('utf-8'), iterations, key_length).hex()
-
-
-print(generate_hash("1234", get_salt()))
-print(get_salt())

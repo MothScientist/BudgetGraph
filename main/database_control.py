@@ -148,7 +148,7 @@ def create_db():
         print(str(e))
 
 
-def create_table_group(table_name) -> None:
+def create_table_group(table_name) -> bool:
     """
     table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
@@ -166,17 +166,21 @@ def create_table_group(table_name) -> None:
                  f"username text NOT NULL, "
                  f"transfer text NOT NULL, "
                  f"date_time text NOT NULL, "
-                 f"description text NOT NULL);")
+                 f"description text);")
         cursor.execute(query)
 
         conn.commit()
         conn.close()
+
+        return True
 
     except sqlite3.Error as e:
         print(str(e))
 
     except ValueError as e:
         print(str(e))
+
+    return False
 
 # def insert_data():
 #     conn = create_connection()

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 from dotenv import load_dotenv
-from database_control import get_db, close_db, FDataBase
+from database_control import get_db, close_db, create_table_group, FDataBase
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
 from password_hashing import generate_hash, get_salt
@@ -41,9 +41,9 @@ def registration():
                     if dbase.add_user_to_db(request.form["username"], psw_salt,
                                             generate_hash(request.form["password"], psw_salt),
                                             group_id, request.form["tg_link"]):
-                        flash("Registration completed successfully!", category="success")
-                        flash(f"{request.form['username']}, "
-                              f"your token: {user_token}", category="success_token")
+                        if create_table_group(f"budget_{group_id}"):
+                            flash("Registration completed successfully!", category="success")
+                            flash(f"{request.form['username']}, your token: {user_token}", category="success_token")
 
         # User is added to an existing group
         if len(request.form["token"]) == 32:
