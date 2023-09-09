@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/line.js') }}"></script>
 </head>
-<body>
-<h1>Login: success</h1>
+<body class="household">
+  <header>
+      <a href="/logout">
+        <img src="{{ url_for('static', filename='img/logout.png') }}" alt="Login out" class="logout_button">
+      </a>
+  </header>
+
+  <footer>
+      <div id="gradient-line"></div>
+      <div class="content">
+          <p><a href="https://www.flaticon.com/free-icons/check-out" title="check out icons">Check out icons created by Infinite Dendrogram - Flaticon</a></p>
+      </div>
+  </footer>
 </body>
 </html>

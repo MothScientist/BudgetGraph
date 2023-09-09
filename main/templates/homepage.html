@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/line.js') }}"></script>
 </head>
-<body>
+<body class="homepage">
   <header>
       <div class="logo">
         <span class="logo-text">Budget Control project</span>
@@ -24,6 +24,31 @@
         <img src="{{ url_for('static', filename='img/telegram.png') }}" alt="Telegram_bot" class="tg_button">
       </a>
   </header>
+
+  <div class="about">
+      <ul>
+          <h3>What is this and why?</h3>
+          ...
+      </ul>
+      <ul>
+          <h3>How is your data stored and processed?</h3>
+          ...
+      </ul>
+      <ul>
+          <h3>Support and FAQ</h3>
+          support@support.org
+      </ul>
+  </div>
+
+  <div class="ad-container">
+      <div class="ad-box">
+          <h1>Space for your advertising #1</h1>
+      </div>
+
+      <div class="ad-box">
+        <h1>Space for your advertising #2</h1>
+      </div>
+  </div>
 
   <footer>
       <div id="gradient-line"></div>
