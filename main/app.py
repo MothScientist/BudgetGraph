@@ -111,13 +111,13 @@ def household(username):
     return render_template("household.html", title=f"Budget control - {username}")
 
 
-# @app.route('/logout', methods=['GET'])
-# def logout():
-#     # Removing the "userLogged" key from the session
-#     session.pop("userLogged", None)
-#
-#     # Redirecting the user to another page, such as the homepage
-#     return redirect(url_for('homepage'))
+@app.route('/logout', methods=['GET'])
+def logout():
+    # Removing the "userLogged" key from the session
+    session.pop("userLogged", None)
+
+    # Redirecting the user to another page, such as the homepage
+    return redirect(url_for('homepage'))
 
 
 @app.errorhandler(401)

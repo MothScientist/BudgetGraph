@@ -52,6 +52,17 @@ header {
   height: auto;
 }
 
+.logout_button{
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
 .paragraph {
     margin-bottom: 10px;
   }
@@ -271,3 +282,26 @@ a:hover {
   100% { color: rebeccapurple; }
 }
 
+.ad-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 18%;
+  right: 1%;
+  background-color: transparent;
+}
+
+.ad-box {
+  width: 200px;
+  height: 230px;
+  background-color: lightpink;
+  margin: 10px;
+  padding: 10px;
+}
+
+.about{
+  position: absolute;
+  left: 5%;
+  top: 10%;
+  background-color: transparent;
+}
