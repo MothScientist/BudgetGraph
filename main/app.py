@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from database_control import get_db, close_db, create_table_group, FDataBase
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
-from password_hashing import generate_hash, get_salt
+from password_hashing import getting_hash, get_salt
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -29,34 +29,41 @@ def homepage():
 def registration():
     if request.method == "POST":
 
+        username = request.form["username"]
+        psw = request.form["password"]
+        tg_link = request.form["tg_link"]
+        token = request.form["token"]
+
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
-            if registration_validator(
-                    request.form["username"], request.form["password"], request.form["tg_link"]
-            ):
+            if registration_validator(username, psw, tg_link):
+
                 dbase = FDataBase(get_db())
-                psw_salt = get_salt()
-                if user_token := dbase.create_group(request.form["tg_link"]):
+
+                if user_token := dbase.create_group(tg_link):
+
                     group_id = token_validator(user_token)
-                    if dbase.add_user_to_db(request.form["username"], psw_salt,
-                                            generate_hash(request.form["password"], psw_salt),
-                                            group_id, request.form["tg_link"]):
-                        if create_table_group(f"budget_{group_id}"):
-                            flash("Registration completed successfully!", category="success")
-                            flash(f"{request.form['username']}, your token: {user_token}", category="success_token")
+                    psw_salt = get_salt()
+                    create_table_group(f"budget_{group_id}")
+
+                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
+                        flash("Registration completed successfully!", category="success")
+                        flash(f"{username}, your token: {user_token}", category="success_token")
 
         # User is added to an existing group
-        if len(request.form["token"]) == 32:
-            if registration_validator(request.form["username"], request.form["password"], request.form["tg_link"]):
-                if group_id := token_validator(request.form["token"]):  # new variable "group_id" (int)
+        if len(token) == 32:
+            if registration_validator(username, psw, tg_link):
+                if group_id := token_validator(token):  # new variable "group_id" (int)
+
                     dbase = FDataBase(get_db())
                     psw_salt = get_salt()
-                    if dbase.add_user_to_db(request.form["username"], psw_salt,
-                                            generate_hash(request.form["password"], psw_salt),
-                                            group_id, request.form["tg_link"]):
+
+                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
+
                         # redirecting the user to a personal account (he already has a group token)
-                        session["userLogged"] = request.form["username"]
+                        session["userLogged"] = username
                         return redirect(url_for("household", username=session["userLogged"]))
+
                     else:
                         flash("Error creating user. Please try again and if the problem persists, "
                               "contact technical support.", category="error")
@@ -78,13 +85,18 @@ def login():
 
     # here the POST request is checked and the presence of the user in the database is checked
     if request.method == "POST":
+        username = request.form["username"]
+        psw = request.form["password"]
+        token = request.form["token"]
         dbase = FDataBase(get_db())
-        psw_salt = dbase.get_salt_by_username(request.form["username"])
-        if login_validator(request.form["username"], generate_hash(request.form["password"], psw_salt),
-                           request.form["token"]):
-            session["userLogged"] = request.form["username"]
-            dbase.update_user_last_login(request.form["username"])
+        psw_salt = dbase.get_salt_by_username(username)
+
+        if login_validator(username, getting_hash(psw, psw_salt), token):
+
+            session["userLogged"] = username
+            dbase.update_user_last_login(username)
             return redirect(url_for("household", username=session["userLogged"]))
+
         else:
             flash("Error. Please try again and if the problem persists, contact technical support.", category="error")
         # request.args - GET, request.form - POST

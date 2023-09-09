@@ -10,7 +10,7 @@ class FDataBase:
         self.__db = db
         self.__cur = db.cursor()
 
-    def token_verification(self, token: str):
+    def get_group_id_by_token(self, token: str):
         """
         search for a group by its token and return the id value of this group
         """
@@ -33,7 +33,7 @@ class FDataBase:
 
         return False
 
-    def user_exist_by_tg_link(self, tg_link: str):
+    def get_user_id_by_username(self, tg_link: str):
         """
         :param tg_link:
         :return:
@@ -148,7 +148,7 @@ def create_db():
         print(str(e))
 
 
-def create_table_group(table_name) -> bool:
+def create_table_group(table_name) -> None:
     """
     table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
@@ -172,22 +172,11 @@ def create_table_group(table_name) -> bool:
         conn.commit()
         conn.close()
 
-        return True
-
     except sqlite3.Error as e:
         print(str(e))
 
     except ValueError as e:
         print(str(e))
-
-    return False
-
-# def insert_data():
-#     conn = create_connection()
-#     cursor = conn.cursor()
-#     cursor.execute("INSERT INTO table_name (column1, column2, ...) VALUES (?, ?)", ('value1', 'value2'))
-#     conn.commit()
-#     conn.close()
 
 
 def get_db():

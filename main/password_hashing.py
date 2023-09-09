@@ -10,7 +10,7 @@ def get_salt():
                    for _ in range(16))
 
 
-def generate_hash(secure_key: str, salt: str, iterations=512, key_length=32, hash_algorithm="sha256"):
+def getting_hash(secure_key: str, salt: str, iterations=512, key_length=32, hash_algorithm="sha256"):
     """
     :param secure_key: your password
     :param iterations: it is best to choose a number from 500 to 2000
