@@ -22,6 +22,17 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def get_salt_by_username(self, username: str):
+        try:
+            self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+        except sqlite3.Error as e:
+            print(str(e))
+
+        return False
+
     def user_exist_by_tg_link(self, tg_link: str):
         """
         :param tg_link:
@@ -64,14 +75,14 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def add_user_to_db(self, username: str, psw_hash: str, group_id: int, tg_link: str):
+    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str):
         """
         adding a new user to the Users table
         """
         try:
             self.__cur.execute("INSERT INTO Users "
-                               "VALUES(NULL, ?, NULL, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'))",
-                               (username, psw_hash, group_id, tg_link,))
+                               "VALUES(NULL, ?, ?, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'))",
+                               (username, psw_salt, psw_hash, group_id, tg_link,))
             self.__db.commit()
 
         except sqlite3.Error as e:
