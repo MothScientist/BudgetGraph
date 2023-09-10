@@ -5,6 +5,7 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/line.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/accept_button.js') }}"></script>
 </head>
 <body>
   <a href="/">
@@ -24,7 +25,10 @@
         <input id="tg_link" type="text" name="tg_link" placeholder="Link to your telegram (https://t.me/username)">
         <input id="password" type="password" name="password" placeholder="Password (4-128 characters)">
         <input id="token" type="password" name="token" placeholder="Token (if you are adding to an existing family)">
-        <button type="submit" class="link-button">Sign up!</button>
+        <button type="submit" id="signup-button" class="link-button" disabled>Sign up!</button>
+        <label for="agree-checkbox">
+          <input id="agree-checkbox" type="checkbox" required> I agree with <a href="\">the conditions</a>
+        </label>
         <button id="clear-button" type="reset">Clear</button>
       </form>
     </div>
