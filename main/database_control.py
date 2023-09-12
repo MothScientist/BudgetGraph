@@ -30,8 +30,7 @@ class FDataBase:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
                                  (SELECT group_id FROM Users WHERE username = ?)""", (username,))
             res = self.__cur.fetchone()
-            if res:
-                return res[0]
+            return res[0]
 
         except sqlite3.Error as e:
             print(str(e))
@@ -44,6 +43,7 @@ class FDataBase:
                 return str(res[0])
             else:
                 return False
+
         except sqlite3.Error as e:
             print(str(e))
 
@@ -59,6 +59,9 @@ class FDataBase:
             res = self.__cur.fetchone()
             if res:  # res[0] = None if the user with this link does not exist
                 return True
+            else:
+                return False
+
         except sqlite3.Error as e:
             print(str(e))
 
@@ -74,9 +77,10 @@ class FDataBase:
                     SELECT token FROM Groups WHERE Groups.id = Users.group_id AND token = ?)""",
                                (username, psw_hash, token))
             res = self.__cur.fetchone()
-
             if res:
                 return True
+            else:
+                return False
 
         except sqlite3.Error as e:
             print(str(e))

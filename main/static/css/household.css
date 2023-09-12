@@ -13,6 +13,11 @@
 
 .token_place{
   position: absolute;
-  top: 8px;
-  right: 5px;
+  top: 10px;
+  right: 20px;
+}
+
+h3#token_place{
+  display: inline;
+  user-select: none;
 }
