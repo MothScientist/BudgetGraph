@@ -21,3 +21,28 @@ h3#token_place{
   display: inline;
   user-select: none;
 }
+
+.container{
+  display: flex;
+  flex-direction: column;
+  float: right;
+  position: absolute;
+  top: 225px;
+  right: 75px;
+}
+
+.add_form_1, .add_form_2 {
+  float: right;
+  background-color: beige;
+  padding: 10px;
+  margin: 10px;
+  width: 210px;
+}
+
+.add_form_1 form, .add_form_2 form {
+  display: flex;
+  flex-direction: column;
+}
+.add_form_1 input, .add_form_2 input {
+  margin-bottom: 10px;
+}

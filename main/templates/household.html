@@ -17,6 +17,28 @@
       <h3 id="token_place">Token: </h3>{{ token }}
   </div>
 
+  <div class="container">
+      <div class="add_form_1">
+          <div class="header_1">Add income</div>
+          <form action="/household/{{ username }}" method="POST">
+            <input type="text" id="income" name="income" placeholder="Income">
+            <input type="text" id="description_1" name="description_1" placeholder="Description">
+            <button type="submit" id="submit_button_1">Add to table</button>
+            <button type="reset" id="clear_button_1">Clear</button>
+          </form>
+        </div>
+
+      <div class="add_form_2">
+          <div class="header_2">Add expense</div>
+          <form action="/household/{{ username }}" method="POST">
+            <input type="text" id="expense" name="expense" placeholder="Expense">
+            <input type="text" id="description_2" name="description_2" placeholder="Description">
+            <button type="submit" id="submit_button_2">Add to table</button>
+            <button type="reset" id="clear_button_2">Clear</button>
+          </form>
+        </div>
+    </div>
+
   <footer>
       <div id="gradient-line"></div>
       <div class="content">

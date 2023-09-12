@@ -49,23 +49,29 @@ class FDataBase:
 
         return False
 
-    def get_user_id_by_username(self, tg_link: str):
+    def get_user_id_by_username(self, username: str, tg_link: str) -> bool:
         """
+
+        :param username:
         :param tg_link:
         :return:
         """
         try:
             self.__cur.execute("""SELECT id FROM Users WHERE telegram_link = ?""", (tg_link,))
-            res = self.__cur.fetchone()
-            if res:  # res[0] = None if the user with this link does not exist
+            res_link = self.__cur.fetchone()
+
+            self.__cur.execute("""SELECT id FROM Users WHERE username = ?""", (username,))
+            res_username = self.__cur.fetchone()
+
+            print(res_link, res_username)
+
+            if res_link or res_username:  # If a user with this link or name is found
                 return True
             else:
                 return False
 
         except sqlite3.Error as e:
             print(str(e))
-
-        return False
 
     def auth_by_username(self, username: str, psw_hash: str, token: str):
         """

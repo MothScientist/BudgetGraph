@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
+import re
 from dotenv import load_dotenv
 from database_control import get_db, close_db, create_table_group, FDataBase
 from validators.registration import registration_validator, token_validator
@@ -105,13 +106,29 @@ def login():
     return render_template("login.html", title="Budget control - Login")
 
 
-@app.route('/household/<username>')  # user's personal account
+@app.route('/household/<username>', methods=["GET", "POST"])  # user's personal account
 def household(username):
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
+
+    if request.method == "POST":
+        income = request.form.get("income")
+        if income is not None:
+            income = re.sub(r"[^0-9.-]", "", income)
+
+        description_1 = request.form.get("description_1")
+
+        expense = request.form.get("expense")
+        if expense is not None:
+            expense = re.sub(r"[^0-9.-]", "", expense)
+
+        description_2 = request.form.get("description_2")
+
+        print(f"Income: {income},\n Description: {description_1},\n Expense: {expense},\n Description: {description_2}")
+
     dbase = FDataBase(get_db())
-    _token = dbase.get_token_by_username(username)
-    return render_template("household.html", title=f"Budget control - {username}", token=_token)
+    token = dbase.get_token_by_username(username)
+    return render_template("household.html", title=f"Budget control - {username}", token=token, username=username)
 
 
 @app.route('/logout', methods=['GET'])

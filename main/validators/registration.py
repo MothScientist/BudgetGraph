@@ -13,10 +13,10 @@ def registration_validator(username: str, password: str, tg_link: str) -> bool:
         if 4 <= len(password) <= 128:
             if 18 <= len(tg_link) <= 45 and tg_link.startswith("https://t.me/"):
                 dbase = FDataBase(get_db())
-                if not dbase.get_user_id_by_username(tg_link):
+                if not dbase.get_user_id_by_username(username, tg_link):
                     return True
                 else:
-                    flash("Error - check the link you entered.", category="error")
+                    flash("Error - the username is taken or the link is entered incorrectly.", category="error")
             else:  # each error has its own flash message so that the user knows where he made a mistake
                 flash("Error - invalid telegram link.", category="error")
         else:
