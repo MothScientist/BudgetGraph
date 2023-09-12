@@ -1,6 +1,5 @@
 from flask import g
 import sqlite3
-from hmac import compare_digest
 from token_generation import get_token
 from validators.table_name import table_name_validator
 
@@ -22,12 +21,17 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_salt_by_username(self, username: str):
+    def get_token_by_username(self, username: str) -> str:
+        pass
+
+    def get_salt_by_username(self, username: str) -> str | bool:
         try:
             self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
             res = self.__cur.fetchone()
             if res:
                 return str(res[0])
+            else:
+                return False
         except sqlite3.Error as e:
             print(str(e))
 
@@ -53,27 +57,17 @@ class FDataBase:
         full process of user confirmation during authorization.
         the whole process is initialized with the username
         """
-        # The first stage of verification: using username, we verify the password and get the user's group id
         try:
-            self.__cur.execute("""SELECT password_hash, group_id FROM Users WHERE username = ?""", (username,))
-            res = self.__cur.fetchall()
-            if res:  # if data for such username exists
-                psw, group = res[0]  # get password_hash и group_id from database
-                if compare_digest(psw, psw_hash):  # if the password matches / safe string comparison
-                    psw = "EMPTY"  # overwriting a variable for safety
+            self.__cur.execute("""SELECT username FROM Users WHERE username = ? AND password_hash = ? AND EXISTS (
+                    SELECT token FROM Groups WHERE Groups.id = Users.group_id AND token = ?)""",
+                               (username, psw_hash, token))
+            res = self.__cur.fetchone()
 
-                    # The second stage of verification: we verify the token by the group id
-                    try:
-                        self.__cur.execute("""SELECT token FROM Groups WHERE id = ?""", (group,))
-                        res = self.__cur.fetchone()
-                        if res:
-                            if compare_digest(res[0], token):  # safe string comparison
-                                return True  # if the token matches the group token
-                    except sqlite3.Error as e:
-                        print(str(e))
+            if res:
+                return True
 
         except sqlite3.Error as e:
-            print(str(e))
+            raise Exception("An error occurred during the database query: " + str(e))
 
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str):
         """

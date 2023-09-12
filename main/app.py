@@ -91,7 +91,7 @@ def login():
         dbase = FDataBase(get_db())
         psw_salt = dbase.get_salt_by_username(username)
 
-        if login_validator(username, getting_hash(psw, psw_salt), token):
+        if psw_salt and login_validator(username, getting_hash(psw, psw_salt), token):
 
             session["userLogged"] = username
             dbase.update_user_last_login(username)
