@@ -22,7 +22,19 @@ class FDataBase:
             print(str(e))
 
     def get_token_by_username(self, username: str) -> str:
-        pass
+        """
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT token FROM Groups WHERE id = 
+                                 (SELECT group_id FROM Users WHERE username = ?)""", (username,))
+            res = self.__cur.fetchone()
+            if res:
+                return res[0]
+
+        except sqlite3.Error as e:
+            print(str(e))
 
     def get_salt_by_username(self, username: str) -> str | bool:
         try:
@@ -67,7 +79,7 @@ class FDataBase:
                 return True
 
         except sqlite3.Error as e:
-            raise Exception("An error occurred during the database query: " + str(e))
+            print(str(e))
 
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str):
         """

@@ -62,7 +62,7 @@ def registration():
 
                         # redirecting the user to a personal account (he already has a group token)
                         session["userLogged"] = username
-                        return redirect(url_for("household", username=session["userLogged"]))
+                        return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
                         flash("Error creating user. Please try again and if the problem persists, "
@@ -81,6 +81,7 @@ def registration():
 @app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
 def login():
     if "userLogged" in session:  # If the client has logged in before
+        print(session["userLogged"])
         return redirect(url_for("household", username=session["userLogged"]))
 
     # here the POST request is checked and the presence of the user in the database is checked
@@ -108,16 +109,15 @@ def login():
 def household(username):
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
-    return render_template("household.html", title=f"Budget control - {username}")
+    dbase = FDataBase(get_db())
+    _token = dbase.get_token_by_username(username)
+    return render_template("household.html", title=f"Budget control - {username}", token=_token)
 
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    # Removing the "userLogged" key from the session
-    session.pop("userLogged", None)
-
-    # Redirecting the user to another page, such as the homepage
-    return redirect(url_for('homepage'))
+    session.pop("userLogged", None)  # removing the "userLogged" key from the session
+    return redirect(url_for('homepage'))  # redirecting the user to another page, such as the homepage
 
 
 @app.errorhandler(401)
