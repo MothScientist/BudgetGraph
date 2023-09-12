@@ -1,0 +1,83 @@
+@import "styles.css";
+
+.sign_up_button{
+  position: absolute;
+  top: 10px;
+  right: 70px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.sign_in_button{
+  position: absolute;
+  top: 8px;
+  right: 150px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.tg_button{
+  position: absolute;
+  top: 8px;
+  right: 235px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.logo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: inline-block;
+  z-index: 9999;
+}
+
+.logo-text {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: deepskyblue;
+}
+
+.logo:hover .logo-text {
+  animation: flash 1.0s infinite;
+}
+
+@keyframes flash {
+  0% { color: blue; }
+  50% { color: transparent; }
+  100% { color: rebeccapurple; }
+}
+
+.ad-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 18%;
+  right: 1%;
+  background-color: transparent;
+}
+
+.ad-box {
+  width: 200px;
+  height: 230px;
+  background-color: lightpink;
+  margin: 10px;
+  padding: 10px;
+}
+
+.about{
+  position: absolute;
+  left: 5%;
+  top: 10%;
+  background-color: transparent;
+}

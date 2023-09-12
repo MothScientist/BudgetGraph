@@ -1,0 +1,33 @@
+@import "styles.css";
+
+.page404 {
+  background-image: url("../img/dark_404.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+}
+
+.text_404_1{
+  font-size: 36px;
+  position: fixed;
+  left: 150px;
+  top: 150px;
+}
+
+.text_404_2{
+  font-size: 36px;
+  position: fixed;
+  left: 300px;
+  top: 300px;
+}
+
+.text_404_3{
+  font-size: 36px;
+  position: fixed;
+  left: 450px;
+  top: 450px;
+}
+
+.link_back_404{
+  color: greenyellow;
+}

@@ -1,0 +1,18 @@
+@import "styles.css";
+
+.logout_button{
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.token_place{
+  position: absolute;
+  top: 8px;
+  right: 5px;
+}
