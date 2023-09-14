@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 import re
+import datetime
 from dotenv import load_dotenv
 from database_control import get_db, close_db, create_table_group, FDataBase
 from validators.registration import registration_validator, token_validator
@@ -19,6 +20,8 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config.update(dict(DATABASE=os.path.join(app.root_path, "db.sqlite3")))
 
 app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
+
+app.permanent_session_lifetime = datetime.timedelta(days=14)  # session lifetime in browser cookies
 
 
 @app.route('/')
@@ -81,8 +84,9 @@ def registration():
 
 @app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
 def login():
+    session.permanent = True
+
     if "userLogged" in session:  # If the client has logged in before
-        print(session["userLogged"])
         return redirect(url_for("household", username=session["userLogged"]))
 
     # here the POST request is checked and the presence of the user in the database is checked
@@ -111,29 +115,50 @@ def household(username):
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
 
-    if request.method == "POST":
-        income = request.form.get("income")
-        if income is not None:
-            income = re.sub(r"[^0-9.-]", "", income)
-
-        description_1 = request.form.get("description_1")
-
-        expense = request.form.get("expense")
-        if expense is not None:
-            expense = re.sub(r"[^0-9.-]", "", expense)
-
-        description_2 = request.form.get("description_2")
-
-        print(f"Income: {income},\n Description: {description_1},\n Expense: {expense},\n Description: {description_2}")
-
     dbase = FDataBase(get_db())
     token = dbase.get_token_by_username(username)
+
+    if request.method == "POST":
+        table_name = f"budget_{dbase.get_group_id_by_token(token)}"
+
+        if "submit_button_1" in request.form:  # Processing the "Add to table" button for form 1
+            income = request.form.get("income")
+            income = re.sub(r"[^0-9]", "", income)
+
+            if not re.match(r"^(?!0\d)\d{0,14}$", income):
+                flash("Error", category="error")
+
+            description_1 = request.form.get("description_1")
+
+            if dbase.add_monetary_transaction_to_db(table_name, username, int(income), description_1):
+                flash("Data added successfully.", category="success")
+            else:
+                flash("Error adding data to database.", category="error")
+
+            print(f"Income: {income},\nDescription: {description_1}")
+
+        elif "submit_button_2" in request.form:  # Processing the "Add to table" button for form 2
+            expense = request.form.get("expense")
+            expense = re.sub(r"[^0-9]", "", expense)
+
+            if not re.match(r"^(?!0\d)\d{0,14}$", expense):
+                flash("Error", category="error")
+
+            description_2 = request.form.get("description_2")
+
+            if dbase.add_monetary_transaction_to_db(table_name, username, int(expense)*(-1), description_2):
+                flash("Data added successfully.", category="success")
+            else:
+                flash("Error adding data to database.", category="error")
+
+            print(f"Expense: {expense},\nDescription: {description_2}")
+
     return render_template("household.html", title=f"Budget control - {username}", token=token, username=username)
 
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    session.pop("userLogged", None)  # removing the "userLogged" key from the session
+    session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
     return redirect(url_for('homepage'))  # redirecting the user to another page, such as the homepage
 
 

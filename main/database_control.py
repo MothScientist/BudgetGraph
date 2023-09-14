@@ -9,7 +9,7 @@ class FDataBase:
         self.__db = db
         self.__cur = db.cursor()
 
-    def get_group_id_by_token(self, token: str):
+    def get_group_id_by_token(self, token: str) -> int:
         """
         search for a group by its token and return the id value of this group
         """
@@ -47,8 +47,6 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-        return False
-
     def get_user_id_by_username(self, username: str, tg_link: str) -> bool:
         """
 
@@ -62,8 +60,6 @@ class FDataBase:
 
             self.__cur.execute("""SELECT id FROM Users WHERE username = ?""", (username,))
             res_username = self.__cur.fetchone()
-
-            print(res_link, res_username)
 
             if res_link or res_username:  # If a user with this link or name is found
                 return True
@@ -105,7 +101,28 @@ class FDataBase:
             print(str(e))
             return False
 
-        return True
+        else:
+            return True
+
+    def add_monetary_transaction_to_db(self, table_name: str, username: str, transfer: int, description: str = "")\
+            -> bool:
+        """
+
+        """
+        try:
+            self.__cur.execute(
+                f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
+                f" ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), ?)",
+                (transfer, username, transfer, description))
+            self.__db.commit()
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+        else:
+            return True
+
+        return False
 
     def create_group(self, owner: str) -> str | bool:
         """
@@ -122,7 +139,8 @@ class FDataBase:
             print(str(e))
             return False
 
-        return token
+        else:
+            return token
 
     def update_user_last_login(self, username: str) -> None:
         """
@@ -178,11 +196,11 @@ def create_table_group(table_name) -> None:
         cursor = conn.cursor()
 
         query = (f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY AUTOINCREMENT, "
-                 f"total text NOT NULL, "
+                 f"total integer NOT NULL, "
                  f"username text NOT NULL, "
-                 f"transfer text NOT NULL, "
+                 f"transfer integer NOT NULL, "
                  f"date_time text NOT NULL, "
-                 f"description text);")
+                 f"description text NOT NULL);")
         cursor.execute(query)
 
         conn.commit()
