@@ -104,7 +104,7 @@ class FDataBase:
         else:
             return True
 
-    def add_monetary_transaction_to_db(self, table_name: str, username: str, transfer: int, description: str = "")\
+    def add_monetary_transaction_to_db(self, table_name: str, username: str, amount: int, description: str = "")\
             -> bool:
         """
 
@@ -113,7 +113,7 @@ class FDataBase:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
                 f" ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), ?)",
-                (transfer, username, transfer, description))
+                (amount, username, amount, description))
             self.__db.commit()
 
         except sqlite3.Error as e:

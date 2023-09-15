@@ -1,5 +1,11 @@
 @import "styles.css";
 
+.homepage{
+  background-image: url("../img/m_min.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .sign_up_button{
   position: absolute;
   top: 10px;
@@ -76,8 +82,15 @@
 }
 
 .about{
+  color: black;
   position: absolute;
-  left: 5%;
-  top: 10%;
+  left: 1%;
+  top: 6%;
   background-color: transparent;
+}
+
+ul {
+  width: 600px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
 }

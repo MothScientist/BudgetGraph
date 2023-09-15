@@ -59,6 +59,12 @@
         </div>
     </div>
 
+    {% for category, messages in get_flashed_messages(True) %}
+        <div class="flash {{ category }}">
+            {{ messages }}<br>
+        </div>
+    {% endfor %}
+
   <footer>
       <div id="gradient-line"></div>
       <div class="content">

@@ -1,5 +1,11 @@
 @import "styles.css";
 
+.household{
+  background-color: white;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .logout_button{
   position: absolute;
   top: 8px;
@@ -12,6 +18,9 @@
 }
 
 .token_place{
+  color: black;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
   position: absolute;
   top: 10px;
   right: 20px;
@@ -59,15 +68,32 @@ table {
 }
 
 th, td {
-  border: 1px solid #000;
+  color: black;
+  border: 1px solid black;
   padding: 8px;
-  text-align: left;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
 }
 
 .flash.success{
-
+  position: fixed;
+  bottom: 30%;
+  right: 0%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  padding: 3px;
+  border: 1px solid #21DB56;
+  background: #AEFFC5;
 }
 
 .flash.error{
-
+  position: fixed;
+  bottom: 25%;
+  right: 3%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  padding: 5px;
+  border: 1px solid #FF4343;
+  background: #FF9C9C;
 }

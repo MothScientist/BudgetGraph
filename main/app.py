@@ -125,33 +125,31 @@ def household(username):
             income = request.form.get("income")
             income = re.sub(r"[^0-9]", "", income)
 
-            if not re.match(r"^(?!0\d)\d{0,14}$", income):
+            if not income or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", income):
                 flash("Error", category="error")
 
-            description_1 = request.form.get("description_1")
-
-            if dbase.add_monetary_transaction_to_db(table_name, username, int(income), description_1):
-                flash("Data added successfully.", category="success")
             else:
-                flash("Error adding data to database.", category="error")
+                description_1 = request.form.get("description_1")
 
-            print(f"Income: {income},\nDescription: {description_1}")
+                if dbase.add_monetary_transaction_to_db(table_name, username, int(income), description_1):
+                    flash("Data added successfully.", category="success")
+                else:
+                    flash("Error adding data to database.", category="error")
 
         elif "submit_button_2" in request.form:  # Processing the "Add to table" button for form 2
             expense = request.form.get("expense")
             expense = re.sub(r"[^0-9]", "", expense)
 
-            if not re.match(r"^(?!0\d)\d{0,14}$", expense):
+            if not expense or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", expense):
                 flash("Error", category="error")
 
-            description_2 = request.form.get("description_2")
-
-            if dbase.add_monetary_transaction_to_db(table_name, username, int(expense)*(-1), description_2):
-                flash("Data added successfully.", category="success")
             else:
-                flash("Error adding data to database.", category="error")
+                description_2 = request.form.get("description_2")
 
-            print(f"Expense: {expense},\nDescription: {description_2}")
+                if dbase.add_monetary_transaction_to_db(table_name, username, int(expense)*(-1), description_2):
+                    flash("Data added successfully.", category="success")
+                else:
+                    flash("Error adding data to database.", category="error")
 
     headers = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
     data = dbase.select_data_for_household_table(table_name)
