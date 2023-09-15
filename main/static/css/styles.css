@@ -57,6 +57,10 @@ footer {
   height: 100%;
 }
 
+a{
+  color: black;
+}
+
 a:hover {
   background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet, red, orange, yellow);
   background-size: 500%;
@@ -68,35 +72,6 @@ a:hover {
   100% { background-position: 100% 50%; }
 }
 
-.flash.success{
-  position: fixed;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 237px;
-  padding: 3px;
-  border: 1px solid #21DB56;
-  background: #AEFFC5;
-}
-
-.flash.success_token{
-  position: fixed;
-  top: 48%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 500px;
-  padding: 5px;
-  border: 1px solid #21DB56;
-  background: #AEFFC5;
-}
-
-.flash.error{
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  padding: 5px;
-  border: 1px solid #FF4343;
-  background: #FF9C9C;
+p {
+  margin: 8px;
 }

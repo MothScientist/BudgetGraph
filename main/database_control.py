@@ -11,7 +11,8 @@ class FDataBase:
 
     def get_group_id_by_token(self, token: str) -> int:
         """
-        search for a group by its token and return the id value of this group
+        search for a group by its token
+        return: the id value of this group
         """
         try:
             self.__cur.execute("""SELECT id FROM Groups WHERE token = ?""", (token,))
@@ -23,8 +24,7 @@ class FDataBase:
 
     def get_token_by_username(self, username: str) -> str:
         """
-        :param username:
-        :return:
+        Obtaining a group token using username produces a query with a subquery in 2 tables.
         """
         try:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
@@ -36,6 +36,10 @@ class FDataBase:
             print(str(e))
 
     def get_salt_by_username(self, username: str) -> str | bool:
+        """
+        necessary for hashing the user's password during authorization.
+        return: str - if salt is found. bool (false) - if information on this user is not in the database.
+        """
         try:
             self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
             res = self.__cur.fetchone()
@@ -49,10 +53,9 @@ class FDataBase:
 
     def get_user_id_by_username(self, username: str, tg_link: str) -> bool:
         """
-
-        :param username:
-        :param tg_link:
-        :return:
+        Since the username and telegram_link fields are unique,
+        additional verification is required so that errors do not appear in the future when working with the database.
+        return: True - if the data is found in the database, False - if both parameters are not found in the database.
         """
         try:
             self.__cur.execute("""SELECT id FROM Users WHERE telegram_link = ?""", (tg_link,))
@@ -69,10 +72,11 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def auth_by_username(self, username: str, psw_hash: str, token: str):
+    def auth_by_username(self, username: str, psw_hash: str, token: str) -> bool:
         """
         full process of user confirmation during authorization.
         the whole process is initialized with the username
+        return: True if the user was successfully found and the data was confirmed, False otherwise.
         """
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE username = ? AND password_hash = ? AND EXISTS (
@@ -87,9 +91,10 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str):
+    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str) -> bool:
         """
         adding a new user to the Users table
+        return: True if the addition was successful and False otherwise.
         """
         try:
             self.__cur.execute("INSERT INTO Users "
@@ -101,25 +106,27 @@ class FDataBase:
             print(str(e))
             return False
 
-        else:
+        else:  # Executed if the try block executed without errors.
             return True
 
-    def add_monetary_transaction_to_db(self, table_name: str, username: str, transfer: int, description: str = "")\
+    def add_monetary_transaction_to_db(self, table_name: str, username: str, amount: int, description: str = "")\
             -> bool:
         """
-
+        Submits the "add_expense" and "add_income" forms to the database.
         """
+        if not table_name_validator(table_name):  # Additional check of table title format
+            return False
         try:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
                 f" ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), ?)",
-                (transfer, username, transfer, description))
+                (amount, username, amount, description))
             self.__db.commit()
 
         except sqlite3.Error as e:
             print(str(e))
 
-        else:
+        else:  # Executed if the try block executed without errors.
             return True
 
         return False
@@ -178,7 +185,10 @@ def connect_db():
         print(str(e))
 
 
-def create_db():
+def create_db() -> None:
+    """
+    Creates 2 main tables: Users and Groups, using a .sql file describing their structures.
+    """
     try:
         conn = connect_db()
         cursor = conn.cursor()
@@ -225,13 +235,19 @@ def create_table_group(table_name) -> None:
 
 
 def get_db():
+    """
+    A function required to establish a connection to the database.
+    """
     if not hasattr(g, "link_db"):
         g.link_db = connect_db()
         print("Database connection: OK")
     return g.link_db
 
 
-def close_db(error):
+def close_db(error) -> None:
+    """
+    Required to close the connection to the database. Used in the main application file through the app.teardown_appcontext function.
+    """
     if hasattr(g, "link_db"):
         g.link_db.close()
         print("Database connection: CLOSED")
