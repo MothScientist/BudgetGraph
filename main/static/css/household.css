@@ -1,0 +1,73 @@
+@import "styles.css";
+
+.logout_button{
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.token_place{
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+
+h3#token_place{
+  display: inline;
+  user-select: none;
+}
+
+.container{
+  display: flex;
+  flex-direction: column;
+  float: right;
+  position: absolute;
+  top: 225px;
+  right: 75px;
+}
+
+.add_form_1, .add_form_2 {
+  float: right;
+  background-color: beige;
+  padding: 10px;
+  margin: 10px;
+  width: 210px;
+}
+
+.add_form_1 form, .add_form_2 form {
+  display: flex;
+  flex-direction: column;
+}
+.add_form_1 input, .add_form_2 input {
+  margin-bottom: 10px;
+}
+
+.table-wrapper {
+  padding: 10px;
+  margin-top: 6%;
+  margin-left: 50px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 80%;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: left;
+}
+
+.flash.success{
+
+}
+
+.flash.error{
+
+}

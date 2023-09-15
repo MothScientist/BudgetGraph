@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_registration.css') }}">
     <script src="{{ url_for('static', filename='js/line.js') }}"></script>
 </head>
 <body>
@@ -20,11 +20,11 @@
     <div class="form">
       <div class="header_1">Login</div>
       <form action="/login" method="POST">
-        <input id="username" type="text" name="username" placeholder="Your name">
-        <input id="token" type="password" name="token" placeholder="Token">
-        <input id="password" type="password" name="password" placeholder="Password">
+        <input type="text" id="username" name="username" placeholder="Your name">
+        <input type="password" id="token" name="token" placeholder="Token">
+        <input type="password" id="password" name="password" placeholder="Password">
         <button type="submit" class="link-button">Sign in!</button>
-          <button id="clear-button" type="reset">Clear</button>
+        <button type="reset" id="clear-button">Clear</button>
       </form>
     </div>
     </div>

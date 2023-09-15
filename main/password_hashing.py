@@ -10,7 +10,7 @@ def get_salt():
                    for _ in range(16))
 
 
-def getting_hash(secure_key: str, salt: str, iterations=512, key_length=32, hash_algorithm="sha256"):
+def getting_hash(secure_key: str, salt: str, iterations=512, key_length=32, hash_algorithm="sha256") -> str:
     """
     :param secure_key: your password
     :param iterations: it is best to choose a number from 500 to 2000
@@ -19,4 +19,5 @@ def getting_hash(secure_key: str, salt: str, iterations=512, key_length=32, hash
     :param salt: Any string for unique hash generation, not currently used
     :return: hash in hex format
     """
-    return hashlib.pbkdf2_hmac(hash_algorithm, secure_key.encode('utf-8'), salt.encode('utf-8'), iterations, key_length).hex()
+    return hashlib.pbkdf2_hmac(hash_algorithm, secure_key.encode('utf-8'), salt.encode('utf-8'),
+                               iterations, key_length).hex()

@@ -1,6 +1,5 @@
 from flask import g
 import sqlite3
-from hmac import compare_digest
 from token_generation import get_token
 from validators.table_name import table_name_validator
 
@@ -10,7 +9,7 @@ class FDataBase:
         self.__db = db
         self.__cur = db.cursor()
 
-    def get_group_id_by_token(self, token: str):
+    def get_group_id_by_token(self, token: str) -> int:
         """
         search for a group by its token and return the id value of this group
         """
@@ -22,55 +21,68 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_salt_by_username(self, username: str):
+    def get_token_by_username(self, username: str) -> str:
+        """
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT token FROM Groups WHERE id = 
+                                 (SELECT group_id FROM Users WHERE username = ?)""", (username,))
+            res = self.__cur.fetchone()
+            return res[0]
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+    def get_salt_by_username(self, username: str) -> str | bool:
         try:
             self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
             res = self.__cur.fetchone()
             if res:
                 return str(res[0])
+            else:
+                return False
+
         except sqlite3.Error as e:
             print(str(e))
 
-        return False
-
-    def get_user_id_by_username(self, tg_link: str):
+    def get_user_id_by_username(self, username: str, tg_link: str) -> bool:
         """
+
+        :param username:
         :param tg_link:
         :return:
         """
         try:
             self.__cur.execute("""SELECT id FROM Users WHERE telegram_link = ?""", (tg_link,))
-            res = self.__cur.fetchone()
-            if res:  # res[0] = None if the user with this link does not exist
+            res_link = self.__cur.fetchone()
+
+            self.__cur.execute("""SELECT id FROM Users WHERE username = ?""", (username,))
+            res_username = self.__cur.fetchone()
+
+            if res_link or res_username:  # If a user with this link or name is found
                 return True
+            else:
+                return False
+
         except sqlite3.Error as e:
             print(str(e))
-
-        return False
 
     def auth_by_username(self, username: str, psw_hash: str, token: str):
         """
         full process of user confirmation during authorization.
         the whole process is initialized with the username
         """
-        # The first stage of verification: using username, we verify the password and get the user's group id
         try:
-            self.__cur.execute("""SELECT password_hash, group_id FROM Users WHERE username = ?""", (username,))
-            res = self.__cur.fetchall()
-            if res:  # if data for such username exists
-                psw, group = res[0]  # get password_hash и group_id from database
-                if compare_digest(psw, psw_hash):  # if the password matches / safe string comparison
-                    psw = "EMPTY"  # overwriting a variable for safety
-
-                    # The second stage of verification: we verify the token by the group id
-                    try:
-                        self.__cur.execute("""SELECT token FROM Groups WHERE id = ?""", (group,))
-                        res = self.__cur.fetchone()
-                        if res:
-                            if compare_digest(res[0], token):  # safe string comparison
-                                return True  # if the token matches the group token
-                    except sqlite3.Error as e:
-                        print(str(e))
+            self.__cur.execute("""SELECT username FROM Users WHERE username = ? AND password_hash = ? AND EXISTS (
+                    SELECT token FROM Groups WHERE Groups.id = Users.group_id AND token = ?)""",
+                               (username, psw_hash, token))
+            res = self.__cur.fetchone()
+            if res:
+                return True
+            else:
+                return False
 
         except sqlite3.Error as e:
             print(str(e))
@@ -89,7 +101,28 @@ class FDataBase:
             print(str(e))
             return False
 
-        return True
+        else:
+            return True
+
+    def add_monetary_transaction_to_db(self, table_name: str, username: str, transfer: int, description: str = "")\
+            -> bool:
+        """
+
+        """
+        try:
+            self.__cur.execute(
+                f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
+                f" ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), ?)",
+                (transfer, username, transfer, description))
+            self.__db.commit()
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+        else:
+            return True
+
+        return False
 
     def create_group(self, owner: str) -> str | bool:
         """
@@ -106,7 +139,8 @@ class FDataBase:
             print(str(e))
             return False
 
-        return token
+        else:
+            return token
 
     def update_user_last_login(self, username: str) -> None:
         """
@@ -118,6 +152,17 @@ class FDataBase:
             self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime') 
             WHERE username = ?""", (username,))
             self.__db.commit()
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+    def select_data_for_household_table(self, table_name: str) -> list:
+        try:
+            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT 15")
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            print(result_list)
+            return result_list
 
         except sqlite3.Error as e:
             print(str(e))
@@ -162,11 +207,11 @@ def create_table_group(table_name) -> None:
         cursor = conn.cursor()
 
         query = (f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY AUTOINCREMENT, "
-                 f"total text NOT NULL, "
+                 f"total integer NOT NULL, "
                  f"username text NOT NULL, "
-                 f"transfer text NOT NULL, "
+                 f"transfer integer NOT NULL, "
                  f"date_time text NOT NULL, "
-                 f"description text);")
+                 f"description text NOT NULL);")
         cursor.execute(query)
 
         conn.commit()

@@ -2,4 +2,4 @@ Microservice using Flask, which has a very simple web interface and a telegram b
 
 In developing. 
 
-The first alpha version is expected on 09/15/2023.
+The alpha version is expected on 09/20/2023.
