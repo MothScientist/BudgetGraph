@@ -156,6 +156,17 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def select_data_for_household_table(self, table_name: str) -> list:
+        try:
+            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT 15")
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            print(result_list)
+            return result_list
+
+        except sqlite3.Error as e:
+            print(str(e))
+
 
 def connect_db():
     try:

@@ -117,9 +117,9 @@ def household(username):
 
     dbase = FDataBase(get_db())
     token = dbase.get_token_by_username(username)
+    table_name = f"budget_{dbase.get_group_id_by_token(token)}"
 
     if request.method == "POST":
-        table_name = f"budget_{dbase.get_group_id_by_token(token)}"
 
         if "submit_button_1" in request.form:  # Processing the "Add to table" button for form 1
             income = request.form.get("income")
@@ -153,7 +153,11 @@ def household(username):
 
             print(f"Expense: {expense},\nDescription: {description_2}")
 
-    return render_template("household.html", title=f"Budget control - {username}", token=token, username=username)
+    headers = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
+    data = dbase.select_data_for_household_table(table_name)
+
+    return render_template("household.html", title=f"Budget control - {username}",
+                           token=token, username=username, data=data, headers=headers)
 
 
 @app.route('/logout', methods=['GET'])
