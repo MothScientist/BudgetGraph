@@ -46,3 +46,20 @@ h3#token_place{
 .add_form_1 input, .add_form_2 input {
   margin-bottom: 10px;
 }
+
+.table-wrapper {
+  padding: 10px;
+  margin-top: 6%;
+  margin-left: 50px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 80%;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: left;
+}
