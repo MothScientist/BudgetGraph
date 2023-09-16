@@ -1,13 +1,13 @@
 import telebot
 from telebot import types
-import os
+from os import getenv
 from dotenv import load_dotenv
 
 
 def main():
 
     load_dotenv()  # Load environment variables from .env file
-    bot_token = os.getenv("BOT_TOKEN")  # Get the bot token from an environment variable
+    bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
     bot = telebot.TeleBot(bot_token)
 
     def check_user_by_link(link: str) -> bool:

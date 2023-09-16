@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 import re
-import datetime
+from datetime import timedelta
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
 
@@ -32,7 +32,8 @@ app.config.update(dict(DATABASE=os.path.join(app.root_path, "db.sqlite3")))
 
 app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
 
-app.permanent_session_lifetime = datetime.timedelta(days=14)  # session lifetime in browser cookies
+# session lifetime in browser cookies
+app.permanent_session_lifetime = timedelta(days=14)  # timedelta from datetime module
 
 app.config.from_object('config.DevelopmentConfig')
 # -----------------------------------------------------------------------------
@@ -54,10 +55,10 @@ def homepage():
 def registration():
     if request.method == "POST":
 
-        username = request.form["username"]
-        psw = request.form["password"]
-        tg_link = request.form["tg_link"]
-        token = request.form["token"]
+        username: str = request.form["username"]
+        psw: str = request.form["password"]
+        tg_link: str = request.form["tg_link"]
+        token: str = request.form["token"]
 
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
@@ -67,8 +68,8 @@ def registration():
 
                 if user_token := dbase.create_group(tg_link):
 
-                    group_id = token_validator(user_token)
-                    psw_salt = get_salt()
+                    group_id: int = token_validator(user_token)
+                    psw_salt: str = get_salt()
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
@@ -81,7 +82,7 @@ def registration():
                 if group_id := token_validator(token):  # new variable "group_id" (int)
 
                     dbase = FDataBase(get_db())
-                    psw_salt = get_salt()
+                    psw_salt: str = get_salt()
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
 
@@ -113,11 +114,11 @@ def login():
 
     # here the POST request is checked and the presence of the user in the database is checked
     if request.method == "POST":
-        username = request.form["username"]
-        psw = request.form["password"]
-        token = request.form["token"]
+        username: str = request.form["username"]
+        psw: str = request.form["password"]
+        token: str = request.form["token"]
         dbase = FDataBase(get_db())
-        psw_salt = dbase.get_salt_by_username(username)
+        psw_salt: str = dbase.get_salt_by_username(username)
 
         if psw_salt and login_validator(username, getting_hash(psw, psw_salt), token):
 
@@ -139,14 +140,15 @@ def household(username):
         abort(401)
 
     dbase = FDataBase(get_db())
-    token = dbase.get_token_by_username(username)
-    table_name = f"budget_{dbase.get_group_id_by_token(token)}"
+    token: str = dbase.get_token_by_username(username)
+    group_id: int = dbase.get_group_id_by_token(token)
+    table_name: str = f"budget_{group_id}"
 
     if request.method == "POST":
 
         if "submit_button_1" in request.form:  # Processing the "Add to table" button for form 1
-            income = request.form.get("income")
-            income = re.sub(r"[^0-9]", "", income)
+            income: str = request.form.get("income")
+            income: str = re.sub(r"[^0-9]", "", income)
 
             if not income or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", income):
                 flash("Error", category="error")
@@ -164,8 +166,8 @@ def household(username):
                     flash("Error adding data to database.", category="error")
 
         elif "submit_button_2" in request.form:  # Processing the "Add to table" button for form 2
-            expense = request.form.get("expense")
-            expense = re.sub(r"[^0-9]", "", expense)
+            expense: str = request.form.get("expense")
+            expense: str = re.sub(r"[^0-9]", "", expense)
 
             if not expense or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", expense):
                 flash("Error", category="error")
@@ -182,8 +184,8 @@ def household(username):
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Error adding data to database.", category="error")
 
-    headers = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
-    data = dbase.select_data_for_household_table(table_name)
+    headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
+    data: list = dbase.select_data_for_household_table(table_name)
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)
