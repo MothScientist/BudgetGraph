@@ -1,7 +1,7 @@
 from secrets import choice
 
 
-def get_token():
+def get_token() -> str:
     """
     :return: random (entropy-based) character string of length 32
     """
