@@ -16,21 +16,17 @@ class FDataBase:
 
 # Database sampling methods (SELECT)
 
-    def auth_telegram_by_tg_link(self, tg_link: str, username_return: bool = False) -> bool | str:
+    def get_username_by_tg_link(self, tg_link: str) -> bool | str:
         """
         Finds a user in the Users table by telegram_link value
-        username_return (default = 0): depending on the value, returns the user's username or boolean value
-        return: True [username_return==False] / username [username_return==True] or False
+        return: username or False
         """
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE telegram_link = ?""", (tg_link,))
             res = self.__cur.fetchone()
 
             if res:  # If a user with this link is found
-                if username_return:
-                    return res[0]
-                else:
-                    return True
+                return res[0]
             else:
                 return False
 
@@ -93,7 +89,7 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_user_id_by_username(self, username: str, tg_link: str) -> bool:
+    def get_id_by_username(self, username: str, tg_link: str) -> bool:
         """
         Since the username and telegram_link fields are unique,
         additional verification is required so that errors do not appear in the future when working with the database.
@@ -185,7 +181,7 @@ class FDataBase:
 
         return False
 
-    def create_group(self, owner: str) -> str | bool:
+    def create_new_group(self, owner: str) -> str | bool:
         """
         creating a new group in the Groups table
         :param owner: link to the telegram of the user who initiates the creation of the group

@@ -32,9 +32,10 @@ def main():
 
         # check user in our project
         bot_db = FDataBase(connect_db())
-        res: bool | str = bot_db.auth_telegram_by_tg_link("https://t.me/" + message.from_user.username, True)
+        res: bool | str = bot_db.get_username_by_tg_link("https://t.me/" + message.from_user.username)
 
         if res:
+            bot_db.update_user_last_login(res)
             bot.send_message(message.chat.id, f"Hello, {res}!\n"
                                               f"We recognized you. Welcome!", reply_markup=markup_1)
         else:

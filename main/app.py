@@ -67,7 +67,7 @@ def registration():
 
                 dbase = FDataBase(get_db())
 
-                if user_token := dbase.create_group(tg_link):
+                if user_token := dbase.create_new_group(tg_link):
 
                     group_id: int = token_validator(user_token)
                     psw_salt: str = get_salt()
