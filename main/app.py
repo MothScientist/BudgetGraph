@@ -6,11 +6,12 @@ from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
 
 # Database
-from database_control import get_db, close_db, create_table_group, FDataBase
+from database_control import get_db, close_db_g, create_table_group, FDataBase
 
 # Validators
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
+from validators.input_number import input_number
 
 # Logging
 from logging.handlers import RotatingFileHandler
@@ -31,7 +32,7 @@ db_path = os.getenv("DATABASE")
 
 app.config.update(dict(DATABASE=os.path.join(app.root_path, db_path)))
 
-app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
+app.teardown_appcontext(close_db_g)  # Disconnects the database connection after a query
 
 # session lifetime in browser cookies
 app.permanent_session_lifetime = timedelta(days=14)  # timedelta from datetime module
@@ -149,15 +150,17 @@ def household(username):
 
         if "submit_button_1" in request.form:  # Processing the "Add to table" button for form 1
             income: str = request.form.get("income")
-            income: str = re.sub(r"[^0-9]", "", income)
+            income: int | bool = input_number(income)
 
-            if not income or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", income):
+            if not income:
+                app.logger.error(f"Error adding income to database (household): table: {table_name}, "
+                                 f"username: {username}, income: {income}.")
                 flash("Error", category="error")
 
             else:
                 description_1 = request.form.get("description_1")
 
-                if dbase.add_monetary_transaction_to_db(table_name, username, int(income), description_1):
+                if dbase.add_monetary_transaction_to_db(table_name, username, income, description_1):
                     app.logger.info(f"Successfully adding data to database (household): table: {table_name}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Data added successfully.", category="success")
@@ -168,15 +171,17 @@ def household(username):
 
         elif "submit_button_2" in request.form:  # Processing the "Add to table" button for form 2
             expense: str = request.form.get("expense")
-            expense: str = re.sub(r"[^0-9]", "", expense)
+            expense: int | bool = input_number(expense)
 
-            if not expense or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", expense):
+            if not expense:
+                app.logger.error(f"Error adding income to database (household): table: {table_name}, "
+                                 f"username: {username}, income: {expense}.")
                 flash("Error", category="error")
 
             else:
                 description_2 = request.form.get("description_2")
 
-                if dbase.add_monetary_transaction_to_db(table_name, username, int(expense)*(-1), description_2):
+                if dbase.add_monetary_transaction_to_db(table_name, username, expense*(-1), description_2):
                     app.logger.info(f"Successfully adding data to database (household): table: {table_name}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Data added successfully.", category="success")

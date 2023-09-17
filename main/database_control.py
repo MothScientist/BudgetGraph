@@ -46,6 +46,22 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def get_group_id_by_tg_link(self, tg_link: str) -> int:
+        """
+
+        """
+        try:
+            self.__cur.execute("""SELECT group_id FROM Users WHERE telegram_link = ?""", (tg_link,))
+            res = self.__cur.fetchone()
+
+            if res:
+                return res[0]
+            else:
+                return False
+
+        except sqlite3.Error as e:
+            print(str(e))
+
     def get_token_by_username(self, username: str) -> str:
         """
         Obtaining a group token using username produces a query with a subquery in 2 tables.
@@ -59,7 +75,7 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_token_by_telegram_link(self, tg_link: str):
+    def get_token_by_tg_link(self, tg_link: str):
         """
 
         :return:
@@ -224,6 +240,7 @@ def connect_db():
     try:
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
+        print("Database connection (main): OK")
         return conn
 
     except sqlite3.Error as e:
@@ -236,11 +253,11 @@ def get_db():
     """
     if not hasattr(g, "link_db"):
         g.link_db = connect_db()
-        print("Database connection: OK")
+        print("Database connection (g): OK")
     return g.link_db
 
 
-def close_db(error) -> None:
+def close_db_g(error) -> None:
     """
     Required to close the connection to the database.
 
@@ -248,7 +265,16 @@ def close_db(error) -> None:
     """
     if hasattr(g, "link_db"):
         g.link_db.close()
-        print("Database connection: CLOSED")
+        print("Database connection (g): CLOSED")
+
+
+def close_db_bot(connection):
+    """
+
+    """
+    if connection:
+        connection.close()
+        print("Database connection (bot): CLOSED")
 
 
 def create_db() -> None:

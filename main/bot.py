@@ -4,7 +4,10 @@ from os import getenv
 from dotenv import load_dotenv
 
 # Database
-from database_control import FDataBase, connect_db
+from database_control import FDataBase, connect_db, close_db_bot
+
+# Validators
+from validators.input_number import input_number
 
 
 def main():
@@ -31,7 +34,8 @@ def main():
         markup_2.add(btn1, btn2, btn3, btn4)
 
         # check user in our project
-        bot_db = FDataBase(connect_db())
+        connection = connect_db()
+        bot_db = FDataBase(connection)
         res: bool | str = bot_db.get_username_by_tg_link("https://t.me/" + message.from_user.username)
 
         if res:
@@ -42,6 +46,12 @@ def main():
             bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name} {message.from_user.last_name}!\n"
                                               f"We didn't recognize you. Would you like to register in the project?",
                              reply_markup=markup_2)
+
+        close_db_bot(connection)
+
+    @bot.message_handler(commands=['registration'])
+    def registration(message):
+        pass
 
     @bot.message_handler(commands=['help'])
     def help(message):
@@ -59,9 +69,49 @@ def main():
 
     @bot.message_handler(commands=['get_token'])
     def get_token(message):
-        bot_db = FDataBase(connect_db())
-        token = bot_db.get_token_by_telegram_link("https://t.me/" + message.from_user.username)
-        bot.send_message(message.chat.id, f"Your group token:\n{token}")
+        connection = connect_db()
+        bot_db = FDataBase(connection)
+        token = bot_db.get_token_by_tg_link("https://t.me/" + message.from_user.username)
+        close_db_bot(connection)
+        bot.send_message(message.chat.id, f"Your group token:")
+        bot.send_message(message.chat.id, f"{token}")
+
+    @bot.message_handler(commands=['add_income'])
+    def add_income(message):
+        bot.send_message(message.chat.id, f"Enter the amount of income:")
+        bot.register_next_step_handler(message, process_transfer, False)
+
+    @bot.message_handler(commands=['add_expense'])
+    def add_expense(message):
+        bot.send_message(message.chat.id, f"Enter the amount of expense:")
+        bot.register_next_step_handler(message, process_transfer, True)
+
+    def process_transfer(message, is_negative: bool = False):
+        """
+
+        :param message:
+        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense)
+        :return:
+        """
+        transfer: str = message.text
+        transfer: int | bool = input_number(transfer)
+
+        if transfer:
+            connection = connect_db()
+            bot_db = FDataBase(connect_db())
+            group_id: int = bot_db.get_group_id_by_tg_link("https://t.me/" + message.from_user.username)
+            username: str = bot_db.get_username_by_tg_link("https://t.me/" + message.from_user.username)
+            if is_negative:
+                bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer*(-1))
+            else:
+                bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer)
+
+            close_db_bot(connection)
+            bot.send_message(message.chat.id, "Data added successfully.")
+
+    @bot.message_handler(commands=['view_table'])
+    def view_table(message):
+        pass
 
     @bot.message_handler(content_types=['text'])
     def text(message):
@@ -75,19 +125,19 @@ def main():
             my_link(message)
 
         elif message.text == "🤡 I want to register":
-            pass
+            registration(message)
 
         elif message.text == "🔐 Get my token":
             get_token(message)
 
         elif message.text == "📖 View table":
-            pass
+            view_table(message)
 
         elif message.text == "📈 Add income":
-            pass
+            add_income(message)
 
         elif message.text == "📉 Add expense":
-            pass
+            add_expense(message)
 
     bot.polling(none_stop=True)
 
