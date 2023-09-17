@@ -1,7 +1,12 @@
 from flask import g
 import sqlite3
+import os
+from dotenv import load_dotenv
 from token_generation import get_token
 from validators.table_name import table_name_validator
+
+load_dotenv()  # Load environment variables from .env file
+db_path = os.getenv("DATABASE")
 
 
 class FDataBase:
@@ -9,10 +14,29 @@ class FDataBase:
         self.__db = db
         self.__cur = db.cursor()
 
+# Database sampling methods (SELECT)
+
+    def get_username_by_tg_link(self, tg_link: str) -> bool | str:
+        """
+        Finds a user in the Users table by telegram_link value
+        return: username or False
+        """
+        try:
+            self.__cur.execute("""SELECT username FROM Users WHERE telegram_link = ?""", (tg_link,))
+            res = self.__cur.fetchone()
+
+            if res:  # If a user with this link is found
+                return res[0]
+            else:
+                return False
+
+        except sqlite3.Error as e:
+            print(str(e))
+
     def get_group_id_by_token(self, token: str) -> int:
         """
-        search for a group by its token
-        return: the id value of this group
+        searches for the group id using the group token.
+        :return: group id as int.
         """
         try:
             self.__cur.execute("""SELECT id FROM Groups WHERE token = ?""", (token,))
@@ -22,9 +46,27 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def get_group_id_by_tg_link(self, tg_link: str) -> int:
+        """
+        searches for the group id using the telegram link.
+        :return: group id as a int.
+        """
+        try:
+            self.__cur.execute("""SELECT group_id FROM Users WHERE telegram_link = ?""", (tg_link,))
+            res = self.__cur.fetchone()
+
+            if res:
+                return res[0]
+            else:
+                return False
+
+        except sqlite3.Error as e:
+            print(str(e))
+
     def get_token_by_username(self, username: str) -> str:
         """
-        Obtaining a group token using username produces a query with a subquery in 2 tables.
+        searches for the group token using the username.
+        :return: group token as a string.
         """
         try:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
@@ -35,10 +77,24 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def get_token_by_tg_link(self, tg_link: str) -> str:
+        """
+        searches for the group token using the telegram link.
+        :return: group token as a string.
+        """
+        try:
+            self.__cur.execute("""SELECT token FROM Groups WHERE id = 
+                                 (SELECT group_id FROM Users WHERE telegram_link = ?)""", (tg_link,))
+            res = self.__cur.fetchone()
+            return res[0]
+
+        except sqlite3.Error as e:
+            print(str(e))
+
     def get_salt_by_username(self, username: str) -> str | bool:
         """
         necessary for hashing the user's password during authorization.
-        return: str - if salt is found. bool (false) - if information on this user is not in the database.
+        :return: str - if salt is found. bool (false) - if information on this user is not in the database.
         """
         try:
             self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
@@ -51,11 +107,13 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_user_id_by_username(self, username: str, tg_link: str) -> bool:
+    def get_id_by_username_or_tg_link(self, username: str = "", tg_link: str = "") -> bool:
         """
         Since the username and telegram_link fields are unique,
         additional verification is required so that errors do not appear in the future when working with the database.
-        return: True - if the data is found in the database, False - if both parameters are not found in the database.
+
+        Works both with two parameters and with each separately.
+        :return: True - if the data is found in the database, False - if both parameters are not found in the database.
         """
         try:
             self.__cur.execute("""SELECT id FROM Users WHERE telegram_link = ?""", (tg_link,))
@@ -76,7 +134,7 @@ class FDataBase:
         """
         full process of user confirmation during authorization.
         the whole process is initialized with the username
-        return: True if the user was successfully found and the data was confirmed, False otherwise.
+        :return: True if the user was successfully found and the data was confirmed, False otherwise.
         """
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE username = ? AND password_hash = ? AND EXISTS (
@@ -91,10 +149,28 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def select_data_for_household_table(self, table_name: str, n: int) -> list:
+        """
+        Returns the specified number of rows (starting with the most recent) from the budget table.
+        :param table_name: group table in format "budget_{group_id}" (no additional validation)
+        :param n: number of rows returned.
+        :return: a list of [n] elements.
+        """
+        try:
+            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            return result_list
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+# Methods for inserting data into a database (INSERT)
+
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str) -> bool:
         """
         adding a new user to the Users table
-        return: True if the addition was successful and False otherwise.
+        :return: True if the addition was successful and False otherwise.
         """
         try:
             self.__cur.execute("INSERT INTO Users "
@@ -113,6 +189,11 @@ class FDataBase:
             -> bool:
         """
         Submits the "add_expense" and "add_income" forms to the database.
+        :param table_name: String in format "budget_n" -> will undergo additional validation.
+        :param username: the name of the user making the changes.
+        :param amount: value of the deposited amount.
+        :param description: optional parameter.
+        :return: True if the transaction was successful, False otherwise.
         """
         if not table_name_validator(table_name):  # Additional check of table title format
             return False
@@ -131,11 +212,11 @@ class FDataBase:
 
         return False
 
-    def create_group(self, owner: str) -> str | bool:
+    def create_new_group(self, owner: str) -> str | bool:
         """
-        creating a new group in the Groups table
-        :param owner: link to the telegram of the user who initiates the creation of the group
-        :return: token generated by external function (returns False in case of error)
+        creating a new group in the Groups table and generate new token for this group.
+        :param owner: link to the telegram of the user who initiates the creation of the group.
+        :return: token or False (+error)
         """
         try:
             token = get_token()
@@ -144,14 +225,17 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
-            return False
 
         else:
             return token
 
+        return False
+
+# Methods for updating data in a database (UPDATE)
+
     def update_user_last_login(self, username: str) -> None:
         """
-        changes the user's last login time in the last_login column in the Users table
+        changes the user's last login time in the last_login column in the Users table.
         :param username:
         :return: None
         """
@@ -163,26 +247,50 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def select_data_for_household_table(self, table_name: str) -> list:
-        try:
-            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT 15")
-            result = self.__cur.fetchall()
-            result_list = [list(row) for row in result]
-            print(result_list)
-            return result_list
-
-        except sqlite3.Error as e:
-            print(str(e))
-
 
 def connect_db():
+    """
+    Connects to the database
+    :return: connection
+    """
     try:
-        conn = sqlite3.connect("db.sqlite3")
+        conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
+        print("Database connection (main): OK")
         return conn
 
     except sqlite3.Error as e:
         print(str(e))
+
+
+def get_db():
+    """
+    A function required to establish a connection to the database.
+    """
+    if not hasattr(g, "link_db"):
+        g.link_db = connect_db()
+        print("Database connection (g): OK")
+    return g.link_db
+
+
+def close_db_g(error) -> None:
+    """
+    Required to close the connection to the database.
+
+    Used in the main application file through the app.teardown_appcontext function.
+    """
+    if hasattr(g, "link_db"):
+        g.link_db.close()
+        print("Database connection (g): CLOSED")
+
+
+def close_db_bot(connection):
+    """
+
+    """
+    if connection:
+        connection.close()
+        print("Database connection (bot): CLOSED")
 
 
 def create_db() -> None:
@@ -203,9 +311,11 @@ def create_db() -> None:
         print(str(e))
 
 
-def create_table_group(table_name) -> None:
+def create_table_group(table_name: str) -> None:
     """
-    table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
+    creates a table in the database called budget_? (id, total, username, transfer, date_time, description)
+
+    contains table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
     :return: None
     """
@@ -213,7 +323,7 @@ def create_table_group(table_name) -> None:
         if not table_name_validator(table_name):
             raise ValueError("Possible SQL injection attempt")
 
-        conn = sqlite3.connect("db.sqlite3")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         query = (f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY AUTOINCREMENT, "
@@ -232,25 +342,6 @@ def create_table_group(table_name) -> None:
 
     except ValueError as e:
         print(str(e))
-
-
-def get_db():
-    """
-    A function required to establish a connection to the database.
-    """
-    if not hasattr(g, "link_db"):
-        g.link_db = connect_db()
-        print("Database connection: OK")
-    return g.link_db
-
-
-def close_db(error) -> None:
-    """
-    Required to close the connection to the database. Used in the main application file through the app.teardown_appcontext function.
-    """
-    if hasattr(g, "link_db"):
-        g.link_db.close()
-        print("Database connection: CLOSED")
 
 
 if __name__ == '__main__':

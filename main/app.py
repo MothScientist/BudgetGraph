@@ -1,16 +1,17 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 import re
-import datetime
+from datetime import timedelta
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
 
 # Database
-from database_control import get_db, close_db, create_table_group, FDataBase
+from database_control import get_db, close_db_g, create_table_group, FDataBase
 
 # Validators
 from validators.registration import registration_validator, token_validator
 from validators.login import login_validator
+from validators.input_number import input_number
 
 # Logging
 from logging.handlers import RotatingFileHandler
@@ -27,12 +28,14 @@ app.config.from_object(__name__)
 
 # Get the secret key to encrypt the Flask session from an environment variable
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+db_path = os.getenv("DATABASE")
 
-app.config.update(dict(DATABASE=os.path.join(app.root_path, "db.sqlite3")))
+app.config.update(dict(DATABASE=os.path.join(app.root_path, db_path)))
 
-app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
+app.teardown_appcontext(close_db_g)  # Disconnects the database connection after a query
 
-app.permanent_session_lifetime = datetime.timedelta(days=14)  # session lifetime in browser cookies
+# session lifetime in browser cookies
+app.permanent_session_lifetime = timedelta(days=14)  # timedelta from datetime module
 
 app.config.from_object('config.DevelopmentConfig')
 # -----------------------------------------------------------------------------
@@ -54,10 +57,10 @@ def homepage():
 def registration():
     if request.method == "POST":
 
-        username = request.form["username"]
-        psw = request.form["password"]
-        tg_link = request.form["tg_link"]
-        token = request.form["token"]
+        username: str = request.form["username"]
+        psw: str = request.form["password"]
+        tg_link: str = request.form["tg_link"]
+        token: str = request.form["token"]
 
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
@@ -65,13 +68,14 @@ def registration():
 
                 dbase = FDataBase(get_db())
 
-                if user_token := dbase.create_group(tg_link):
+                if user_token := dbase.create_new_group(tg_link):
 
-                    group_id = token_validator(user_token)
-                    psw_salt = get_salt()
+                    group_id: int = token_validator(user_token)
+                    psw_salt: str = get_salt()
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
+                        app.logger.info(f"Successful registration: {username}. New group created: id={group_id}.")
                         flash("Registration completed successfully!", category="success")
                         flash(f"{username}, your token: {user_token}", category="success_token")
 
@@ -81,23 +85,27 @@ def registration():
                 if group_id := token_validator(token):  # new variable "group_id" (int)
 
                     dbase = FDataBase(get_db())
-                    psw_salt = get_salt()
+                    psw_salt: str = get_salt()
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
 
                         # redirecting the user to a personal account (he already has a group token)
                         session["userLogged"] = username
+                        app.logger.info(f"Successful registration: {username}. Joining a group: id={group_id}.")
                         return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
+                        app.logger.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
                         flash("Error creating user. Please try again and if the problem persists, "
                               "contact technical support.", category="error")
                 else:
+                    app.logger.info(f"The user entered an incorrect token: username = {username}, token = {token}.")
                     flash("There is no group with this token, please check the correctness of the entered data!",
                           category="error")
 
         # User made a mistake when entering the token
-        if len(request.form["token"]) > 0 and len(request.form["token"]) != 32:
+        if len(token) > 0 and len(token) != 32:
+            app.logger.info(f"The user entered a token of incorrect length: {token}.")
             flash("Error - token length must be 32 characters", category="error")
 
     return render_template("registration.html", title="Budget control - Registration")
@@ -113,11 +121,11 @@ def login():
 
     # here the POST request is checked and the presence of the user in the database is checked
     if request.method == "POST":
-        username = request.form["username"]
-        psw = request.form["password"]
-        token = request.form["token"]
+        username: str = request.form["username"]
+        psw: str = request.form["password"]
+        token: str = request.form["token"]
         dbase = FDataBase(get_db())
-        psw_salt = dbase.get_salt_by_username(username)
+        psw_salt: str = dbase.get_salt_by_username(username)
 
         if psw_salt and login_validator(username, getting_hash(psw, psw_salt), token):
 
@@ -139,22 +147,25 @@ def household(username):
         abort(401)
 
     dbase = FDataBase(get_db())
-    token = dbase.get_token_by_username(username)
-    table_name = f"budget_{dbase.get_group_id_by_token(token)}"
+    token: str = dbase.get_token_by_username(username)
+    group_id: int = dbase.get_group_id_by_token(token)
+    table_name: str = f"budget_{group_id}"
 
     if request.method == "POST":
 
         if "submit_button_1" in request.form:  # Processing the "Add to table" button for form 1
-            income = request.form.get("income")
-            income = re.sub(r"[^0-9]", "", income)
+            income: str = request.form.get("income")
+            income: int | bool = input_number(income)
 
-            if not income or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", income):
+            if not income:
+                app.logger.error(f"Error adding income to database (household): table: {table_name}, "
+                                 f"username: {username}, income: {income}.")
                 flash("Error", category="error")
 
             else:
                 description_1 = request.form.get("description_1")
 
-                if dbase.add_monetary_transaction_to_db(table_name, username, int(income), description_1):
+                if dbase.add_monetary_transaction_to_db(table_name, username, income, description_1):
                     app.logger.info(f"Successfully adding data to database (household): table: {table_name}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Data added successfully.", category="success")
@@ -164,16 +175,18 @@ def household(username):
                     flash("Error adding data to database.", category="error")
 
         elif "submit_button_2" in request.form:  # Processing the "Add to table" button for form 2
-            expense = request.form.get("expense")
-            expense = re.sub(r"[^0-9]", "", expense)
+            expense: str = request.form.get("expense")
+            expense: int | bool = input_number(expense)
 
-            if not expense or not re.match(r"^(?=.*\d)(?!0\d)\d{0,14}$", expense):
+            if not expense:
+                app.logger.error(f"Error adding income to database (household): table: {table_name}, "
+                                 f"username: {username}, income: {expense}.")
                 flash("Error", category="error")
 
             else:
                 description_2 = request.form.get("description_2")
 
-                if dbase.add_monetary_transaction_to_db(table_name, username, int(expense)*(-1), description_2):
+                if dbase.add_monetary_transaction_to_db(table_name, username, expense*(-1), description_2):
                     app.logger.info(f"Successfully adding data to database (household): table: {table_name}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Data added successfully.", category="success")
@@ -182,8 +195,8 @@ def household(username):
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Error adding data to database.", category="error")
 
-    headers = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
-    data = dbase.select_data_for_household_table(table_name)
+    headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
+    data: list = dbase.select_data_for_household_table(table_name, 15)
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)
