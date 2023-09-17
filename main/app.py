@@ -75,6 +75,7 @@ def registration():
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
+                        app.logger.info(f"Successful registration: {username}. New group created: id={group_id}.")
                         flash("Registration completed successfully!", category="success")
                         flash(f"{username}, your token: {user_token}", category="success_token")
 
@@ -90,17 +91,21 @@ def registration():
 
                         # redirecting the user to a personal account (he already has a group token)
                         session["userLogged"] = username
+                        app.logger.info(f"Successful registration: {username}. Joining a group: id={group_id}.")
                         return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
+                        app.logger.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
                         flash("Error creating user. Please try again and if the problem persists, "
                               "contact technical support.", category="error")
                 else:
+                    app.logger.info(f"The user entered an incorrect token: username = {username}, token = {token}.")
                     flash("There is no group with this token, please check the correctness of the entered data!",
                           category="error")
 
         # User made a mistake when entering the token
-        if len(request.form["token"]) > 0 and len(request.form["token"]) != 32:
+        if len(token) > 0 and len(token) != 32:
+            app.logger.info(f"The user entered a token of incorrect length: {token}.")
             flash("Error - token length must be 32 characters", category="error")
 
     return render_template("registration.html", title="Budget control - Registration")
@@ -191,7 +196,7 @@ def household(username):
                     flash("Error adding data to database.", category="error")
 
     headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
-    data: list = dbase.select_data_for_household_table(table_name)
+    data: list = dbase.select_data_for_household_table(table_name, 15)
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)

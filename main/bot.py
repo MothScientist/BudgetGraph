@@ -17,7 +17,7 @@ def main():
     bot = telebot.TeleBot(bot_token)
 
     @bot.message_handler(commands=['start'])
-    def start(message):
+    def start(message) -> None:
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         markup_2 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 
@@ -50,25 +50,25 @@ def main():
         close_db_bot(connection)
 
     @bot.message_handler(commands=['registration'])
-    def registration(message):
+    def registration(message) -> None:
         pass
 
     @bot.message_handler(commands=['help'])
-    def help(message):
+    def help(message) -> None:
         bot.send_message(message.chat.id, f"{message}")
 
     @bot.message_handler(commands=['my_link'])
-    def my_link(message):
+    def my_link(message) -> None:
         bot.send_message(message.chat.id, f"Link to your telegram: https://t.me/{message.from_user.username}")
 
     @bot.message_handler(commands=['project_github'])
-    def project_github(message):
+    def project_github(message) -> None:
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("github.com", url="https://github.com/MothScientist/budget_control"))
         bot.send_message(message.chat.id, "Our open-source project on Github:", reply_markup=markup)
 
     @bot.message_handler(commands=['get_token'])
-    def get_token(message):
+    def get_token(message) -> None:
         connection = connect_db()
         bot_db = FDataBase(connection)
         token = bot_db.get_token_by_tg_link("https://t.me/" + message.from_user.username)
@@ -77,7 +77,7 @@ def main():
         bot.send_message(message.chat.id, f"{token}")
 
     @bot.message_handler(commands=['add_income'])
-    def add_income(message):
+    def add_income(message) -> None:
         bot.send_message(message.chat.id, f"Enter the amount of income:")
         bot.register_next_step_handler(message, process_transfer, False)
 
@@ -86,17 +86,20 @@ def main():
         bot.send_message(message.chat.id, f"Enter the amount of expense:")
         bot.register_next_step_handler(message, process_transfer, True)
 
-    def process_transfer(message, is_negative: bool = False):
+    def process_transfer(message, is_negative: bool = False) -> None:
         """
+        Adds income and expense to the database. Accepts an unvalidated value,
+        performs validation and enters it into the database.
 
+        If the value == 0, then it will be regarded as False.
         :param message:
-        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense)
-        :return:
+        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense) [default=False]
+        :return: None
         """
         transfer: str = message.text
         transfer: int | bool = input_number(transfer)
 
-        if transfer:
+        if transfer: #
             connection = connect_db()
             bot_db = FDataBase(connect_db())
             group_id: int = bot_db.get_group_id_by_tg_link("https://t.me/" + message.from_user.username)
@@ -110,11 +113,11 @@ def main():
             bot.send_message(message.chat.id, "Data added successfully.")
 
     @bot.message_handler(commands=['view_table'])
-    def view_table(message):
+    def view_table(message) -> None:
         pass
 
     @bot.message_handler(content_types=['text'])
-    def text(message):
+    def text(message) -> None:
         if message.text == "❓ Help":
             help(message)
 
