@@ -7,6 +7,4 @@ Microservice using Flask, which has a very simple web interface and a telegram b
 | ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)  | 3.11.5  |
 | ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)  | 2.3.3   |
 
-In developing. 
-
-The alpha version is expected on 09/20/2023.
+Version: 1.0 (alpha version).
