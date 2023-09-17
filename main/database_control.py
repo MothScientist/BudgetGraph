@@ -1,13 +1,41 @@
 from flask import g
 import sqlite3
+import os
+from dotenv import load_dotenv
 from token_generation import get_token
 from validators.table_name import table_name_validator
+
+load_dotenv()  # Load environment variables from .env file
+db_path = os.getenv("DATABASE")
 
 
 class FDataBase:
     def __init__(self, db):
         self.__db = db
         self.__cur = db.cursor()
+
+# Database sampling methods (SELECT)
+
+    def auth_telegram_by_tg_link(self, tg_link: str, username_return: bool = False) -> bool | str:
+        """
+        Finds a user in the Users table by telegram_link value
+        username_return (default = 0): depending on the value, returns the user's username or boolean value
+        return: True [username_return==False] / username [username_return==True] or False
+        """
+        try:
+            self.__cur.execute("""SELECT username FROM Users WHERE telegram_link = ?""", (tg_link,))
+            res = self.__cur.fetchone()
+
+            if res:  # If a user with this link is found
+                if username_return:
+                    return res[0]
+                else:
+                    return True
+            else:
+                return False
+
+        except sqlite3.Error as e:
+            print(str(e))
 
     def get_group_id_by_token(self, token: str) -> int:
         """
@@ -29,6 +57,20 @@ class FDataBase:
         try:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
                                  (SELECT group_id FROM Users WHERE username = ?)""", (username,))
+            res = self.__cur.fetchone()
+            return res[0]
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+    def get_token_by_telegram_link(self, tg_link: str):
+        """
+
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT token FROM Groups WHERE id = 
+                                 (SELECT group_id FROM Users WHERE telegram_link = ?)""", (tg_link,))
             res = self.__cur.fetchone()
             return res[0]
 
@@ -91,6 +133,18 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
+    def select_data_for_household_table(self, table_name: str) -> list:
+        try:
+            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT 15")
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            return result_list
+
+        except sqlite3.Error as e:
+            print(str(e))
+
+# Methods for inserting data into a database (INSERT)
+
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str) -> bool:
         """
         adding a new user to the Users table
@@ -149,6 +203,8 @@ class FDataBase:
         else:
             return token
 
+# Methods for updating data in a database (UPDATE)
+
     def update_user_last_login(self, username: str) -> None:
         """
         changes the user's last login time in the last_login column in the Users table
@@ -163,25 +219,40 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def select_data_for_household_table(self, table_name: str) -> list:
-        try:
-            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT 15")
-            result = self.__cur.fetchall()
-            result_list = [list(row) for row in result]
-            return result_list
-
-        except sqlite3.Error as e:
-            print(str(e))
-
 
 def connect_db():
+    """
+    Connects to the database
+    :return: connection
+    """
     try:
-        conn = sqlite3.connect("db.sqlite3")
+        conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         return conn
 
     except sqlite3.Error as e:
         print(str(e))
+
+
+def get_db():
+    """
+    A function required to establish a connection to the database.
+    """
+    if not hasattr(g, "link_db"):
+        g.link_db = connect_db()
+        print("Database connection: OK")
+    return g.link_db
+
+
+def close_db(error) -> None:
+    """
+    Required to close the connection to the database.
+
+    Used in the main application file through the app.teardown_appcontext function.
+    """
+    if hasattr(g, "link_db"):
+        g.link_db.close()
+        print("Database connection: CLOSED")
 
 
 def create_db() -> None:
@@ -204,7 +275,9 @@ def create_db() -> None:
 
 def create_table_group(table_name) -> None:
     """
-    table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
+    creates a table in the database called budget_? (id, total, username, transfer, date_time, description)
+
+    contains table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
     :return: None
     """
@@ -212,7 +285,7 @@ def create_table_group(table_name) -> None:
         if not table_name_validator(table_name):
             raise ValueError("Possible SQL injection attempt")
 
-        conn = sqlite3.connect("db.sqlite3")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         query = (f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY AUTOINCREMENT, "
@@ -231,25 +304,6 @@ def create_table_group(table_name) -> None:
 
     except ValueError as e:
         print(str(e))
-
-
-def get_db():
-    """
-    A function required to establish a connection to the database.
-    """
-    if not hasattr(g, "link_db"):
-        g.link_db = connect_db()
-        print("Database connection: OK")
-    return g.link_db
-
-
-def close_db(error) -> None:
-    """
-    Required to close the connection to the database. Used in the main application file through the app.teardown_appcontext function.
-    """
-    if hasattr(g, "link_db"):
-        g.link_db.close()
-        print("Database connection: CLOSED")
 
 
 if __name__ == '__main__':

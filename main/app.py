@@ -27,8 +27,9 @@ app.config.from_object(__name__)
 
 # Get the secret key to encrypt the Flask session from an environment variable
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+db_path = os.getenv("DATABASE")
 
-app.config.update(dict(DATABASE=os.path.join(app.root_path, "db.sqlite3")))
+app.config.update(dict(DATABASE=os.path.join(app.root_path, db_path)))
 
 app.teardown_appcontext(close_db)  # Disconnects the database connection after a query
 
