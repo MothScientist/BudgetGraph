@@ -16,13 +16,13 @@ class FDataBase:
 
 # Database sampling methods (SELECT)
 
-    def get_username_by_tg_link(self, tg_link: str) -> bool | str:
+    def get_username_by_telegram_id(self, telegram_id: int) -> bool | str:
         """
         Finds a user in the Users table by telegram_link value
         return: username or False
         """
         try:
-            self.__cur.execute("""SELECT username FROM Users WHERE telegram_link = ?""", (tg_link,))
+            self.__cur.execute("""SELECT username FROM Users WHERE telegram_id = ?""", (telegram_id,))
             res = self.__cur.fetchone()
 
             if res:  # If a user with this link is found
@@ -43,16 +43,18 @@ class FDataBase:
             res = self.__cur.fetchone()
             if res:
                 return res[0]
+            else:
+                return 0
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_group_id_by_tg_link(self, tg_link: str) -> int:
+    def get_group_id_by_telegram_id(self, telegram_id: int) -> int:
         """
         searches for the group id using the telegram link.
         :return: group id as a int.
         """
         try:
-            self.__cur.execute("""SELECT group_id FROM Users WHERE telegram_link = ?""", (tg_link,))
+            self.__cur.execute("""SELECT group_id FROM Users WHERE telegram_id = ?""", (telegram_id,))
             res = self.__cur.fetchone()
 
             if res:
@@ -77,14 +79,14 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_token_by_tg_link(self, tg_link: str) -> str:
+    def get_token_by_telegram_id(self, telegram_id: int) -> str:
         """
         searches for the group token using the telegram link.
         :return: group token as a string.
         """
         try:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
-                                 (SELECT group_id FROM Users WHERE telegram_link = ?)""", (tg_link,))
+                                 (SELECT group_id FROM Users WHERE telegram_id = ?)""", (telegram_id,))
             res = self.__cur.fetchone()
             return res[0]
 
@@ -107,7 +109,7 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
 
-    def get_id_by_username_or_tg_link(self, username: str = "", tg_link: str = "") -> bool:
+    def get_id_by_username_or_telegram_id(self, username: str = "", telegram_id: int = 0) -> bool:
         """
         Since the username and telegram_link fields are unique,
         additional verification is required so that errors do not appear in the future when working with the database.
@@ -116,7 +118,7 @@ class FDataBase:
         :return: True - if the data is found in the database, False - if both parameters are not found in the database.
         """
         try:
-            self.__cur.execute("""SELECT id FROM Users WHERE telegram_link = ?""", (tg_link,))
+            self.__cur.execute("""SELECT id FROM Users WHERE telegram_id = ?""", (telegram_id,))
             res_link = self.__cur.fetchone()
 
             self.__cur.execute("""SELECT id FROM Users WHERE username = ?""", (username,))
@@ -167,7 +169,7 @@ class FDataBase:
 
 # Methods for inserting data into a database (INSERT)
 
-    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, tg_link: str) -> bool:
+    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
         """
         adding a new user to the Users table
         :return: True if the addition was successful and False otherwise.
@@ -175,7 +177,7 @@ class FDataBase:
         try:
             self.__cur.execute("INSERT INTO Users "
                                "VALUES(NULL, ?, ?, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'))",
-                               (username, psw_salt, psw_hash, group_id, tg_link,))
+                               (username, psw_salt, psw_hash, group_id, telegram_id,))
             self.__db.commit()
 
         except sqlite3.Error as e:
@@ -212,7 +214,7 @@ class FDataBase:
 
         return False
 
-    def create_new_group(self, owner: str) -> str | bool:
+    def create_new_group(self, owner: int) -> str | bool:
         """
         creating a new group in the Groups table and generate new token for this group.
         :param owner: link to the telegram of the user who initiates the creation of the group.
@@ -284,13 +286,13 @@ def close_db_g(error) -> None:
         print("Database connection (g): CLOSED")
 
 
-def close_db_bot(connection):
+def close_db_main(connection):
     """
 
     """
     if connection:
         connection.close()
-        print("Database connection (bot): CLOSED")
+        print("Database connection (main): CLOSED")
 
 
 def create_db() -> None:

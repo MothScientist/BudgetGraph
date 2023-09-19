@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS Groups (
     id integer PRIMARY KEY AUTOINCREMENT,
-    owner text NOT NULL UNIQUE,
+    owner integer NOT NULL UNIQUE,
     token text NOT NULL UNIQUE
 );
 
@@ -10,6 +10,6 @@ CREATE TABLE IF NOT EXISTS Users (
     psw_salt text NOT NULL,
     password_hash text NOT NULL,
     group_id integer NOT NULL,
-    telegram_link text NOT NULL UNIQUE,
+    telegram_id integer NOT NULL UNIQUE,
     last_login real NOT NULL
 );
