@@ -32,6 +32,7 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
     def get_group_id_by_token(self, token: str) -> int:
         """
@@ -45,8 +46,10 @@ class FDataBase:
                 return res[0]
             else:
                 return 0
+
         except sqlite3.Error as e:
             print(str(e))
+            return 0
 
     def get_group_id_by_telegram_id(self, telegram_id: int) -> int:
         """
@@ -64,6 +67,7 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
     def get_token_by_username(self, username: str) -> str:
         """
@@ -74,10 +78,14 @@ class FDataBase:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
                                  (SELECT group_id FROM Users WHERE username = ?)""", (username,))
             res = self.__cur.fetchone()
-            return res[0]
+            if res:
+                return res[0]
+            else:
+                return ""
 
         except sqlite3.Error as e:
             print(str(e))
+            return ""
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
         """
@@ -88,10 +96,14 @@ class FDataBase:
             self.__cur.execute("""SELECT token FROM Groups WHERE id = 
                                  (SELECT group_id FROM Users WHERE telegram_id = ?)""", (telegram_id,))
             res = self.__cur.fetchone()
-            return res[0]
+            if res:
+                return res[0]
+            else:
+                return ""
 
         except sqlite3.Error as e:
             print(str(e))
+            return ""
 
     def get_salt_by_username(self, username: str) -> str | bool:
         """
@@ -108,6 +120,7 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
     def get_id_by_username_or_telegram_id(self, username: str = "", telegram_id: int = 0) -> bool:
         """
@@ -131,6 +144,7 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
     def auth_by_username(self, username: str, psw_hash: str, token: str) -> bool:
         """
@@ -150,6 +164,7 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
     def select_data_for_household_table(self, table_name: str, n: int) -> list:
         """
@@ -166,6 +181,7 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return []
 
 # Methods for inserting data into a database (INSERT)
 
@@ -184,7 +200,7 @@ class FDataBase:
             print(str(e))
             return False
 
-        else:  # Executed if the try block executed without errors.
+        else:
             return True
 
     def add_monetary_transaction_to_db(self, table_name: str, username: str, amount: int, description: str = "")\
@@ -208,11 +224,10 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
-        else:  # Executed if the try block executed without errors.
+        else:
             return True
-
-        return False
 
     def create_new_group(self, owner: int) -> str | bool:
         """
@@ -227,11 +242,10 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+            return False
 
         else:
             return token
-
-        return False
 
 # Methods for updating data in a database (UPDATE)
 
@@ -307,7 +321,7 @@ def create_db() -> None:
             cursor.executescript(file.read())
 
         conn.commit()
-        conn.close()
+        close_db_main(conn)
 
     except sqlite3.Error as e:
         print(str(e))
@@ -347,6 +361,4 @@ def create_table_group(table_name: str) -> None:
 
 
 if __name__ == '__main__':
-    pass
-    # create_db()
-    # create_table_group("budget_1")
+    create_db()

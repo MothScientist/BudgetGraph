@@ -150,7 +150,7 @@ def household(username):
 
     dbase = FDataBase(get_db())
     token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)
+    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0 -> data = []
     table_name: str = f"budget_{group_id}"
 
     if request.method == "POST":
@@ -198,7 +198,7 @@ def household(username):
                     flash("Error adding data to database.", category="error")
 
     headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
-    data: list = dbase.select_data_for_household_table(table_name, 15)
+    data: list = dbase.select_data_for_household_table(table_name, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)

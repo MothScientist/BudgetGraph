@@ -86,6 +86,9 @@ def main():
         bot_db = FDataBase(connection)
         telegram_id: int = message.from_user.id
         token: str = bot_db.get_token_by_telegram_id(telegram_id)
+        if len(token) == 0:
+            # noinspection HardcodedPassword
+            token: str = "unknown"
         close_db_main(connection)
         bot.send_message(message.chat.id, f"Your group token:")
         bot.send_message(message.chat.id, f"{token}")
@@ -191,9 +194,10 @@ def main():
 
         token: str = message.text
 
+        connection = connect_db()
+        bot_db = FDataBase(connection)
+
         if compare_digest(token, "None"):
-            connection = connect_db()
-            bot_db = FDataBase(connection)
             telegram_id: int = message.from_user.id
 
             # There is a chance to return False if an error occurred while working with the database
@@ -216,8 +220,6 @@ def main():
                 start(message)
 
         elif len(token) == 32:
-            connection = connect_db()
-            bot_db = FDataBase(connection)
             telegram_id: int = message.from_user.id
 
             if group_id := token_validator(token):  # # new variable "group_id" (int)
