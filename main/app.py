@@ -59,39 +59,41 @@ def registration():
 
         username: str = request.form["username"]
         psw: str = request.form["password"]
-        tg_link: str = request.form["tg_link"]
+        telegram_id: str = request.form["telegram_id"]
         token: str = request.form["token"]
 
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
-            if registration_validator(username, psw, tg_link):
+            if registration_validator(username, psw, telegram_id):
 
+                telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
+                psw_salt: str = get_salt()
                 dbase = FDataBase(get_db())
 
-                if user_token := dbase.create_new_group(tg_link):
+                if user_token := dbase.create_new_group(telegram_id):
 
                     group_id: int = token_validator(user_token)
-                    psw_salt: str = get_salt()
                     create_table_group(f"budget_{group_id}")
 
-                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
+                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
                         app.logger.info(f"Successful registration: {username}. New group created: id={group_id}.")
                         flash("Registration completed successfully!", category="success")
                         flash(f"{username}, your token: {user_token}", category="success_token")
 
         # User is added to an existing group
         if len(token) == 32:
-            if registration_validator(username, psw, tg_link):
+            if registration_validator(username, psw, telegram_id):
                 if group_id := token_validator(token):  # new variable "group_id" (int)
 
+                    telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
                     dbase = FDataBase(get_db())
                     psw_salt: str = get_salt()
 
-                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, tg_link):
+                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
 
                         # redirecting the user to a personal account (he already has a group token)
                         session["userLogged"] = username
-                        app.logger.info(f"Successful registration: {username}. Joining a group: id={group_id}.")
+                        app.logger.info(f"Successful registration: {username}. Group: id={group_id}.")
                         return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
@@ -148,7 +150,7 @@ def household(username):
 
     dbase = FDataBase(get_db())
     token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)
+    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0 -> data = []
     table_name: str = f"budget_{group_id}"
 
     if request.method == "POST":
@@ -196,7 +198,7 @@ def household(username):
                     flash("Error adding data to database.", category="error")
 
     headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
-    data: list = dbase.select_data_for_household_table(table_name, 15)
+    data: list = dbase.select_data_for_household_table(table_name, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)

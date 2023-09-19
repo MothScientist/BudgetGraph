@@ -1,20 +1,21 @@
 from flask import flash
-from database_control import get_db, FDataBase, connect_db, close_db_bot
+from database_control import get_db, FDataBase, connect_db, close_db_main
 import re
 
 
-def registration_validator(username: str, psw: str, tg_link: str) -> bool:
+def registration_validator(username: str, psw: str, telegram_id: str) -> bool:
     """
     :param username: 3 to 15 characters
     :param psw: 4 to 128 characters
-    :param tg_link: https://t.me/{username} - username: 18 to 45 characters (unique)
+    :param telegram_id:
     :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
     """
     if 3 <= len(username) <= 20 and not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username):
         if 4 <= len(psw) <= 128:
-            if 18 <= len(tg_link) <= 45 and tg_link.startswith("https://t.me/"):
+            if len(telegram_id) <= 12 and re.match(r'^\d+$', telegram_id):
                 dbase = FDataBase(get_db())
-                if not dbase.get_id_by_username_or_tg_link(username=username, tg_link=tg_link):
+                telegram_id: int = int(telegram_id)
+                if not dbase.get_id_by_username_or_telegram_id(username=username, telegram_id=telegram_id):
                     return True
                 else:
                     flash("Error - the username is taken or the link is entered incorrectly.", category="error")
@@ -36,5 +37,5 @@ def token_validator(token: str) -> int:
     connection = connect_db()
     dbase = FDataBase(connection)
     group_id = dbase.get_group_id_by_token(token)
-    close_db_bot(connection)
+    close_db_main(connection)
     return group_id

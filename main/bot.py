@@ -6,11 +6,12 @@ from password_hashing import getting_hash, get_salt
 import re
 
 # Database
-from database_control import FDataBase, connect_db, close_db_bot, create_table_group
+from database_control import FDataBase, connect_db, close_db_main, create_table_group
 
 # Validators
 from validators.input_number import input_number
 from validators.registration import token_validator
+from secrets import compare_digest
 
 
 def main():
@@ -27,7 +28,7 @@ def main():
 
         btn1 = types.KeyboardButton("❓ Help")
         btn2 = types.KeyboardButton("📎 Link to GitHub")
-        btn3 = types.KeyboardButton("💻 My Telegram link")
+        btn3 = types.KeyboardButton("💻 My Telegram ID")
         btn4 = types.KeyboardButton("🤡 I want to register")
         btn5 = types.KeyboardButton("🔐 Get my token")
         btn6 = types.KeyboardButton("📖 View table")
@@ -40,11 +41,13 @@ def main():
         # check user in our project
         connection = connect_db()
         bot_db = FDataBase(connection)
-        res: bool | str = bot_db.get_username_by_tg_link("https://t.me/" + message.from_user.username)
+
+        telegram_id: int = message.from_user.id
+
+        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
 
         if res:
             bot_db.update_user_last_login(res)
-            close_db_bot(connection)
 
             # to send a sticker from a car in .webp format no larger than 512x512 pixels
             # sticker = open("D:\\telebot\\stickers\\stick_name.webp)", "rb")
@@ -55,19 +58,21 @@ def main():
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
         else:
-            bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name} {message.from_user.last_name}!\n"
+            bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name}!\n"
                                               f"We didn't recognize you. Would you like to register in the project?",
                              reply_markup=markup_2)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
 
+        close_db_main(connection)
+
     @bot.message_handler(commands=['help'])
     def help(message) -> None:
         bot.send_message(message.chat.id, f"{message}")
 
-    @bot.message_handler(commands=['my_link'])
-    def my_link(message) -> None:
-        bot.send_message(message.chat.id, f"Link to your telegram: https://t.me/{message.from_user.username}")
+    @bot.message_handler(commands=['get_my_id'])
+    def get_my_id(message) -> None:
+        bot.send_message(message.chat.id, f"Your telegram ID: {message.from_user.id}")
 
     @bot.message_handler(commands=['project_github'])
     def project_github(message) -> None:
@@ -79,8 +84,12 @@ def main():
     def get_my_token(message) -> None:
         connection = connect_db()
         bot_db = FDataBase(connection)
-        token: str = bot_db.get_token_by_tg_link("https://t.me/" + message.from_user.username)
-        close_db_bot(connection)
+        telegram_id: int = message.from_user.id
+        token: str = bot_db.get_token_by_telegram_id(telegram_id)
+        if len(token) == 0:
+            # noinspection HardcodedPassword
+            token: str = "unknown"
+        close_db_main(connection)
         bot.send_message(message.chat.id, f"Your group token:")
         bot.send_message(message.chat.id, f"{token}")
 
@@ -110,14 +119,17 @@ def main():
         if transfer:
             connection = connect_db()
             bot_db = FDataBase(connection)
-            group_id: int = bot_db.get_group_id_by_tg_link("https://t.me/" + message.from_user.username)
-            username: str = bot_db.get_username_by_tg_link("https://t.me/" + message.from_user.username)
+
+            telegram_id: int = message.from_user.id
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+
             if is_negative:
                 bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer*(-1))
             else:
                 bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer)
 
-            close_db_bot(connection)
+            close_db_main(connection)
             bot.send_message(message.chat.id, "Data added successfully.")
 
     @bot.message_handler(commands=['view_table'])
@@ -129,7 +141,8 @@ def main():
 
         connection = connect_db()
         bot_db = FDataBase(connection)
-        res: bool | str = bot_db.get_username_by_tg_link("https://t.me/" + message.from_user.username)
+        res: bool | str = bot_db.get_username_by_telegram_id(message.from_user.id)
+        close_db_main(connection)
 
         if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
             bot.send_message(message.chat.id, "Let's start registration!")
@@ -140,22 +153,29 @@ def main():
             start(message)
 
     def process_username(message):
+
         username: str = message.text
         connection = connect_db()
         bot_db = FDataBase(connection)
 
         if (3 <= len(username) <= 20 and
                 not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username) and
-                not bot_db.get_id_by_username_or_tg_link(username=username)):
+                not bot_db.get_id_by_username_or_telegram_id(username=username)):
             bot.send_message(message.chat.id, "Accepted the data! Let's continue!")
             bot.send_message(message.chat.id, "Enter your password (4-128 characters):")
             bot.register_next_step_handler(message, process_psw, username)
         else:
+            bot.send_message(message.chat.id, "This username already exists!")
             start(message)
 
-        close_db_bot(connection)
+        close_db_main(connection)
 
     def process_psw(message, username: str):
+
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+        btn1 = types.KeyboardButton("None")
+        markup_1.add(btn1)
+
         psw: str = message.text
 
         if 4 <= len(psw) <= 128:
@@ -163,43 +183,62 @@ def main():
             psw: str = getting_hash(psw, psw_salt)
 
             bot.send_message(message.chat.id, "Well done! There's still a little time left!")
-            bot.send_message(message.chat.id, "Token (if you are adding to an existing family, otherwise send 'none')")
+            bot.send_message(message.chat.id, "Token (if you have it (32 characters), otherwise send 'None')",
+                             reply_markup=markup_1)
             bot.register_next_step_handler(message, process_token, username, psw, psw_salt)
         else:
+            bot.send_message(message.chat.id, "Invalid password format!")
             start(message)
 
     def process_token(message, username: str, psw_hash: str, psw_salt: str):
 
         token: str = message.text
-        if len(token) <= 5:
-            connection = connect_db()
-            bot_db = FDataBase(connection)
-            tg_link: str = "https://t.me/" + message.from_user.username
-            user_token: str = bot_db.create_new_group(tg_link)
-            group_id: int = token_validator(user_token)  # error
-            if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, tg_link):
-                close_db_bot(connection)
-                create_table_group(f"budget_{group_id}")
-                bot.send_message(message.chat.id, "Congratulations on registering!")
-                bot.send_message(message.chat.id, "Your token:")
-                bot.send_message(message.chat.id, user_token)
-                start(message)
+
+        connection = connect_db()
+        bot_db = FDataBase(connection)
+
+        if compare_digest(token, "None"):
+            telegram_id: int = message.from_user.id
+
+            # There is a chance to return False if an error occurred while working with the database
+            if user_token := bot_db.create_new_group(telegram_id):
+                group_id: int = token_validator(user_token)
+
+                if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
+                    close_db_main(connection)
+                    create_table_group(f"budget_{group_id}")
+                    bot.send_message(message.chat.id, "Congratulations on registering!")
+                    bot.send_message(message.chat.id, "Your token:")
+                    bot.send_message(message.chat.id, user_token)
+                    start(message)
+                else:
+                    bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
+                    start(message)
+
             else:
+                bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
                 start(message)
 
         elif len(token) == 32:
-            connection = connect_db()
-            bot_db = FDataBase(connection)
-            tg_link: str = "https://t.me/" + message.from_user.username
-            group_id: int = token_validator(token)  # error
-            if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, tg_link):
-                close_db_bot(connection)
-                bot.send_message(message.chat.id, "Congratulations on registering!")
-                start(message)
+            telegram_id: int = message.from_user.id
+
+            if group_id := token_validator(token):  # # new variable "group_id" (int)
+                if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
+                    close_db_main(connection)
+                    bot.send_message(message.chat.id, "Congratulations on registering!")
+                    start(message)
+                else:
+                    bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
+                    start(message)
             else:
+                bot.send_message(message.chat.id, "There is no group with this token. "
+                                                  "Contact the group members for more information, "
+                                                  "or create your own group!")
                 start(message)
 
         else:
+            bot.send_message(message.chat.id, "This is not a valid token format, "
+                                              "please check if it is correct or send 'None'!")
             start(message)
 
     @bot.message_handler(content_types=['text'])
@@ -211,8 +250,8 @@ def main():
         elif message.text == "📎 Link to GitHub":
             project_github(message)
 
-        elif message.text == "💻 My Telegram link":
-            my_link(message)
+        elif message.text == "💻 My Telegram ID":
+            get_my_id(message)
 
         elif message.text == "🤡 I want to register":
             registration(message)
