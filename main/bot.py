@@ -125,9 +125,9 @@ def main():
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
 
             if is_negative:
-                bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer*(-1))
+                bot_db.add_monetary_transaction_to_db(group_id, username, transfer*(-1))
             else:
-                bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer)
+                bot_db.add_monetary_transaction_to_db(group_id, username, transfer)
 
             close_db_main(connection)
             bot.send_message(message.chat.id, "Data added successfully.")

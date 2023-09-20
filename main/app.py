@@ -151,7 +151,6 @@ def household(username):
     dbase = FDataBase(get_db())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0 -> data = []
-    table_name: str = f"budget_{group_id}"
 
     if request.method == "POST":
 
@@ -160,19 +159,19 @@ def household(username):
             income: int | bool = input_number(income)
 
             if not income:
-                app.logger.error(f"Error adding income to database (household): table: {table_name}, "
+                app.logger.error(f"Error adding income to database (household): table: budget_{group_id}, "
                                  f"username: {username}, income: {income}.")
                 flash("Error", category="error")
 
             else:
                 description_1 = request.form.get("description_1")
 
-                if dbase.add_monetary_transaction_to_db(table_name, username, income, description_1):
-                    app.logger.info(f"Successfully adding data to database (household): table: {table_name}, "
+                if dbase.add_monetary_transaction_to_db(group_id, username, income, description_1):
+                    app.logger.info(f"Successfully adding data to database (household): table: budget_{group_id}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Data added successfully.", category="success")
                 else:
-                    app.logger.info(f"Error adding data to database (household): table: {table_name}, "
+                    app.logger.info(f"Error adding data to database (household): table: budget_{group_id}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Error adding data to database.", category="error")
 
@@ -181,24 +180,24 @@ def household(username):
             expense: int | bool = input_number(expense)
 
             if not expense:
-                app.logger.error(f"Error adding income to database (household): table: {table_name}, "
+                app.logger.error(f"Error adding income to database (household): table: budget_{group_id}, "
                                  f"username: {username}, income: {expense}.")
                 flash("Error", category="error")
 
             else:
                 description_2 = request.form.get("description_2")
 
-                if dbase.add_monetary_transaction_to_db(table_name, username, expense*(-1), description_2):
-                    app.logger.info(f"Successfully adding data to database (household): table: {table_name}, "
+                if dbase.add_monetary_transaction_to_db(group_id, username, expense*(-1), description_2):
+                    app.logger.info(f"Successfully adding data to database (household): table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Data added successfully.", category="success")
                 else:
-                    app.logger.info(f"Error adding data to database (household): table: {table_name}, "
+                    app.logger.info(f"Error adding data to database (household): table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Error adding data to database.", category="error")
 
     headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
-    data: list = dbase.select_data_for_household_table(table_name, 15)  # In case of error group_id == 0 -> data = []
+    data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)

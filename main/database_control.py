@@ -164,13 +164,15 @@ class FDataBase:
             print(str(e))
             return False
 
-    def select_data_for_household_table(self, table_name: str, n: int) -> list:
+    def select_data_for_household_table(self, group_id: int, n: int) -> list:
         """
         Returns the specified number of rows (starting with the most recent) from the budget table.
-        :param table_name: group table in format "budget_{group_id}" (no additional validation)
+        :param group_id:
         :param n: number of rows returned.
         :return: list of n elements | empty list
         """
+        table_name = f"budget_{group_id}"
+
         try:
             self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
             result = self.__cur.fetchall()
@@ -201,18 +203,18 @@ class FDataBase:
         else:
             return True
 
-    def add_monetary_transaction_to_db(self, table_name: str, username: str, amount: int, description: str = "")\
+    def add_monetary_transaction_to_db(self, group_id: int, username: str, amount: int, description: str = "")\
             -> bool:
         """
         Submits the "add_expense" and "add_income" forms to the database.
-        :param table_name: String in format "budget_n" -> will undergo additional validation.
+        :param group_id:
         :param username: the name of the user making the changes.
         :param amount: value of the deposited amount.
         :param description: optional parameter.
         :return: True | False
         """
-        if not table_name_validator(table_name):  # Additional check of table title format
-            return False
+        table_name = f"budget_{group_id}"
+
         try:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
@@ -259,6 +261,28 @@ class FDataBase:
 
         except sqlite3.Error as e:
             print(str(e))
+
+# Methods for deleting database data (DELETE)
+
+    def delete_budget_entry_by_id(self, group_id: int, record_id: int) -> bool:
+        """
+        Removes an entry from the group budget table.
+        :param group_id:
+        :param record_id: row id in the table
+        :return: True | False
+        """
+        table_name = f"budget_{group_id}"
+
+        try:
+            self.__cur.execute(f"""DELETE FROM {table_name} WHERE id = ?""", (record_id,))
+            self.__db.commit()
+
+        except sqlite3.Error as e:
+            print(str(e))
+            return False
+
+        else:
+            return True
 
 
 def connect_db():
