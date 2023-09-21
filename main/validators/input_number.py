@@ -14,3 +14,7 @@ def input_number(number: str) -> int | bool:
         return False
     else:
         return int(number)
+
+
+if __name__ == '__main__':
+    pass

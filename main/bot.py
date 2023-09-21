@@ -6,7 +6,7 @@ from password_hashing import getting_hash, get_salt
 import re
 
 # Database
-from database_control import FDataBase, connect_db, close_db_main, create_table_group
+from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
 # Validators
 from validators.input_number import input_number
@@ -34,13 +34,14 @@ def main():
         btn6 = types.KeyboardButton("📖 View table")
         btn7 = types.KeyboardButton("📈 Add income")
         btn8 = types.KeyboardButton("📉 Add expense")
+        btn9 = types.KeyboardButton("❌ Delete record")
 
-        markup_1.add(btn1, btn2, btn5, btn6, btn7, btn8)
+        markup_1.add(btn1, btn2, btn5, btn6, btn7, btn8, btn9)
         markup_2.add(btn1, btn2, btn3, btn4)
 
         # check user in our project
         connection = connect_db()
-        bot_db = FDataBase(connection)
+        bot_db = DatabaseQueries(connection)
 
         telegram_id: int = message.from_user.id
 
@@ -72,6 +73,8 @@ def main():
 
     @bot.message_handler(commands=['get_my_id'])
     def get_my_id(message) -> None:
+        bot.send_sticker(message.chat.id,
+                         "CAACAgIAAxkBAAEKWillDGfSs-fnAAGchbLPICSILmW_7yoAAiMUAAKtXgABSjhqQKnHD7SIMAQ")
         bot.send_message(message.chat.id, f"Your telegram ID: {message.from_user.id}")
 
     @bot.message_handler(commands=['project_github'])
@@ -83,7 +86,7 @@ def main():
     @bot.message_handler(commands=['get_my_token'])
     def get_my_token(message) -> None:
         connection = connect_db()
-        bot_db = FDataBase(connection)
+        bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
         token: str = bot_db.get_token_by_telegram_id(telegram_id)
         if len(token) == 0:
@@ -103,6 +106,52 @@ def main():
         bot.send_message(message.chat.id, f"Enter the amount of expense:")
         bot.register_next_step_handler(message, process_transfer, True)
 
+    @bot.message_handler(commands=['delete_record'])
+    def delete_record(message):
+        bot.send_message(message.chat.id, f"Enter the record ID:")
+        bot.register_next_step_handler(message, process_delete_record)
+
+    @bot.message_handler(commands=['view_table'])
+    def view_table(message) -> None:
+        pass
+
+    @bot.message_handler(commands=['registration'])
+    def registration(message) -> None:
+
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        res: bool | str = bot_db.get_username_by_telegram_id(message.from_user.id)
+        close_db_main(connection)
+
+        if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
+            bot.send_message(message.chat.id, "Let's start registration!")
+            bot.send_message(message.chat.id, "Enter your name (3-20 characters):")
+            bot.register_next_step_handler(message, process_username)
+        else:
+            bot.send_message(message.chat.id, "You are already registered!")
+            start(message)
+
+    def process_delete_record(message):
+        record_id: str = message.text
+        record_id: int | bool = input_number(record_id)
+
+        if record_id:
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+
+            telegram_id: int = message.from_user.id
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+            if group_id and bot_db.check_id_is_exist(group_id, record_id):
+                bot_db.delete_budget_entry_by_id(group_id, record_id)
+                bot.send_message(message.chat.id, "Successfully.")
+
+            else:
+                bot.send_message(message.chat.id, "There is no record with this ID.")
+
+            close_db_main(connection)
+        else:
+            bot.send_message(message.chat.id, "Invalid value.")
+
     def process_transfer(message, is_negative: bool = False) -> None:
         """
         Adds income and expense to the database. Accepts an unvalidated value,
@@ -118,45 +167,28 @@ def main():
 
         if transfer:
             connection = connect_db()
-            bot_db = FDataBase(connection)
+            bot_db = DatabaseQueries(connection)
 
             telegram_id: int = message.from_user.id
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
 
             if is_negative:
-                bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer*(-1))
+                bot_db.add_monetary_transaction_to_db(group_id, username, transfer*(-1))
             else:
-                bot_db.add_monetary_transaction_to_db(f"budget_{group_id}", username, transfer)
+                bot_db.add_monetary_transaction_to_db(group_id, username, transfer)
 
             close_db_main(connection)
             bot.send_message(message.chat.id, "Data added successfully.")
 
-    @bot.message_handler(commands=['view_table'])
-    def view_table(message) -> None:
-        pass
-
-    @bot.message_handler(commands=['registration'])
-    def registration(message) -> None:
-
-        connection = connect_db()
-        bot_db = FDataBase(connection)
-        res: bool | str = bot_db.get_username_by_telegram_id(message.from_user.id)
-        close_db_main(connection)
-
-        if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
-            bot.send_message(message.chat.id, "Let's start registration!")
-            bot.send_message(message.chat.id, "Enter your name (3-20 characters):")
-            bot.register_next_step_handler(message, process_username)
         else:
-            bot.send_message(message.chat.id, "You are already registered!")
-            start(message)
+            bot.send_message(message.chat.id, "Invalid value.")
 
     def process_username(message):
 
         username: str = message.text
         connection = connect_db()
-        bot_db = FDataBase(connection)
+        bot_db = DatabaseQueries(connection)
 
         if (3 <= len(username) <= 20 and
                 not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username) and
@@ -195,7 +227,7 @@ def main():
         token: str = message.text
 
         connection = connect_db()
-        bot_db = FDataBase(connection)
+        bot_db = DatabaseQueries(connection)
 
         if compare_digest(token, "None"):
             telegram_id: int = message.from_user.id
@@ -208,6 +240,8 @@ def main():
                     close_db_main(connection)
                     create_table_group(f"budget_{group_id}")
                     bot.send_message(message.chat.id, "Congratulations on registering!")
+                    bot.send_sticker(message.chat.id,
+                                     "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
                     bot.send_message(message.chat.id, "Your token:")
                     bot.send_message(message.chat.id, user_token)
                     start(message)
@@ -267,6 +301,9 @@ def main():
 
         elif message.text == "📉 Add expense":
             add_expense(message)
+
+        elif message.text == "❌ Delete record":
+            delete_record(message)
 
     bot.polling(none_stop=True)
 

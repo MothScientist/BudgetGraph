@@ -1,46 +1,68 @@
 @import "styles.css";
 
-.household{
-  background-color: white;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.logout_button{
+.home-button {
   position: absolute;
   top: 8px;
   left: 5px;
   background-color: transparent;
   border: none;
   outline: none;
-  width: 3%;
+  width: 3.5%;
   height: auto;
 }
 
-.token_place{
+.logout_button{
+  position: absolute;
+  top: 8px;
+  left: 100px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3.2%;
+  height: auto;
+}
+
+.token-place{
   color: black;
   font-family: Arial, sans-serif;
   font-size: 16px;
   position: absolute;
-  top: 10px;
-  right: 20px;
+  top: 15px;
+  right: 55px;
+}
+.copy-img{
+  position: absolute;
+  top: -5px;
+  right: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 10%;
+  height: auto;
 }
 
-h3#token_place{
+.copy-button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+h3#token-place{
   display: inline;
   user-select: none;
 }
 
 .container{
+  position: absolute;
   display: flex;
   flex-direction: column;
   float: right;
-  position: absolute;
-  top: 225px;
-  right: 75px;
+  top: 110px;
+  right: 50px;
 }
 
-.add_form_1, .add_form_2 {
+.add-form-1, .add-form-2 {
   float: right;
   background-color: beige;
   padding: 10px;
@@ -48,11 +70,52 @@ h3#token_place{
   width: 210px;
 }
 
-.add_form_1 form, .add_form_2 form {
+.delete-record {
+  float: right;
+  background-color: #FFCCCC;
+  padding: 10px;
+  margin: 10px;
+  width: 210px;
+}
+
+.bin-img{
+  position: absolute;
+  bottom: 35px;
+  left: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 15%;
+  height: auto;
+}
+
+.income-img{
+  position: absolute;
+  top: 60px;
+  left: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 20%;
+  height: auto;
+}
+
+.expense-img{
+  position: absolute;
+  bottom: 165px;
+  left: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 20%;
+  height: auto;
+}
+
+.add-form-1 form, .add-form-2 form {
   display: flex;
   flex-direction: column;
 }
-.add_form_1 input, .add_form_2 input {
+.add-form-1 input, .add-form-2 input, .delete-record input {
   margin-bottom: 10px;
 }
 

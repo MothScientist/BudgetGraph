@@ -3,28 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_registration.css') }}">
-    <script src="{{ url_for('static', filename='js/line.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/accept_button.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
+    <script src="{{ url_for('static', filename='js/FooterLine.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/AcceptButton.js') }}"></script>
 </head>
 <body>
-  <a href="/">
-    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home_button">
-  </a>
+
+  <header>
+      <a href="/">
+        <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home-button">
+      </a>
+
+      <a href="/login">
+        <img src="{{ url_for('static', filename='img/sign-in.png') }}" alt="Sign in" class="sign-in-button">
+      </a>
+
+      <a href="https://t.me/budget_control1bot">
+        <img src="{{ url_for('static', filename='img/telegram.png') }}" alt="Telegram bot" class="tg-button">
+      </a>
+
+      <a href="https://github.com/MothScientist/budget_control">
+        <img src="{{ url_for('static', filename='img/github.png') }}" alt="Github" class="github-button">
+      </a>
+  </header>
+
   {% for category, messages in get_flashed_messages(True) %}
   <div class="flash {{ category }}">
     {{ messages }}<br>
   </div>
   {% endfor %}
-  <!-- main container -->
+
   <div class="container_2">
     <div class="form">
-      <div class="header_2">Registration</div>
+      <div class="header-2">Registration</div>
       <form action="/registration" method="POST">
         <input type="text" id="username" name="username" placeholder="Your name (3-20 characters)">
-        <input type="text" id="telegram_id" name="telegram_id" placeholder="Your telegram ID">
+        <input type="text" id="telegram-id" name="telegram-id" placeholder="Your telegram ID">
         <input type="password" id="password" name="password" placeholder="Password (4-128 characters)">
-        <input type="password" id="token" name="token" placeholder="Token (if you are adding to an existing family)">
+        <input type="password" id="token" name="token" placeholder="Token (if you are adding to an existing group)">
         <button type="submit" id="signup-button" class="link-button" disabled>Sign up!</button>
         <label for="agree-checkbox">
           <input id="agree-checkbox" type="checkbox" required> I agree with <a href="\">the conditions</a>
@@ -38,7 +54,7 @@
   <footer>
     <div id="gradient-line"></div>
     <div class="content">
-        <p><a href="https://www.flaticon.com/free-icons/back" title="back icons">Back icons created by Freepik - Flaticon</a></p>
+        <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
     </div>
   </footer>
 </body>

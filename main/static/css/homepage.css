@@ -1,12 +1,6 @@
 @import "styles.css";
 
-.homepage{
-  background-image: url("../img/m_min.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.sign_up_button{
+.sign-up-button{
   position: absolute;
   top: 10px;
   right: 70px;
@@ -17,10 +11,10 @@
   height: auto;
 }
 
-.sign_in_button{
+.sign-in-button{
   position: absolute;
   top: 8px;
-  right: 150px;
+  right: 145px;
   background-color: transparent;
   border: none;
   outline: none;
@@ -28,10 +22,10 @@
   height: auto;
 }
 
-.tg_button{
+.tg-button{
   position: absolute;
   top: 8px;
-  right: 235px;
+  right: 220px;
   background-color: transparent;
   border: none;
   outline: none;
@@ -39,10 +33,10 @@
   height: auto;
 }
 
-.github_button{
+.github-button{
   position: absolute;
   top: 8px;
-  right: 315px;
+  right: 295px;
   background-color: transparent;
   border: none;
   outline: none;
