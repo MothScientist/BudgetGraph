@@ -7,27 +7,27 @@
   color: white;
 }
 
-.text_404_1{
+.text-404-1{
   font-size: 36px;
   position: fixed;
   left: 150px;
   top: 150px;
 }
 
-.text_404_2{
+.text-404-2{
   font-size: 36px;
   position: fixed;
   left: 300px;
   top: 300px;
 }
 
-.text_404_3{
+.text-404-3{
   font-size: 36px;
   position: fixed;
   left: 450px;
   top: 450px;
 }
 
-.link_back_404{
+.link-back-404{
   color: greenyellow;
 }

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_registration.css') }}">
-    <script src="{{ url_for('static', filename='js/line.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
+    <script src="{{ url_for('static', filename='js/FooterLine.js') }}"></script>
 </head>
 <body>
   <a href="/">
-    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home_button">
+    <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home-button">
   </a>
   {% for category, messages in get_flashed_messages(True) %}
   <div class="flash {{ category }}">
@@ -18,7 +18,7 @@
   <!-- main container -->
   <div class="container_1">
     <div class="form">
-      <div class="header_1">Login</div>
+      <div class="header-1">Login</div>
       <form action="/login" method="POST">
         <input type="text" id="username" name="username" placeholder="Your name">
         <input type="password" id="token" name="token" placeholder="Token">
@@ -32,7 +32,7 @@
   <footer>
     <div id="gradient-line"></div>
     <div class="content">
-        <p><a href="https://www.flaticon.com/free-icons/back" title="back icons">Back icons created by Freepik - Flaticon</a></p>
+        <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
     </div>
   </footer>
 </body>

@@ -1,31 +1,32 @@
 @import "styles.css";
 
-.header_1 {
+.header-1 {
   font-size: 20px;
   font-weight: bold;
   margin-top: -5px;
   margin-bottom: 10px;
 }
 
-.header_2 {
+.header-2 {
   font-size: 20px;
   font-weight: bold;
   margin-top: -5px;
   margin-bottom: 10px;
 }
 
-.home_button {
+.home-button {
   position: absolute;
   top: 10px;
   left: 10px;
   background-color: transparent;
   border: none;
   outline: none;
-  width: 3%;
+  width: 3.5%;
   height: auto;
 }
 
 .container_1 {
+  background-color: #E0FFFF;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38,6 +39,7 @@
 }
 
 .container_2 {
+  background-color: #E0FFFF;
   display: flex;
   flex-direction: column;
   align-items: center;

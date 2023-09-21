@@ -1,3 +1,7 @@
+body{
+  background-color: #F5F5F5;
+}
+
 header {
   background-color: transparent;
   padding: 30px;
@@ -57,20 +61,33 @@ footer {
   height: 100%;
 }
 
-a{
+footer a {
+  position: relative;
+  transition: color 0.3s ease-in-out;
   color: black;
 }
 
-a:hover {
-  background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet, red, orange, yellow);
-  background-size: 500%;
-  animation: rainbow 3s linear infinite;
+footer a:hover {
+  text-decoration: none;
 }
 
-@keyframes rainbow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+footer a::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: blue;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s ease-in-out;
 }
+
+footer a:hover::after {
+  transform: scaleX(1);
+}
+
 
 p {
   margin: 5px;

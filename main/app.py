@@ -59,7 +59,7 @@ def registration():
 
         username: str = request.form["username"]
         psw: str = request.form["password"]
-        telegram_id: str = request.form["telegram_id"]
+        telegram_id: str = request.form["telegram-id"]
         token: str = request.form["token"]
 
         # If the token field is empty
@@ -154,7 +154,7 @@ def household(username):
 
     if request.method == "POST":
 
-        if "submit_button_1" in request.form:  # Processing the "Add to table" button for form 1
+        if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
             income: str = request.form.get("income")
             income: int | bool = input_number(income)
 
@@ -164,7 +164,7 @@ def household(username):
                 flash("Error", category="error")
 
             else:
-                description_1 = request.form.get("description_1")
+                description_1 = request.form.get("description-1")
 
                 if dbase.add_monetary_transaction_to_db(group_id, username, income, description_1):
                     app.logger.info(f"Successfully adding data to database (household): table: budget_{group_id}, "
@@ -175,7 +175,7 @@ def household(username):
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Error adding data to database.", category="error")
 
-        elif "submit_button_2" in request.form:  # Processing the "Add to table" button for form 2
+        elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
             expense: str = request.form.get("expense")
             expense: int | bool = input_number(expense)
 
@@ -185,7 +185,7 @@ def household(username):
                 flash("Error", category="error")
 
             else:
-                description_2 = request.form.get("description_2")
+                description_2 = request.form.get("description-2")
 
                 if dbase.add_monetary_transaction_to_db(group_id, username, expense*(-1), description_2):
                     app.logger.info(f"Successfully adding data to database (household): table: budget_{group_id}, "

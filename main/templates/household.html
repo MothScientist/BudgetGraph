@@ -4,17 +4,27 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/household.css') }}">
-    <script src="{{ url_for('static', filename='js/line.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/FooterLine.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/CopyButton.js') }}"></script>
 </head>
 <body class="household">
   <header>
+      <a href="/">
+        <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home-button">
+      </a>
+
       <a href="/logout">
         <img src="{{ url_for('static', filename='img/logout.png') }}" alt="Login out" class="logout_button">
       </a>
   </header>
 
-  <div class="token_place">
-      <h3 id="token_place">Token: </h3>{{ token }}
+  <div class="token-place">
+      <h3 id="token-place">Token: </h3>{{ token }}
+
+      <button onclick="copyText('{{ token }}')" class="copy-button">
+        <img src="{{ url_for('static', filename='img/copy.png') }}" alt="Copy token" class="copy-img" onclick="copyText('{{ token }}')">
+      </button>
+
   </div>
 
   <div class="table-wrapper">
@@ -38,23 +48,23 @@
   </div>
 
   <div class="container">
-      <div class="add_form_1">
-          <div class="header_1">Add income</div>
+      <div class="add-form-1">
+          <div class="header-1">Add income</div>
           <form action="/household/{{ username }}" method="POST">
             <input type="text" id="income" name="income" placeholder="Income">
-            <input type="text" id="description_1" name="description_1" placeholder="Description">
-            <button type="submit" name="submit_button_1" id="submit_button_1">Add to table</button>
-            <button type="reset" id="clear_button_1">Clear</button>
+            <input type="text" id="description-1" name="description-1" placeholder="Description">
+            <button type="submit" name="submit-button-1" id="submit-button-1">Add to table</button>
+            <button type="reset" id="clear-button-1">Clear</button>
           </form>
         </div>
 
-      <div class="add_form_2">
-          <div class="header_2">Add expense</div>
+      <div class="add-form-2">
+          <div class="header-2">Add expense</div>
           <form action="/household/{{ username }}" method="POST">
             <input type="text" id="expense" name="expense" placeholder="Expense">
-            <input type="text" id="description_2" name="description_2" placeholder="Description">
-            <button type="submit" name="submit_button_2" id="submit_button_2">Add to table</button>
-            <button type="reset" id="clear_button_2">Clear</button>
+            <input type="text" id="description-2" name="description-2" placeholder="Description">
+            <button type="submit" name="submit-button-2" id="submit-button-2">Add to table</button>
+            <button type="reset" id="clear-button-2">Clear</button>
           </form>
         </div>
     </div>
@@ -68,7 +78,9 @@
   <footer>
       <div id="gradient-line"></div>
       <div class="content">
+          <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
           <p><a href="https://www.flaticon.com/free-icons/check-out" title="check out icons">Check out icons created by Infinite Dendrogram - Flaticon</a></p>
+          <p><a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by Ryan Adryawan - Flaticon</a></p>
       </div>
   </footer>
 </body>
