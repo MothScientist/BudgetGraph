@@ -1,5 +1,49 @@
 @import "styles.css";
 
+.sign-up-button{
+  position: absolute;
+  top: 10px;
+  right: 70px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.sign-in-button{
+  position: absolute;
+  top: 10px;
+  right: 70px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.tg-button{
+  position: absolute;
+  top: 8px;
+  right: 145px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 3%;
+  height: auto;
+}
+
+.github-button{
+  position: absolute;
+  top: 8px;
+  right: 220px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 2.8%;
+  height: auto;
+}
+
 .header-1 {
   font-size: 20px;
   font-weight: bold;

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
 
 # Database
-from database_control import get_db, close_db_g, create_table_group, FDataBase
+from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
 # Validators
 from validators.registration import registration_validator, token_validator
@@ -68,7 +68,7 @@ def registration():
 
                 telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
                 psw_salt: str = get_salt()
-                dbase = FDataBase(get_db())
+                dbase = DatabaseQueries(get_db())
 
                 if user_token := dbase.create_new_group(telegram_id):
 
@@ -86,7 +86,7 @@ def registration():
                 if group_id := token_validator(token):  # new variable "group_id" (int)
 
                     telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
-                    dbase = FDataBase(get_db())
+                    dbase = DatabaseQueries(get_db())
                     psw_salt: str = get_salt()
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
@@ -126,7 +126,7 @@ def login():
         username: str = request.form["username"]
         psw: str = request.form["password"]
         token: str = request.form["token"]
-        dbase = FDataBase(get_db())
+        dbase = DatabaseQueries(get_db())
         psw_salt: str = dbase.get_salt_by_username(username)
 
         if psw_salt and login_validator(username, getting_hash(psw, psw_salt), token):
@@ -148,7 +148,7 @@ def household(username):
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
 
-    dbase = FDataBase(get_db())
+    dbase = DatabaseQueries(get_db())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0 -> data = []
 
@@ -159,19 +159,17 @@ def household(username):
             income: int | bool = input_number(income)
 
             if not income:
-                app.logger.error(f"Error adding income to database (household): table: budget_{group_id}, "
-                                 f"username: {username}, income: {income}.")
                 flash("Error", category="error")
 
             else:
                 description_1 = request.form.get("description-1")
 
                 if dbase.add_monetary_transaction_to_db(group_id, username, income, description_1):
-                    app.logger.info(f"Successfully adding data to database (household): table: budget_{group_id}, "
+                    app.logger.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Data added successfully.", category="success")
                 else:
-                    app.logger.info(f"Error adding data to database (household): table: budget_{group_id}, "
+                    app.logger.info(f"Error adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Error adding data to database.", category="error")
 
@@ -180,21 +178,37 @@ def household(username):
             expense: int | bool = input_number(expense)
 
             if not expense:
-                app.logger.error(f"Error adding income to database (household): table: budget_{group_id}, "
-                                 f"username: {username}, income: {expense}.")
                 flash("Error", category="error")
 
             else:
                 description_2 = request.form.get("description-2")
 
                 if dbase.add_monetary_transaction_to_db(group_id, username, expense*(-1), description_2):
-                    app.logger.info(f"Successfully adding data to database (household): table: budget_{group_id}, "
+                    app.logger.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Data added successfully.", category="success")
                 else:
-                    app.logger.info(f"Error adding data to database (household): table: budget_{group_id}, "
+                    app.logger.info(f"Error adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Error adding data to database.", category="error")
+
+        elif "delete-record-submit-button" in request.form:
+            record_id: str = request.form.get("record-id")
+            record_id: int | bool = input_number(record_id)
+
+            if not record_id or not dbase.check_id_is_exist(group_id, record_id):
+                flash("Error. The format of the entered data is incorrect.", category="error")
+
+            else:
+                if dbase.delete_budget_entry_by_id(group_id, record_id):
+                    app.logger.info(f"Successful deletion record from database: table: budget_{group_id}, "
+                                    f"username: {username}, record id: {record_id}.")
+                    flash("Record successfully deleted", category="success")
+                else:
+                    app.logger.info(f"Error deletion record from database: table: budget_{group_id}, "
+                                    f"username: {username}, record id: {record_id}.")
+                    flash("Error deleting a record from the database. Check that the entered data is correct.",
+                          category="error")
 
     headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
     data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []

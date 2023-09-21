@@ -58,8 +58,8 @@ h3#token-place{
   display: flex;
   flex-direction: column;
   float: right;
-  top: 225px;
-  right: 75px;
+  top: 110px;
+  right: 50px;
 }
 
 .add-form-1, .add-form-2 {
@@ -70,11 +70,52 @@ h3#token-place{
   width: 210px;
 }
 
+.delete-record {
+  float: right;
+  background-color: #FFCCCC;
+  padding: 10px;
+  margin: 10px;
+  width: 210px;
+}
+
+.bin-img{
+  position: absolute;
+  bottom: 35px;
+  left: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 15%;
+  height: auto;
+}
+
+.income-img{
+  position: absolute;
+  top: 60px;
+  left: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 20%;
+  height: auto;
+}
+
+.expense-img{
+  position: absolute;
+  bottom: 165px;
+  left: -40px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 20%;
+  height: auto;
+}
+
 .add-form-1 form, .add-form-2 form {
   display: flex;
   flex-direction: column;
 }
-.add-form-1 input, .add-form-2 input {
+.add-form-1 input, .add-form-2 input, .delete-record input {
   margin-bottom: 10px;
 }
 

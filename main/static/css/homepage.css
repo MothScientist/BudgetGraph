@@ -14,7 +14,7 @@
 .sign-in-button{
   position: absolute;
   top: 8px;
-  right: 150px;
+  right: 145px;
   background-color: transparent;
   border: none;
   outline: none;
@@ -25,7 +25,7 @@
 .tg-button{
   position: absolute;
   top: 8px;
-  right: 235px;
+  right: 220px;
   background-color: transparent;
   border: none;
   outline: none;
@@ -36,7 +36,7 @@
 .github-button{
   position: absolute;
   top: 8px;
-  right: 315px;
+  right: 295px;
   background-color: transparent;
   border: none;
   outline: none;

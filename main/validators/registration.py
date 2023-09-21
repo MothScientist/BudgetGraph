@@ -1,5 +1,5 @@
 from flask import flash
-from database_control import get_db, FDataBase, connect_db, close_db_main
+from database_control import get_db, DatabaseQueries, connect_db, close_db_main
 import re
 
 
@@ -13,7 +13,7 @@ def registration_validator(username: str, psw: str, telegram_id: str) -> bool:
     if 3 <= len(username) <= 20 and not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username):
         if 4 <= len(psw) <= 128:
             if len(telegram_id) <= 12 and re.match(r'^\d+$', telegram_id):
-                dbase = FDataBase(get_db())
+                dbase = DatabaseQueries(get_db())
                 telegram_id: int = int(telegram_id)
                 if not dbase.get_id_by_username_or_telegram_id(username=username, telegram_id=telegram_id):
                     return True
@@ -35,7 +35,7 @@ def token_validator(token: str) -> int:
              x - if the group exists (x - group id)
     """
     connection = connect_db()
-    dbase = FDataBase(connection)
+    dbase = DatabaseQueries(connection)
     group_id = dbase.get_group_id_by_token(token)
     close_db_main(connection)
     return group_id

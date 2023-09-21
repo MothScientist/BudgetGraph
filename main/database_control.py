@@ -9,7 +9,7 @@ load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")
 
 
-class FDataBase:
+class DatabaseQueries:
     def __init__(self, db):
         self.__db = db
         self.__cur = db.cursor()
@@ -51,7 +51,7 @@ class FDataBase:
             print(str(e))
             return 0
 
-    def get_group_id_by_telegram_id(self, telegram_id: int) -> int:
+    def get_group_id_by_telegram_id(self, telegram_id: int) -> int | bool:
         """
         Get the group id using the telegram id.
         :return: id | False.
@@ -182,6 +182,45 @@ class FDataBase:
         except sqlite3.Error as e:
             print(str(e))
             return []
+
+    def select_group_users_by_group_id(self, group_id: int) -> list:
+        """
+
+        :param group_id:
+        :return:
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE group_id = ?", (group_id,))
+            result = self.__cur.fetchall()
+            username_list = [user[0] for user in result]
+            print(username_list)
+
+        except sqlite3.Error as e:
+            print(str(e))
+            return []
+
+        else:
+            return username_list
+
+    def check_id_is_exist(self, group_id: int, record_id: int) -> bool:
+        """
+
+        :param group_id:
+        :param record_id:
+        :return:
+        """
+        table_name = f"budget_{group_id}"
+        try:
+            self.__cur.execute(f"SELECT * FROM {table_name} WHERE id = ?", (record_id,))
+            res = self.__cur.fetchone()
+            if res:
+                return True
+            else:
+                return False
+
+        except sqlite3.Error as e:
+            print(str(e))
+            return False
 
 # Methods for inserting data into a database (INSERT)
 
@@ -321,13 +360,13 @@ def close_db_g(error) -> None:
         print("Database connection (g): CLOSED")
 
 
-def close_db_main(connection):
+def close_db_main(conn):
     """
     Closing a database connection.
     :return: None
     """
-    if connection:
-        connection.close()
+    if conn:
+        conn.close()
         print("Database connection (main): CLOSED")
 
 
@@ -384,4 +423,8 @@ def create_table_group(table_name: str) -> None:
 
 
 if __name__ == '__main__':
-    create_db()
+    # create_db()
+    connection = connect_db()
+    bot_db = DatabaseQueries(connection)
+    print(bot_db.check_id_is_exist(1, 9))
+    close_db_main(connection)
