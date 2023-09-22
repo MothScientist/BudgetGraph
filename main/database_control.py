@@ -423,8 +423,4 @@ def create_table_group(table_name: str) -> None:
 
 
 if __name__ == '__main__':
-     create_db()
-    #connection = connect_db()
-    #bot_db = DatabaseQueries(connection)
-    #print(bot_db.check_id_is_exist(1, 9))
-    #close_db_main(connection)
+    create_db()
