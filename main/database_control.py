@@ -75,7 +75,7 @@ class DatabaseQueries:
         :return: token | empty line
         """
         try:
-            self.__cur.execute("""SELECT token FROM Groups WHERE id = 
+            self.__cur.execute("""SELECT token FROM Groups WHERE id =
                                  (SELECT group_id FROM Users WHERE username = ?)""", (username,))
             res = self.__cur.fetchone()
             if res:
@@ -93,7 +93,7 @@ class DatabaseQueries:
         :return: token | empty line.
         """
         try:
-            self.__cur.execute("""SELECT token FROM Groups WHERE id = 
+            self.__cur.execute("""SELECT token FROM Groups WHERE id =
                                  (SELECT group_id FROM Users WHERE telegram_id = ?)""", (telegram_id,))
             res = self.__cur.fetchone()
             if res:
@@ -294,7 +294,7 @@ class DatabaseQueries:
         :return: None
         """
         try:
-            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime') 
+            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime')
             WHERE username = ?""", (username,))
             self.__db.commit()
 
@@ -423,8 +423,8 @@ def create_table_group(table_name: str) -> None:
 
 
 if __name__ == '__main__':
-    # create_db()
-    connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-    print(bot_db.check_id_is_exist(1, 9))
-    close_db_main(connection)
+     create_db()
+    #connection = connect_db()
+    #bot_db = DatabaseQueries(connection)
+    #print(bot_db.check_id_is_exist(1, 9))
+    #close_db_main(connection)

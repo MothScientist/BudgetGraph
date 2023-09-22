@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/env sh
 
 # Installing dependencies
-pip install -r requirements.txt || exit 1
+#pip install -r requirements.txt || exit 1
 
 # Go to the "main" directory
 cd main || exit 1
