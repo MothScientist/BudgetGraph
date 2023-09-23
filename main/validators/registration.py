@@ -10,7 +10,7 @@ def registration_validator(username: str, psw: str, telegram_id: str) -> bool:
     :param telegram_id:
     :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
     """
-    if 3 <= len(username) <= 20 and not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username):
+    if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username):
         if 4 <= len(psw) <= 128:
             if len(telegram_id) <= 12 and re.match(r'^\d+$', telegram_id):
                 dbase = DatabaseQueries(get_db())
@@ -39,3 +39,7 @@ def token_validator(token: str) -> int:
     group_id = dbase.get_group_id_by_token(token)
     close_db_main(connection)
     return group_id
+
+
+if __name__ == '__main__':
+    pass

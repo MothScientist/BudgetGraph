@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
-import re
 from datetime import timedelta
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
@@ -14,9 +13,7 @@ from validators.login import login_validator
 from validators.input_number import input_number
 
 # Logging
-from logging.handlers import RotatingFileHandler
-from logging import Formatter
-import logging
+from log_settings import setup_logger
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -28,24 +25,13 @@ app.config.from_object(__name__)
 
 # Get the secret key to encrypt the Flask session from an environment variable
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-db_path = os.getenv("DATABASE")
-
-app.config.update(dict(DATABASE=os.path.join(app.root_path, db_path)))
 
 app.teardown_appcontext(close_db_g)  # Disconnects the database connection after a query
 
 # session lifetime in browser cookies
 app.permanent_session_lifetime = timedelta(days=14)  # timedelta from datetime module
 
-app.config.from_object('config.DevelopmentConfig')
-# -----------------------------------------------------------------------------
-# Enabling, disabling and rotating logs.
-# -----------------------------------------------------------------------------
-handler = RotatingFileHandler(app.config['LOGFILE'], maxBytes=1000000, backupCount=1)
-handler.setLevel(logging.DEBUG)
-handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-# logging.disable(logging.CRITICAL)  # Termination of logs
-app.logger.addHandler(handler)
+logger_app = setup_logger("logs/AppLog.log", "app_loger")
 
 
 @app.route('/')
@@ -76,7 +62,7 @@ def registration():
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
-                        app.logger.info(f"Successful registration: {username}. New group created: id={group_id}.")
+                        logger_app.info(f"Successful registration: {username}. New group created: id={group_id}.")
                         flash("Registration completed successfully!", category="success")
                         flash(f"{username}, your token: {user_token}", category="success_token")
 
@@ -93,21 +79,21 @@ def registration():
 
                         # redirecting the user to a personal account (he already has a group token)
                         session["userLogged"] = username
-                        app.logger.info(f"Successful registration: {username}. Group: id={group_id}.")
+                        logger_app.info(f"Successful registration: {username}. Group: id={group_id}.")
                         return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
-                        app.logger.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
+                        logger_app.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
                         flash("Error creating user. Please try again and if the problem persists, "
                               "contact technical support.", category="error")
                 else:
-                    app.logger.info(f"The user entered an incorrect token: username = {username}, token = {token}.")
+                    logger_app.info(f"The user entered an incorrect token: username = {username}, token = {token}.")
                     flash("There is no group with this token, please check the correctness of the entered data!",
                           category="error")
 
         # User made a mistake when entering the token
         if len(token) > 0 and len(token) != 32:
-            app.logger.info(f"The user entered a token of incorrect length: {token}.")
+            logger_app.info(f"The user entered a token of incorrect length: {token}.")
             flash("Error - token length must be 32 characters", category="error")
 
     return render_template("registration.html", title="Budget control - Registration")
@@ -118,7 +104,7 @@ def login():
     session.permanent = True
 
     if "userLogged" in session:  # If the client has logged in before
-        app.logger.info(f"Successful authorization (cookies): {session['userLogged']}.")
+        logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
         return redirect(url_for("household", username=session["userLogged"]))
 
     # here the POST request is checked and the presence of the user in the database is checked
@@ -133,7 +119,7 @@ def login():
 
             session["userLogged"] = username
             dbase.update_user_last_login(username)
-            app.logger.info(f"Successful authorization: {username}.")
+            logger_app.info(f"Successful authorization: {username}.")
             return redirect(url_for("household", username=session["userLogged"]))
 
         else:
@@ -165,11 +151,11 @@ def household(username):
                 description_1 = request.form.get("description-1")
 
                 if dbase.add_monetary_transaction_to_db(group_id, username, income, description_1):
-                    app.logger.info(f"Successfully adding data to database: table: budget_{group_id}, "
+                    logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Data added successfully.", category="success")
                 else:
-                    app.logger.info(f"Error adding data to database: table: budget_{group_id}, "
+                    logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, income: {income}, description: {description_1}.")
                     flash("Error adding data to database.", category="error")
 
@@ -184,11 +170,11 @@ def household(username):
                 description_2 = request.form.get("description-2")
 
                 if dbase.add_monetary_transaction_to_db(group_id, username, expense*(-1), description_2):
-                    app.logger.info(f"Successfully adding data to database: table: budget_{group_id}, "
+                    logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Data added successfully.", category="success")
                 else:
-                    app.logger.info(f"Error adding data to database: table: budget_{group_id}, "
+                    logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Error adding data to database.", category="error")
 
@@ -201,11 +187,11 @@ def household(username):
 
             else:
                 if dbase.delete_budget_entry_by_id(group_id, record_id):
-                    app.logger.info(f"Successful deletion record from database: table: budget_{group_id}, "
+                    logger_app.info(f"Successful deletion record from database: table: budget_{group_id}, "
                                     f"username: {username}, record id: {record_id}.")
                     flash("Record successfully deleted", category="success")
                 else:
-                    app.logger.info(f"Error deletion record from database: table: budget_{group_id}, "
+                    logger_app.info(f"Error deletion record from database: table: budget_{group_id}, "
                                     f"username: {username}, record id: {record_id}.")
                     flash("Error deleting a record from the database. Check that the entered data is correct.",
                           category="error")
@@ -219,7 +205,7 @@ def household(username):
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    app.logger.info(f"Successful logout: {session['userLogged']}.")
+    logger_app.info(f"Successful logout: {session['userLogged']}.")
     session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
     return redirect(url_for('homepage'))  # redirecting the user to another page, such as the homepage
 

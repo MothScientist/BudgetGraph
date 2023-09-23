@@ -13,12 +13,18 @@ from validators.input_number import input_number
 from validators.registration import token_validator
 from secrets import compare_digest
 
+# Logging
+from log_settings import setup_logger
+
 
 def main():
 
     load_dotenv()  # Load environment variables from .env file
+
     bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
     bot = telebot.TeleBot(bot_token)
+
+    logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
 
     @bot.message_handler(commands=['start'])
     def start(message) -> None:
@@ -58,12 +64,14 @@ def main():
                                               f"We recognized you. Welcome!", reply_markup=markup_1)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
+            logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
         else:
             bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name}!\n"
                                               f"We didn't recognize you. Would you like to register in the project?",
                              reply_markup=markup_2)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
+            logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
 
         close_db_main(connection)
 
@@ -191,7 +199,7 @@ def main():
         bot_db = DatabaseQueries(connection)
 
         if (3 <= len(username) <= 20 and
-                not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username) and
+                re.match(r"^[a-zA-Z0-9]+$", username) and
                 not bot_db.get_id_by_username_or_telegram_id(username=username)):
             bot.send_message(message.chat.id, "Accepted the data! Let's continue!")
             bot.send_message(message.chat.id, "Enter your password (4-128 characters):")

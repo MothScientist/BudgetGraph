@@ -1,12 +1,20 @@
 from flask import g
 import sqlite3
-import os
 from dotenv import load_dotenv
+import os
 from token_generation import get_token
+
+# Validators
 from validators.table_name import table_name_validator
+
+# Logging
+import logging
+from log_settings import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")
+
+logger_database = setup_logger("logs/DatabaseLog.log", "db_logger", level=logging.DEBUG)
 
 
 class DatabaseQueries:
@@ -30,8 +38,8 @@ class DatabaseQueries:
             else:
                 return False
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {telegram_id}")
             return False
 
     def get_group_id_by_token(self, token: str) -> int:
@@ -47,8 +55,8 @@ class DatabaseQueries:
             else:
                 return 0
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {token}")
             return 0
 
     def get_group_id_by_telegram_id(self, telegram_id: int) -> int | bool:
@@ -65,8 +73,8 @@ class DatabaseQueries:
             else:
                 return False
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {telegram_id}")
             return False
 
     def get_token_by_username(self, username: str) -> str:
@@ -83,8 +91,8 @@ class DatabaseQueries:
             else:
                 return ""
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {username}")
             return ""
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
@@ -101,8 +109,8 @@ class DatabaseQueries:
             else:
                 return ""
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {telegram_id}")
             return ""
 
     def get_salt_by_username(self, username: str) -> str | bool:
@@ -118,8 +126,8 @@ class DatabaseQueries:
             else:
                 return False
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {username}")
             return False
 
     def get_id_by_username_or_telegram_id(self, username: str = "", telegram_id: int = 0) -> bool:
@@ -141,8 +149,8 @@ class DatabaseQueries:
             else:
                 return False
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: tg id: {telegram_id}, username: {username}")
             return False
 
     def auth_by_username(self, username: str, psw_hash: str, token: str) -> bool:
@@ -160,8 +168,8 @@ class DatabaseQueries:
             else:
                 return False
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: username: {username}, psw_hash: {psw_hash}, token: {token}")
             return False
 
     def select_data_for_household_table(self, group_id: int, n: int) -> list:
@@ -179,8 +187,8 @@ class DatabaseQueries:
             result_list = [list(row) for row in result]
             return result_list
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: group id: {group_id}, n: {n}, table name: {table_name}")
             return []
 
     def select_group_users_by_group_id(self, group_id: int) -> list:
@@ -195,8 +203,8 @@ class DatabaseQueries:
             username_list = [user[0] for user in result]
             print(username_list)
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
             return []
 
         else:
@@ -218,8 +226,9 @@ class DatabaseQueries:
             else:
                 return False
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: group id: {group_id}, record id: {record_id}, "
+                                  f"table name: {table_name}")
             return False
 
 # Methods for inserting data into a database (INSERT)
@@ -235,8 +244,9 @@ class DatabaseQueries:
                                (username, psw_salt, psw_hash, group_id, telegram_id,))
             self.__db.commit()
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: username: {username}, psw_salt: {psw_salt}, "
+                                  f"psw_hash: {psw_hash}, group_id: {group_id}, telegram_id: {telegram_id}")
             return False
 
         else:
@@ -261,8 +271,9 @@ class DatabaseQueries:
                 (amount, username, amount, description))
             self.__db.commit()
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: group id: {group_id}, table name: {table_name}, "
+                                  f"username: {username}, amount: {amount}, description: {description}")
             return False
 
         else:
@@ -279,8 +290,8 @@ class DatabaseQueries:
             self.__cur.execute("INSERT INTO Groups VALUES(NULL, ?, ?)", (owner, token,))
             self.__db.commit()
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: owner (telegram id): {owner}")
             return False
 
         else:
@@ -298,8 +309,8 @@ class DatabaseQueries:
             WHERE username = ?""", (username,))
             self.__db.commit()
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: username: {username}")
 
 # Methods for deleting database data (DELETE)
 
@@ -316,8 +327,9 @@ class DatabaseQueries:
             self.__cur.execute(f"""DELETE FROM {table_name} WHERE id = ?""", (record_id,))
             self.__db.commit()
 
-        except sqlite3.Error as e:
-            print(str(e))
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: group id: {group_id}, record id: {record_id}, "
+                                  f"table name: {table_name}")
             return False
 
         else:
@@ -329,14 +341,15 @@ def connect_db():
     Connect to a database.
     :return: connection | None
     """
+    logger = logging.getLogger('db_logger')
     try:
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
-        print("Database connection (main): OK")
+        logger.debug("Database connection (main): OK")
         return conn
 
-    except sqlite3.Error as e:
-        print(str(e))
+    except sqlite3.Error as err:
+        print(str(err))
 
 
 def get_db():
@@ -344,9 +357,10 @@ def get_db():
     Connect to a database using a Flask application object.
     :return: connection
     """
+    logger = logging.getLogger('db_logger')
     if not hasattr(g, "link_db"):
         g.link_db = connect_db()
-        print("Database connection (g): OK")
+        logger.debug("Database connection (g): OK")
     return g.link_db
 
 
@@ -355,9 +369,10 @@ def close_db_g(error) -> None:
     Closing a database connection using a Flask application object.
     :return: None
     """
+    logger = logging.getLogger('db_logger')
     if hasattr(g, "link_db"):
         g.link_db.close()
-        print("Database connection (g): CLOSED")
+        logger.debug("Database connection (g): CLOSED")
 
 
 def close_db_main(conn):
@@ -365,9 +380,10 @@ def close_db_main(conn):
     Closing a database connection.
     :return: None
     """
+    logger = logging.getLogger('db_logger')
     if conn:
         conn.close()
-        print("Database connection (main): CLOSED")
+        logger.debug("Database connection (main): CLOSED")
 
 
 def create_db() -> None:
@@ -385,8 +401,8 @@ def create_db() -> None:
         conn.commit()
         close_db_main(conn)
 
-    except sqlite3.Error as e:
-        print(str(e))
+    except sqlite3.Error as err:
+        logger_database.error(f"{str(err)}")
 
 
 def create_table_group(table_name: str) -> None:
@@ -415,11 +431,11 @@ def create_table_group(table_name: str) -> None:
         conn.commit()
         conn.close()
 
-    except sqlite3.Error as e:
-        print(str(e))
+    except sqlite3.Error as err:
+        logger_database.error(f"{str(err)}, Table name: {table_name}")
 
-    except ValueError as e:
-        print(str(e))
+    except ValueError as err:
+        logger_database.error(f"{str(err)}, Value (table name): {table_name}")
 
 
 if __name__ == '__main__':
