@@ -130,29 +130,6 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: {username}")
             return False
 
-    def get_id_by_username_or_telegram_id(self, username: str = "", telegram_id: int = 0) -> bool:
-        """
-        Checking user existence in database
-        :param username: (default = "")
-        :param telegram_id: (default = 0)
-        :return: True | False
-        """
-        try:
-            self.__cur.execute("""SELECT id FROM Users WHERE telegram_id = ?""", (telegram_id,))
-            res_link = self.__cur.fetchone()
-
-            self.__cur.execute("""SELECT id FROM Users WHERE username = ?""", (username,))
-            res_username = self.__cur.fetchone()
-
-            if res_link or res_username:  # If a user with this link or name is found
-                return True
-            else:
-                return False
-
-        except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Params: tg id: {telegram_id}, username: {username}")
-            return False
-
     def auth_by_username(self, username: str, psw_hash: str, token: str) -> bool:
         """
         Function to confirm user authorization using 3 parameters
@@ -242,6 +219,42 @@ class DatabaseQueries:
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: new token: {token}")
+            return False
+
+    def check_telegram_id_is_unique(self, telegram_id: int) -> bool:
+        """
+
+        :param telegram_id:
+        :return:
+        """
+        try:
+            self.__cur.execute(f"SELECT * FROM Users WHERE telegram_id = ?", (telegram_id,))
+            res = self.__cur.fetchone()
+            if res:
+                return False
+            else:
+                return True
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: telegram ID: {telegram_id}")
+            return False
+
+    def check_username_is_unique(self, username: str) -> bool:
+        """
+
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute(f"SELECT * FROM Users WHERE username = ?", (username,))
+            res = self.__cur.fetchone()
+            if res:
+                return False
+            else:
+                return True
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: username: {username}")
             return False
 
 # Methods for inserting data into a database (INSERT)
