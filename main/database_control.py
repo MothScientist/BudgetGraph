@@ -231,6 +231,19 @@ class DatabaseQueries:
                                   f"table name: {table_name}")
             return False
 
+    def check_token_is_unique(self, token: str) -> bool:
+        try:
+            self.__cur.execute(f"SELECT * FROM Groups WHERE token = ?", (token,))
+            res = self.__cur.fetchone()
+            if res:
+                return False
+            else:
+                return True
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: new token: {token}")
+            return False
+
 # Methods for inserting data into a database (INSERT)
 
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
@@ -285,8 +298,14 @@ class DatabaseQueries:
         :param owner: link to the telegram of the user who initiates the creation of the group.
         :return: token | False
         """
-        try:
+        token = get_token()
+        token_is_unique: bool = self.check_token_is_unique(token)
+
+        while not token_is_unique:  # checking the token for uniqueness
             token = get_token()
+            token_is_unique = self.check_token_is_unique(token)
+
+        try:
             self.__cur.execute("INSERT INTO Groups VALUES(NULL, ?, ?)", (owner, token,))
             self.__db.commit()
 

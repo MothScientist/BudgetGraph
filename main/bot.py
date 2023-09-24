@@ -1,9 +1,11 @@
-import telebot
-from telebot import types
 from os import getenv
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
 import re
+
+# Telegram bot
+import telebot
+from telebot import types
 
 # Database
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
