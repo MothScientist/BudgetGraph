@@ -3,14 +3,15 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
+import asyncio
 
 # Database
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
 # Validators
-from validators.registration import registration_validator, token_validator
-from validators.login import login_validator
+from validators.registration import registration_validator
 from validators.input_number import input_number
+from validators.token import token_validator
 
 # Logging
 from log_settings import setup_logger
@@ -50,7 +51,7 @@ def registration():
 
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
-            if registration_validator(username, psw, telegram_id):
+            if asyncio.run(registration_validator(username, psw, telegram_id)):
 
                 telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
                 psw_salt: str = get_salt()
@@ -68,7 +69,7 @@ def registration():
 
         # User is added to an existing group
         if len(token) == 32:
-            if registration_validator(username, psw, telegram_id):
+            if asyncio.run(registration_validator(username, psw, telegram_id)):
                 if group_id := token_validator(token):  # new variable "group_id" (int)
 
                     telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
@@ -115,7 +116,7 @@ def login():
         dbase = DatabaseQueries(get_db())
         psw_salt: str = dbase.get_salt_by_username(username)
 
-        if psw_salt and login_validator(username, getting_hash(psw, psw_salt), token):
+        if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt), token):
 
             session["userLogged"] = username
             dbase.update_user_last_login(username)
@@ -123,7 +124,7 @@ def login():
             return redirect(url_for("household", username=session["userLogged"]))
 
         else:
-            flash("Error. Please try again.", category="error")
+            flash("This user doesn't exist.", category="error")
         # request.args - GET, request.form - POST
 
     return render_template("login.html", title="Budget control - Login")

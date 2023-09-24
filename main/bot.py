@@ -1,7 +1,7 @@
 from os import getenv
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
-import re
+import asyncio
 
 # Telegram bot
 import telebot
@@ -11,8 +11,9 @@ from telebot import types
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
 # Validators
+from validators.registration import username_validator, password_validator
 from validators.input_number import input_number
-from validators.registration import token_validator
+from validators.token import token_validator
 from secrets import compare_digest
 
 # Logging
@@ -197,20 +198,14 @@ def main():
     def process_username(message):
 
         username: str = message.text
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
 
-        if (3 <= len(username) <= 20 and
-                re.match(r"^[a-zA-Z0-9]+$", username) and
-                not bot_db.get_id_by_username_or_telegram_id(username=username)):
+        if asyncio.run(username_validator(username)):
             bot.send_message(message.chat.id, "Accepted the data! Let's continue!")
-            bot.send_message(message.chat.id, "Enter your password (4-128 characters):")
+            bot.send_message(message.chat.id, "Enter your password (8-32 characters / at least 1 number and 1 letter):")
             bot.register_next_step_handler(message, process_psw, username)
         else:
-            bot.send_message(message.chat.id, "This username already exists!")
+            bot.send_message(message.chat.id, "Invalid username format or this username already exists!")
             start(message)
-
-        close_db_main(connection)
 
     def process_psw(message, username: str):
 
@@ -220,7 +215,7 @@ def main():
 
         psw: str = message.text
 
-        if 4 <= len(psw) <= 128:
+        if asyncio.run(password_validator(psw)):
             psw_salt: str = get_salt()
             psw: str = getting_hash(psw, psw_salt)
 

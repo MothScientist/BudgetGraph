@@ -36,9 +36,9 @@
     <div class="form">
       <div class="header-1">Login</div>
       <form action="/login" method="POST">
-        <input type="text" id="username" name="username" placeholder="Your name">
-        <input type="password" id="token" name="token" placeholder="Token">
-        <input type="password" id="password" name="password" placeholder="Password">
+        <input type="text" id="username" name="username" placeholder="Your name" maxlength="20">
+        <input type="password" id="token" name="token" placeholder="Token" maxlength="32">
+        <input type="password" id="password" name="password" placeholder="Password" maxlength="32">
         <button type="submit" class="link-button">Sign in!</button>
         <button type="reset" id="clear-button">Clear</button>
       </form>
