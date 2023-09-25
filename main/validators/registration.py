@@ -3,6 +3,9 @@ from database_control import DatabaseQueries, connect_db, close_db_main
 import re
 import asyncio
 
+# Timeit decorator
+from time_checking import timeit
+
 
 async def username_validator(username: str) -> bool:
     connection = connect_db()
@@ -41,6 +44,7 @@ async def telegram_id_validator(telegram_id: str) -> bool:
         return False
 
 
+@timeit
 async def registration_validator(username: str, psw: str, telegram_id: str) -> bool:
     """
     :param username: 3 to 15 characters
