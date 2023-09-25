@@ -37,10 +37,10 @@
     <div class="form">
       <div class="header-2">Registration</div>
       <form action="/registration" method="POST">
-        <input type="text" id="username" name="username" placeholder="Your name (3-20 characters)">
-        <input type="text" id="telegram-id" name="telegram-id" placeholder="Your telegram ID">
-        <input type="password" id="password" name="password" placeholder="Password (4-128 characters)">
-        <input type="password" id="token" name="token" placeholder="Token (if you are adding to an existing group)">
+        <input type="text" id="username" name="username" placeholder="Your name (3-20 characters)" maxlength="20">
+        <input type="text" id="telegram-id" name="telegram-id" placeholder="Your telegram ID" maxlength="12">
+        <input type="password" id="password" name="password" placeholder="Password (8-32 characters / at least 1 number and 1 letter)" maxlength="32">
+        <input type="password" id="token" name="token" placeholder="Token (if you are adding to an existing group)" maxlength="32">
         <button type="submit" id="signup-button" class="link-button" disabled>Sign up!</button>
         <label for="agree-checkbox">
           <input id="agree-checkbox" type="checkbox" required> I agree with <a href="\">the conditions</a>

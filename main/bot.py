@@ -1,24 +1,33 @@
-import telebot
-from telebot import types
 from os import getenv
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
-import re
+import asyncio
+
+# Telegram bot
+import telebot
+from telebot import types
 
 # Database
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
 # Validators
+from validators.registration import username_validator, password_validator
 from validators.input_number import input_number
-from validators.registration import token_validator
+from validators.token import token_validator
 from secrets import compare_digest
+
+# Logging
+from log_settings import setup_logger
 
 
 def main():
 
     load_dotenv()  # Load environment variables from .env file
+
     bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
     bot = telebot.TeleBot(bot_token)
+
+    logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
 
     @bot.message_handler(commands=['start'])
     def start(message) -> None:
@@ -58,12 +67,14 @@ def main():
                                               f"We recognized you. Welcome!", reply_markup=markup_1)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
+            logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
         else:
             bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name}!\n"
                                               f"We didn't recognize you. Would you like to register in the project?",
                              reply_markup=markup_2)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
+            logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
 
         close_db_main(connection)
 
@@ -187,20 +198,14 @@ def main():
     def process_username(message):
 
         username: str = message.text
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
 
-        if (3 <= len(username) <= 20 and
-                not re.match(r'^[$\\/\\-_#@&*№!:;\'",`~]', username) and
-                not bot_db.get_id_by_username_or_telegram_id(username=username)):
+        if asyncio.run(username_validator(username)):
             bot.send_message(message.chat.id, "Accepted the data! Let's continue!")
-            bot.send_message(message.chat.id, "Enter your password (4-128 characters):")
+            bot.send_message(message.chat.id, "Enter your password (8-32 characters / at least 1 number and 1 letter):")
             bot.register_next_step_handler(message, process_psw, username)
         else:
-            bot.send_message(message.chat.id, "This username already exists!")
+            bot.send_message(message.chat.id, "Invalid username format or this username already exists!")
             start(message)
-
-        close_db_main(connection)
 
     def process_psw(message, username: str):
 
@@ -210,7 +215,7 @@ def main():
 
         psw: str = message.text
 
-        if 4 <= len(psw) <= 128:
+        if asyncio.run(password_validator(psw)):
             psw_salt: str = get_salt()
             psw: str = getting_hash(psw, psw_salt)
 
