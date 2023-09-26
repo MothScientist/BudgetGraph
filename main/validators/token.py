@@ -1,4 +1,4 @@
-from database_control import get_db, DatabaseQueries, connect_db, close_db_main
+from database_control import DatabaseQueries, connect_db, close_db_main
 
 
 def token_validator(token: str) -> int:

@@ -377,7 +377,7 @@ def connect_db():
     try:
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
-        logger.debug("Database connection (main): OK")
+        logger.debug("Database connection (main): OPEN")
         return conn
 
     except sqlite3.Error as err:
@@ -392,7 +392,7 @@ def get_db():
     logger = logging.getLogger('db_logger')
     if not hasattr(g, "link_db"):
         g.link_db = connect_db()
-        logger.debug("Database connection (g): OK")
+        logger.debug("Database connection (g): OPEN")
     return g.link_db
 
 

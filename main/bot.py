@@ -19,6 +19,9 @@ from secrets import compare_digest
 # Logging
 from log_settings import setup_logger
 
+# Timeit decorator
+from time_checking import timeit
+
 
 def main():
 
@@ -118,15 +121,18 @@ def main():
         bot.register_next_step_handler(message, process_transfer, True)
 
     @bot.message_handler(commands=['delete_record'])
+    @timeit
     def delete_record(message):
         bot.send_message(message.chat.id, f"Enter the record ID:")
         bot.register_next_step_handler(message, process_delete_record)
 
     @bot.message_handler(commands=['view_table'])
+    @timeit
     def view_table(message) -> None:
         pass
 
     @bot.message_handler(commands=['registration'])
+    @timeit
     def registration(message) -> None:
 
         connection = connect_db()
@@ -152,14 +158,15 @@ def main():
 
             telegram_id: int = message.from_user.id
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+
             if group_id and bot_db.check_id_is_exist(group_id, record_id):
                 bot_db.delete_budget_entry_by_id(group_id, record_id)
                 bot.send_message(message.chat.id, "Successfully.")
-
             else:
                 bot.send_message(message.chat.id, "There is no record with this ID.")
 
             close_db_main(connection)
+
         else:
             bot.send_message(message.chat.id, "Invalid value.")
 
@@ -242,43 +249,37 @@ def main():
                 group_id: int = token_validator(user_token)
 
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
-                    close_db_main(connection)
                     create_table_group(f"budget_{group_id}")
                     bot.send_message(message.chat.id, "Congratulations on registering!")
                     bot.send_sticker(message.chat.id,
                                      "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
                     bot.send_message(message.chat.id, "Your token:")
                     bot.send_message(message.chat.id, user_token)
-                    start(message)
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
-                    start(message)
 
             else:
                 bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
-                start(message)
 
         elif len(token) == 32:
             telegram_id: int = message.from_user.id
 
             if group_id := token_validator(token):  # # new variable "group_id" (int)
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
-                    close_db_main(connection)
                     bot.send_message(message.chat.id, "Congratulations on registering!")
-                    start(message)
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
-                    start(message)
             else:
                 bot.send_message(message.chat.id, "There is no group with this token. "
                                                   "Contact the group members for more information, "
                                                   "or create your own group!")
-                start(message)
 
         else:
             bot.send_message(message.chat.id, "This is not a valid token format, "
                                               "please check if it is correct or send 'None'!")
-            start(message)
+
+        close_db_main(connection)
+        start(message)
 
     @bot.message_handler(content_types=['text'])
     def text(message) -> None:
