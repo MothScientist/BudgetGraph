@@ -35,22 +35,7 @@ footer {
   height: 150px;
   width: 100%;
   background-color: transparent;
-}
-
-#gradient-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 2px;
-  width: 100%;
-  background: linear-gradient(to right, red, yellow, green, blue);
-  background-size: 800% 100%;
-  animation: gradientAnimation 8s ease infinite;
-}
-
-@keyframes gradientAnimation {
-  0% { background-position: 0 0; }
-  100% { background-position: 100% 0; }
+  border-top: 2px solid blue;
 }
 
 .content {
@@ -68,6 +53,7 @@ footer a {
 }
 
 footer a:hover {
+  color: blue;
   text-decoration: none;
 }
 
@@ -87,7 +73,6 @@ footer a::after {
 footer a:hover::after {
   transform: scaleX(1);
 }
-
 
 p {
   margin: 5px;

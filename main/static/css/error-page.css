@@ -31,3 +31,9 @@
 .link-back-404{
   color: greenyellow;
 }
+
+footer a {
+  position: relative;
+  transition: color 0.3s ease-in-out;
+  color: white;
+}
