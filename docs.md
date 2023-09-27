@@ -1,3 +1,7 @@
+## **Disclaimer**
+All functions in this manual are described with abbreviations and simplified syntax - this is necessary to improve understanding of the principles of the project.</br></br>
+For a more accurate understanding, please look directly at these functions themselves in the project source code.
+
 ### Logging
 
 #### How does the log settings function work?
@@ -125,10 +129,75 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
 3. ```else``` - errors when entering a token
 
 #### Site
-...
+On the site, all registration functionality occurs within one function, calling the necessary validations and database methods.
+```python3
+@app.route('/registration', methods=["GET", "POST"])
+def registration():
+```
+The difference from registration via a bot is that all 3 validations occur simultaneously and asynchronously:
+```python3
+asyncio.run(registration_validator(username, psw, telegram_id))
+```
+#### Validations:
+```python3
+async def username_validator(username: str) -> bool:
+    username_is_unique = check_username_is_unique(username)
+
+    if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and username_is_unique:
+        return True
+
+    else:
+        return False
+
+
+async def password_validator(psw: str) -> bool:
+    if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,32}$', psw):
+        return True
+    else:
+        return False
+
+
+async def telegram_id_validator(telegram_id: str) -> bool:
+    if re.match(r'^[1-9]\d{2,11}$', telegram_id):
+        telegram_id: int = int(telegram_id)
+    else:
+        return False
+
+    telegram_id_is_unique = check_telegram_id_is_unique(telegram_id)
+
+    if telegram_id_is_unique:
+        return True
+    else:
+        return False
+```
 
 ### Login
 #### Bot
-...
+Authorization in telegram occurs without user participation; when sending the /start command, we automatically check the presence of this telegram ID in the database.
+```python3
+telegram_id: int = message.from_user.id
+res: bool | str = get_username_by_telegram_id(telegram_id)
+
+    if res:
+        update_user_last_login(res)
+```
 #### Site
-...
+First, we check the user session in the browser cookies
+```python3
+if "userLogged" in session:
+    return redirect(url_for("household", username=session["userLogged"]))
+```
+If not, then we display the html registration page, where we then check the correctness of the entered data in accordance with the information stored in the database.
+```python3
+    if request.method == "POST":
+        username: str = request.form["username"]
+        psw: str = request.form["password"]
+        token: str = request.form["token"
+        psw_salt: str = get_salt_by_username(username)
+
+        if psw_salt and auth_by_username(username, getting_hash(psw, psw_salt), token):
+
+            session["userLogged"] = username
+            update_user_last_login(username)
+            return redirect(url_for("household", username=session["userLogged"]))
+```
