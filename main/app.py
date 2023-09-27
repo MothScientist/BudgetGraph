@@ -108,7 +108,7 @@ def login():
         logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
         return redirect(url_for("household", username=session["userLogged"]))
 
-    # here the POST request is checked and the presence of the user in the database is checked
+    # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
         username: str = request.form["username"]
         psw: str = request.form["password"]
