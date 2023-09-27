@@ -16,18 +16,6 @@ header {
     margin-bottom: 10px;
 }
 
-.link-button {
-  background-image: linear-gradient(to right, #ff0000, #0000ff);
-  background-color: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  color: #fff;
-  padding: 0.7% 2.3%;
-  font-size: 16px;
-  border-radius: 4px;
-}
-
 footer {
   position: fixed;
   bottom: 0;
@@ -75,5 +63,5 @@ footer a:hover::after {
 }
 
 p {
-  margin: 5px;
+  margin: 3px;
 }

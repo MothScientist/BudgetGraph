@@ -107,7 +107,7 @@ input[type="password"] {
   padding: 5px;
 }
 
-#clear-button {
+.clear-button {
   position: fixed;
   left: 50%;
   bottom: 350px;
@@ -120,6 +120,24 @@ input[type="password"] {
   padding: 8px 16px;
   font-size: 16px;
   border-radius: 4px;
+}
+
+.link-button {
+  background-image: linear-gradient(to right, deepskyblue, blue);
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 0.7% 2.3%;
+  font-size: 16px;
+  border-radius: 4px;
+  animation: gradient 5s ease-in-out infinite;
+}
+@keyframes gradient {
+  0% { background: deepskyblue; }
+  50% { background: blue; }
+  100% { background: deepskyblue; }
 }
 
 .flash.success{

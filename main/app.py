@@ -204,6 +204,12 @@ def household(username):
                            token=token, username=username, data=data, headers=headers)
 
 
+@app.route('/conditions')  # Privacy Policy page
+def conditions():
+    return render_template("conditions.html", title="Usage Policy", site_name="", site_url="",
+                           contact_email="", contact_url="", )
+
+
 @app.route('/logout', methods=['GET'])
 def logout():
     logger_app.info(f"Successful logout: {session['userLogged']}.")
