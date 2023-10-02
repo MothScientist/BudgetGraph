@@ -108,7 +108,7 @@ def login():
         logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
         return redirect(url_for("household", username=session["userLogged"]))
 
-    # here the POST request is checked and the presence of the user in the database is checked
+    # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
         username: str = request.form["username"]
         psw: str = request.form["password"]
@@ -202,6 +202,12 @@ def household(username):
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)
+
+
+@app.route('/conditions')  # Privacy Policy page
+def conditions():
+    return render_template("conditions.html", title="Usage Policy", site_name="", site_url="",
+                           contact_email="", contact_url="", )
 
 
 @app.route('/logout', methods=['GET'])

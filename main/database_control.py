@@ -26,7 +26,7 @@ class DatabaseQueries:
 
     def get_username_by_telegram_id(self, telegram_id: int) -> bool | str:
         """
-        Get username in the Users table by telegram_link value.
+        get username in the Users table by telegram_link value.
         :return: username or False
         """
         try:
@@ -44,7 +44,7 @@ class DatabaseQueries:
 
     def get_group_id_by_token(self, token: str) -> int:
         """
-        Get the group id using the group token.
+        get the group id using the group token.
         :return: id | 0
         """
         try:
@@ -61,7 +61,7 @@ class DatabaseQueries:
 
     def get_group_id_by_telegram_id(self, telegram_id: int) -> int | bool:
         """
-        Get the group id using the telegram id.
+        get the group id using the telegram id.
         :return: id | False.
         """
         try:
@@ -79,7 +79,7 @@ class DatabaseQueries:
 
     def get_token_by_username(self, username: str) -> str:
         """
-        Get the group token using the username.
+        get the group token using the username.
         :return: token | empty line
         """
         try:
@@ -97,7 +97,7 @@ class DatabaseQueries:
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
         """
-        Get the group token using the telegram link.
+        get the group token using the telegram link.
         :return: token | empty line.
         """
         try:
@@ -116,7 +116,7 @@ class DatabaseQueries:
     def get_salt_by_username(self, username: str) -> str | bool:
         """
         Get hash salt using username
-        :return: salt | False (if this username is not in database)
+        :return: salt | False (if this username is not in the database)
         """
         try:
             self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
@@ -132,7 +132,7 @@ class DatabaseQueries:
 
     def auth_by_username(self, username: str, psw_hash: str, token: str) -> bool:
         """
-        Function to confirm user authorization using 3 parameters
+        Function to confirm user authorization using three parameters
         :return: True | False
         """
         try:
@@ -151,7 +151,7 @@ class DatabaseQueries:
 
     def select_data_for_household_table(self, group_id: int, n: int) -> list:
         """
-        Returns the specified number of rows (starting with the most recent) from the budget table.
+        returns the specified number of rows (starting with the most recent) from the budget table.
         :param group_id:
         :param n: number of rows returned.
         :return: list of n elements | empty list
@@ -281,12 +281,12 @@ class DatabaseQueries:
     def add_monetary_transaction_to_db(self, group_id: int, username: str, amount: int, description: str = "")\
             -> bool:
         """
-        Submits the "add_expense" and "add_income" forms to the database.
+        submits the "add_expense" and "add_income" forms to the database.
         :param group_id:
-        :param username: the name of the user making the changes.
+        :param username: the name of the user is making the changes.
         :param amount: value of the deposited amount.
         :param description: optional parameter.
-        :return: True | False
+        :return: true | False
         """
         table_name = f"budget_{group_id}"
 
@@ -307,7 +307,7 @@ class DatabaseQueries:
 
     def create_new_group(self, owner: int) -> str | bool:
         """
-        creating a new group in the Groups table and generate new token for this group.
+        creating a new group in the Groups table and generate a new token for this group.
         :param owner: link to the telegram of the user who initiates the creation of the group.
         :return: token | False
         """
@@ -334,7 +334,7 @@ class DatabaseQueries:
     def update_user_last_login(self, username: str) -> None:
         """
         changes the user's last login time in the last_login column in the Users table.
-        :return: None
+        :return: none
         """
         try:
             self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime')
@@ -348,7 +348,7 @@ class DatabaseQueries:
 
     def delete_budget_entry_by_id(self, group_id: int, record_id: int) -> bool:
         """
-        Removes an entry from the group budget table.
+        removes an entry from the group budget table.
         :param group_id:
         :param record_id: row id in the table
         :return: True | False
@@ -386,7 +386,7 @@ def connect_db():
 
 def get_db():
     """
-    Connect to a database using a Flask application object.
+    connect to a database using a Flask application object.
     :return: connection
     """
     logger = logging.getLogger('db_logger')
@@ -420,7 +420,7 @@ def close_db_main(conn):
 
 def create_db() -> None:
     """
-    Creates 2 main tables: Users and Groups, using a .sql file describing their structures.
+    Creates two main tables: Users and Groups, using a .sql file describing their structures.
     :return: None
     """
     try:
@@ -439,11 +439,12 @@ def create_db() -> None:
 
 def create_table_group(table_name: str) -> None:
     """
-    Creates a table in the database called budget_? (id, total, username, transfer, date_time, description)
+    creates a table in the database called budget_?
+    (id, total, username, transfer, date_time, description)
 
-    Contains table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
+    contains table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
-    :return: None
+    :return: none
     """
     try:
         if not table_name_validator(table_name):

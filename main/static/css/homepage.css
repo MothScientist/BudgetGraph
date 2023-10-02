@@ -53,20 +53,11 @@
 }
 
 .logo-text {
+  background-color: transparent;
   font-family: Arial, sans-serif;
   font-size: 24px;
   font-weight: bold;
-  color: deepskyblue;
-}
-
-.logo:hover .logo-text {
-  animation: flash 1.0s infinite;
-}
-
-@keyframes flash {
-  0% { color: blue; }
-  50% { color: transparent; }
-  100% { color: rebeccapurple; }
+  color: blue;
 }
 
 .ad-container {

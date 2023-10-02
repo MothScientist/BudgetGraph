@@ -62,7 +62,7 @@ def main():
         if res:
             bot_db.update_user_last_login(res)
 
-            # to send a sticker from a car in .webp format no larger than 512x512 pixels
+            # to send a sticker from a car in .webp format no larger than 512x512 pixel
             # sticker = open("D:\\telebot\\stickers\\stick_name.webp)", "rb")
             # bot.send_sticker(message.chat.id, sticker)
 
