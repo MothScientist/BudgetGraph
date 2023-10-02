@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
-  <script src="{{ url_for('static', filename='js/AcceptButton.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/AcceptButton.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
 </head>
 <body>
 
@@ -38,7 +39,15 @@
       <form action="/registration" method="POST">
         <input type="text" id="username" name="username" placeholder="Your name (3-20 characters)" maxlength="20">
         <input type="text" id="telegram-id" name="telegram-id" placeholder="Your telegram ID" maxlength="12">
-        <input type="password" id="password" name="password" placeholder="Password (8-32 characters / at least 1 number and 1 letter)" maxlength="32">
+
+        <div class="password-field">
+            <input type="password" id="password" name="password" placeholder="Password (8-32 characters / at least 1 number and 1 letter)" maxlength="32">
+            <button type="button" id="toggle-password" onclick="togglePasswordVisibility()">
+                <img id= "password-image" src="{{ url_for('static', filename='img/hide.png') }}" alt="Show/Hide Password">
+            </button>
+        </div>
+
+
         <input type="password" id="token" name="token" placeholder="Token (if you are adding to an existing group)" maxlength="32">
         <button type="submit" id="signup-button" class="link-button" disabled>Sign up!</button>
         <label for="agree-checkbox">
@@ -54,6 +63,7 @@
     <div id="gradient-line"></div>
     <div class="content">
         <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
+        <p><a href="https://www.flaticon.com/free-icons/password" title="password icons">Password icons created by th studio - Flaticon</a></p>
     </div>
   </footer>
 </body>

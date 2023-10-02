@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
+    <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
 </head>
 <body>
 
@@ -37,17 +38,25 @@
       <form action="/login" method="POST">
         <input type="text" id="username" name="username" placeholder="Your name" maxlength="20">
         <input type="password" id="token" name="token" placeholder="Token" maxlength="32">
+
+        <div class="password-field">
         <input type="password" id="password" name="password" placeholder="Password" maxlength="32">
+        <button type="button" id="toggle-password" onclick="togglePasswordVisibility()">
+            <img id= "password-image" src="{{ url_for('static', filename='img/hide.png') }}" alt="Show/Hide Password">
+        </button>
+        </div>
+
         <button type="submit" class="link-button">Sign in!</button>
         <button type="reset" class = "clear-button" id="clear-button">Clear</button>
       </form>
     </div>
-    </div>
+  </div>
 
   <footer>
     <div id="gradient-line"></div>
     <div class="content">
         <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
+        <p><a href="https://www.flaticon.com/free-icons/password" title="password icons">Password icons created by th studio - Flaticon</a></p>
     </div>
   </footer>
 </body>
