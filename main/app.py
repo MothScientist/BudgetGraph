@@ -36,11 +36,17 @@ logger_app = setup_logger("logs/AppLog.log", "app_loger")
 
 @app.route('/')
 def homepage():
+    """
+    site's home page
+    """
     return render_template("homepage.html", title="Budget control - Home page")
 
 
 @app.route('/registration', methods=["GET", "POST"])
 def registration():
+    """
+    user registration page
+    """
     if request.method == "POST":
 
         username: str = request.form["username"]
@@ -52,10 +58,10 @@ def registration():
         if len(request.form['token']) == 0:  # user creates a new group
             if asyncio.run(registration_validator(username, psw, telegram_id)):
 
-                telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
-                psw_salt: str = get_salt()
+                telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
+                psw_salt: str = get_salt()  # generating salt for a new user
                 dbase = DatabaseQueries(get_db())
-                user_token: str | bool = dbase.create_new_group(telegram_id)
+                user_token: str | bool = dbase.create_new_group(telegram_id)  # we get token of the newly created group
 
                 if user_token:
 
@@ -72,14 +78,13 @@ def registration():
             if asyncio.run(registration_validator(username, psw, telegram_id)):
 
                 dbase = DatabaseQueries(get_db())
-                group_id: int = token_validator(token)
-                group_not_full = dbase.check_limit_users_in_group(token)
+                group_id: int = token_validator(token)  # getting group id by token
+                group_not_full = dbase.check_limit_users_in_group(token)  # checking places in the group
 
                 if group_id and group_not_full:
-                    print(group_id)
 
                     telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
-                    psw_salt: str = get_salt()
+                    psw_salt: str = get_salt()  # generating salt for a new user
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
 
@@ -110,6 +115,9 @@ def registration():
 
 @app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
 def login():
+    """
+    user login page
+    """
     session.permanent = True
 
     if "userLogged" in session:  # If the client has logged in before
@@ -140,6 +148,9 @@ def login():
 
 @app.route('/household/<username>', methods=["GET", "POST"])  # user's personal account
 def household(username):
+    """
+    user's personal account with his group table
+    """
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
 
@@ -214,6 +225,9 @@ def household(username):
 
 @app.route('/settings/<username>')
 def settings(username):
+    """
+    page with account and group settings (view/edit/delete)
+    """
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
 
@@ -228,14 +242,20 @@ def settings(username):
                            group_owner=group_owner, group_members_data=group_members_data)
 
 
-@app.route('/conditions')  # Privacy Policy page
+@app.route('/conditions')
 def conditions():
+    """
+    privacy Policy page
+    """
     return render_template("conditions.html", title="Usage Policy", site_name="", site_url="",
-                           contact_email="", contact_url="", )
+                           contact_email="", contact_url="")
 
 
 @app.route('/logout', methods=['GET'])
 def logout():
+    """
+    removing session from browser cookies
+    """
     logger_app.info(f"Successful logout: {session['userLogged']}.")
     session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
     return redirect(url_for('homepage'))  # redirecting the user to another page, such as the homepage

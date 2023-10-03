@@ -24,7 +24,7 @@ class DatabaseQueries:
 
 # Database sampling methods (SELECT)
 
-    def get_username_by_telegram_id(self, telegram_id: int) -> bool | str:
+    def get_username_by_telegram_id(self, telegram_id: int) -> str | bool:
         """
         get username in the Users table by telegram_link value.
         :return: username or False
@@ -40,6 +40,25 @@ class DatabaseQueries:
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
+            return False
+
+    def get_telegram_id_by_username(self, username: str) -> str | bool:
+        """
+
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT telegram_id FROM Users WHERE username = ?""", (username,))
+            res = self.__cur.fetchone()
+
+            if res:  # If a user with this link is found
+                return res[0]
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {username}")
             return False
 
     def get_group_id_by_token(self, token: str) -> int:
@@ -75,6 +94,25 @@ class DatabaseQueries:
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
+            return False
+
+    def get_group_id_by_username(self, username: str) -> int | bool:
+        """
+
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT group_id FROM Users WHERE username = ?""", (username,))
+            res = self.__cur.fetchone()
+
+            if res:
+                return res[0]
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {username}")
             return False
 
     def get_token_by_username(self, username: str) -> str:
@@ -400,6 +438,25 @@ class DatabaseQueries:
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: username: {username}")
 
+    def update_group_owner(self, username: str, group_id: int) -> None:  # вставлять не имя а телеграмм id
+        """
+        changes the owner of a group to another user from that group.
+
+        additionally, there is a check for the presence of the specified user in the group.
+        :return: none
+        """
+        try:
+            telegram_id: int | bool = self.get_telegram_id_by_username(username)
+            if telegram_id and self.get_group_id_by_username(username) == group_id:
+                self.__cur.execute("""UPDATE Groups SET owner = ? WHERE id = ?""", (telegram_id, group_id,))
+                self.__db.commit()
+            else:
+                logger_database.error(f"! Update group owner, but the new owner is not in this group: "
+                                      f"username: {username}, group id: {group_id}, telegram ID: {telegram_id}")
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
+
 # Methods for deleting database data (DELETE)
 
     def delete_budget_entry_by_id(self, group_id: int, record_id: int) -> bool:
@@ -529,3 +586,7 @@ def create_table_group(table_name: str) -> None:
 
 if __name__ == '__main__':
     create_db()
+    # connection = connect_db()
+    # bot_db = DatabaseQueries(connection)
+    # print(bot_db.update_group_owner("roman", 1))
+    # close_db_main(connection)

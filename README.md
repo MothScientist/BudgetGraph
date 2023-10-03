@@ -6,8 +6,8 @@ within the scope of its purpose.</br></br>
 | Technology                                                                                                   | Version |
 |--------------------------------------------------------------------------------------------------------------|---------|
 | ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)       | 3.11.5  |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)       | 2.3.3   |
-| **pyTelegramBotAPI**                                                                                         | 4.13.0  |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)       | 3.0.0   |
+| **pyTelegramBotAPI**                                                                                         | 4.14.0  |
 | ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) | -       |
 
 
