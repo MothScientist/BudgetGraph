@@ -438,7 +438,7 @@ class DatabaseQueries:
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: username: {username}")
 
-    def update_group_owner(self, username: str, group_id: int) -> None:  # вставлять не имя а телеграмм id
+    def update_group_owner(self, username: str, group_id: int) -> None:
         """
         changes the owner of a group to another user from that group.
 
