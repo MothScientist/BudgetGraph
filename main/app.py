@@ -16,7 +16,6 @@ from validators.token import token_validator
 # Logging
 from log_settings import setup_logger
 
-
 load_dotenv()  # Load environment variables from .env file
 
 os.makedirs("logs", exist_ok=True)  # Creating a directory for later storing application logs there.
@@ -56,8 +55,9 @@ def registration():
                 telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
                 psw_salt: str = get_salt()
                 dbase = DatabaseQueries(get_db())
+                user_token: str | bool = dbase.create_new_group(telegram_id)
 
-                if user_token := dbase.create_new_group(telegram_id):
+                if user_token:
 
                     group_id: int = token_validator(user_token)
                     create_table_group(f"budget_{group_id}")
@@ -70,10 +70,15 @@ def registration():
         # User is added to an existing group
         if len(token) == 32:
             if asyncio.run(registration_validator(username, psw, telegram_id)):
-                if group_id := token_validator(token):  # new variable "group_id" (int)
 
-                    telegram_id: int = int(telegram_id)  # # If registration_validator is passed, then it is int
-                    dbase = DatabaseQueries(get_db())
+                dbase = DatabaseQueries(get_db())
+                group_id: int = token_validator(token)
+                group_not_full = dbase.check_limit_users_in_group(token)
+
+                if group_id and group_not_full:
+                    print(group_id)
+
+                    telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                     psw_salt: str = get_salt()
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
@@ -88,8 +93,11 @@ def registration():
                         flash("Error creating user. Please try again and if the problem persists, "
                               "contact technical support.", category="error")
                 else:
-                    logger_app.info(f"The user entered an incorrect token: username = {username}, token = {token}.")
-                    flash("There is no group with this token, please check the correctness of the entered data!",
+                    logger_app.info(f"The user entered an incorrect token or group is full: "
+                                    f"username = {username}, token = {token}.")
+
+                    flash("There is no group with this token or it is full. "
+                          "Contact the group members for more information, or create your own group!",
                           category="error")
 
         # User made a mistake when entering the token
@@ -170,7 +178,7 @@ def household(username):
             else:
                 description_2 = request.form.get("description-2")
 
-                if dbase.add_monetary_transaction_to_db(group_id, username, expense*(-1), description_2):
+                if dbase.add_monetary_transaction_to_db(group_id, username, expense * (-1), description_2):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, expense: {expense}, description: {description_2}.")
                     flash("Data added successfully.", category="success")
@@ -202,6 +210,22 @@ def household(username):
 
     return render_template("household.html", title=f"Budget control - {username}",
                            token=token, username=username, data=data, headers=headers)
+
+
+@app.route('/settings/<username>')
+def settings(username):
+    if "userLogged" not in session or session["userLogged"] != username:
+        abort(401)
+
+    dbase = DatabaseQueries(get_db())
+    token: str = dbase.get_token_by_username(username)
+    group_id: int = dbase.get_group_id_by_token(token)
+    group_owner: str = dbase.get_username_group_owner(token)
+
+    group_members_data: list = dbase.get_group_members_data(group_id)
+
+    return render_template("settings.html", title=f"Settings - {username}", token=token,
+                           group_owner=group_owner, group_members_data=group_members_data)
 
 
 @app.route('/conditions')  # Privacy Policy page

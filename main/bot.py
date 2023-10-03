@@ -243,9 +243,10 @@ def main():
 
         if compare_digest(token, "None"):
             telegram_id: int = message.from_user.id
+            user_token: str | bool = bot_db.create_new_group(telegram_id)
 
             # There is a chance to return False if an error occurred while working with the database
-            if user_token := bot_db.create_new_group(telegram_id):
+            if user_token:
                 group_id: int = token_validator(user_token)
 
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
@@ -263,14 +264,16 @@ def main():
 
         elif len(token) == 32:
             telegram_id: int = message.from_user.id
+            group_id: int = token_validator(token)
+            group_not_full: bool = bot_db.check_limit_users_in_group(token)
 
-            if group_id := token_validator(token):  # # new variable "group_id" (int)
+            if group_id and group_not_full:
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                     bot.send_message(message.chat.id, "Congratulations on registering!")
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
             else:
-                bot.send_message(message.chat.id, "There is no group with this token. "
+                bot.send_message(message.chat.id, "There is no group with this token or it is full. "
                                                   "Contact the group members for more information, "
                                                   "or create your own group!")
 

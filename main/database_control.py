@@ -257,6 +257,62 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: username: {username}")
             return False
 
+    def get_username_group_owner(self, token: str) -> str | bool:
+        """
+        allows you to get the username of the group owner using the group token.
+        :param token:
+        :return: username | False
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
+                               f" (SELECT owner FROM Groups WHERE token = ?)", (token,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: token: {token}")
+            return False
+
+    def get_group_members_data(self, group_id: int) -> list:
+        """
+
+        :param group_id:
+        :return:
+        """
+        try:
+            self.__cur.execute(f"SELECT username, last_login FROM Users WHERE group_id=?", (group_id,))
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            return result_list
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return []
+
+    def check_limit_users_in_group(self, token: str) -> bool:
+        """
+        by token checks the group's filling limit.
+
+        if there is no group with such a token, it will return False.
+        :param token:
+        :return: bool
+        """
+        try:
+            self.__cur.execute(f"SELECT COUNT(id) FROM Users WHERE group_id ="
+                               f" (SELECT id FROM Groups WHERE token=?)", (token,))
+            res = self.__cur.fetchone()
+            if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
+                return True
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: token: {token}")
+            return False
+
 # Methods for inserting data into a database (INSERT)
 
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
