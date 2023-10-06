@@ -48,7 +48,7 @@ def main():
         btn8 = types.KeyboardButton("📉 Add expense")
         btn9 = types.KeyboardButton("❌ Delete record")
 
-        markup_1.add(btn1, btn2, btn5, btn6, btn7, btn8, btn9)
+        markup_1.add(btn1, btn2, btn3, btn5, btn6, btn7, btn8, btn9)
         markup_2.add(btn1, btn2, btn3, btn4)
 
         # check user in our project
