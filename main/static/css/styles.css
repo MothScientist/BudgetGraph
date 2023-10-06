@@ -1,3 +1,4 @@
+/*
 body{
   background-color: #F5F5F5;
 }
@@ -65,3 +66,59 @@ footer a:hover::after {
 p {
   margin: 3px;
 }
+
+*/
+
+
+
+
+
+
+
+html, body{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.light-block{
+  background-color: #E7ECEF;
+}
+
+.dark-block{
+  background-color: #8B8C89;
+}
+
+.light-blue{
+  background-color: #6096BA;
+}
+
+.dark-blue{
+  background-color: #274C77;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
