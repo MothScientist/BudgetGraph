@@ -47,8 +47,11 @@ def main():
         btn7 = types.KeyboardButton("📈 Add income")
         btn8 = types.KeyboardButton("📉 Add expense")
         btn9 = types.KeyboardButton("❌ Delete record")
+        btn10 = types.KeyboardButton("🗃️ Get CSV")
+        btn11 = types.KeyboardButton("🗑️ Delete my account")
+        btn12 = types.KeyboardButton("🚫 Delete group")
 
-        markup_1.add(btn1, btn2, btn3, btn5, btn6, btn7, btn8, btn9)
+        markup_1.add(btn1, btn2, btn3, btn5, btn6, btn7, btn9, btn8, btn10, btn11, btn12)
         markup_2.add(btn1, btn2, btn3, btn4)
 
         # check user in our project
@@ -66,14 +69,13 @@ def main():
             # sticker = open("D:\\telebot\\stickers\\stick_name.webp)", "rb")
             # bot.send_sticker(message.chat.id, sticker)
 
-            bot.send_message(message.chat.id, f"Hello, {res}!\n"
-                                              f"We recognized you. Welcome!", reply_markup=markup_1)
+            bot.send_message(message.chat.id, f"Hello, {res}!\nWe recognized you. Welcome!", reply_markup=markup_1)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
             logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
         else:
             bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name}!\n"
-                                              f"We didn't recognize you. Would you like to register in the project?",
+                                            f"We didn't recognize you. Would you like to register in the project?",
                              reply_markup=markup_2)
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
@@ -83,7 +85,7 @@ def main():
 
     @bot.message_handler(commands=['help'])
     def help(message) -> None:
-        bot.send_message(message.chat.id, f"{message}")
+        bot.send_message(message.chat.id, "Support information")
 
     @bot.message_handler(commands=['get_my_id'])
     def get_my_id(message) -> None:
@@ -112,24 +114,87 @@ def main():
 
     @bot.message_handler(commands=['add_income'])
     def add_income(message) -> None:
-        bot.send_message(message.chat.id, f"Enter the amount of income:")
-        bot.register_next_step_handler(message, process_transfer, False)
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if res:  # user authorization check
+            bot_db.update_user_last_login(res)
+            close_db_main(connection)
+
+            bot.send_message(message.chat.id, f"Enter the amount of income:")
+            bot.register_next_step_handler(message, process_transfer, False)
+
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
 
     @bot.message_handler(commands=['add_expense'])
     def add_expense(message):
-        bot.send_message(message.chat.id, f"Enter the amount of expense:")
-        bot.register_next_step_handler(message, process_transfer, True)
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if res:  # user authorization check
+            bot_db.update_user_last_login(res)
+            close_db_main(connection)
+
+            bot.send_message(message.chat.id, f"Enter the amount of expense:")
+            bot.register_next_step_handler(message, process_transfer, True)
+
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_sticker(message.chat.id,
+                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
 
     @bot.message_handler(commands=['delete_record'])
     @timeit
     def delete_record(message):
-        bot.send_message(message.chat.id, f"Enter the record ID:")
-        bot.register_next_step_handler(message, process_delete_record)
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if res:  # user authorization check
+            bot_db.update_user_last_login(res)
+            close_db_main(connection)
+
+            bot.send_message(message.chat.id, f"Enter the record ID:")
+            bot.register_next_step_handler(message, process_delete_record)
+
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_sticker(message.chat.id,
+                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
 
     @bot.message_handler(commands=['view_table'])
     @timeit
     def view_table(message) -> None:
-        pass
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        group_id = bot_db.get_group_id_by_telegram_id(message.from_user.id)
+        if group_id:  # user authorization check
+            telegram_id: int = message.from_user.id
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+            bot_db.update_user_last_login(username)
+
+            data: list = bot_db.select_data_for_household_table(int(group_id), 10)
+            # group_id is int if it passed the check above
+
+            for i in range(len(data)):
+                bot.send_message(message.chat.id,
+                                 f"ID: {data[i][0]}\nTotal: {data[i][1]}\nUsername: {data[i][2]}"
+                                 f"\nTransfer: {data[i][3]}\nDateTime: {data[i][4]}\nDescription: {data[i][5]}")
+        else:
+            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_sticker(message.chat.id,
+                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+        close_db_main(connection)
 
     @bot.message_handler(commands=['registration'])
     @timeit
@@ -147,6 +212,11 @@ def main():
         else:
             bot.send_message(message.chat.id, "You are already registered!")
             start(message)
+
+    @bot.message_handler(commands=['get_csv'])
+    @timeit
+    def get_csv(message):
+        pass
 
     def process_delete_record(message):
         record_id: str = message.text
@@ -313,6 +383,15 @@ def main():
 
         elif message.text == "❌ Delete record":
             delete_record(message)
+
+        elif message.text == "🗃️ Get CSV":
+            pass
+
+        elif message.text == "🗑️ Delete my account":
+            pass
+
+        elif message.text == "🚫 Delete group":
+            pass
 
     bot.polling(none_stop=True)
 
