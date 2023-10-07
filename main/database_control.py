@@ -197,10 +197,16 @@ class DatabaseQueries:
         table_name = f"budget_{group_id}"
 
         try:
-            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
-            result = self.__cur.fetchall()
-            result_list = [list(row) for row in result]
-            return result_list
+            if n == 0:
+                self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC")
+                result = self.__cur.fetchall()
+                result_list = [list(row) for row in result]
+                return result_list
+            else:
+                self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
+                result = self.__cur.fetchall()
+                result_list = [list(row) for row in result]
+                return result_list
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: group id: {group_id}, n: {n}, table name: {table_name}")

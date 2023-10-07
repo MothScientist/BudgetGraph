@@ -10,6 +10,9 @@ from telebot import types
 # Database
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
+# CSV files
+from csv_file_generation import create_csv_file, delete_csv_file
+
 # Validators
 from validators.registration import username_validator, password_validator
 from validators.input_number import input_number
@@ -43,15 +46,16 @@ def main():
         btn3 = types.KeyboardButton("💻 My Telegram ID")
         btn4 = types.KeyboardButton("🤡 I want to register")
         btn5 = types.KeyboardButton("🔐 Get my token")
-        btn6 = types.KeyboardButton("📖 View table")
-        btn7 = types.KeyboardButton("📈 Add income")
-        btn8 = types.KeyboardButton("📉 Add expense")
-        btn9 = types.KeyboardButton("❌ Delete record")
-        btn10 = types.KeyboardButton("🗃️ Get CSV")
-        btn11 = types.KeyboardButton("🗑️ Delete my account")
-        btn12 = types.KeyboardButton("🚫 Delete group")
+        btn6 = types.KeyboardButton("🌍 Group users")
+        btn7 = types.KeyboardButton("📖 View table")
+        btn8 = types.KeyboardButton("📈 Add income")
+        btn9 = types.KeyboardButton("📉 Add expense")
+        btn10 = types.KeyboardButton("❌ Delete record")
+        btn11 = types.KeyboardButton("🗃️ Get CSV")
+        btn12 = types.KeyboardButton("🗑️ Delete my account")
+        btn13 = types.KeyboardButton("🚫 Delete group")
 
-        markup_1.add(btn1, btn2, btn3, btn5, btn6, btn7, btn9, btn8, btn10, btn11, btn12)
+        markup_1.add(btn1, btn2, btn3, btn5, btn6, btn7, btn9, btn8, btn10, btn11, btn12, btn13)
         markup_2.add(btn1, btn2, btn3, btn4)
 
         # check user in our project
@@ -177,9 +181,9 @@ def main():
     def view_table(message) -> None:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        group_id = bot_db.get_group_id_by_telegram_id(message.from_user.id)
+        telegram_id: int = message.from_user.id
+        group_id = bot_db.get_group_id_by_telegram_id(telegram_id)
         if group_id:  # user authorization check
-            telegram_id: int = message.from_user.id
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
             bot_db.update_user_last_login(username)
 
@@ -216,7 +220,20 @@ def main():
     @bot.message_handler(commands=['get_csv'])
     @timeit
     def get_csv(message):
-        pass
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        group_id: int | bool = bot_db.get_group_id_by_telegram_id(message.from_user.id)
+        close_db_main(connection)
+        if group_id:  # user authorization check
+            create_csv_file(group_id)
+            try:
+                bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
+                delete_csv_file(group_id)
+            except FileNotFoundError:
+                bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
+        else:
+            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
 
     def process_delete_record(message):
         record_id: str = message.text
@@ -340,6 +357,8 @@ def main():
             if group_id and group_not_full:
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                     bot.send_message(message.chat.id, "Congratulations on registering!")
+                    bot.send_sticker(message.chat.id,
+                                     "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
             else:
@@ -372,6 +391,9 @@ def main():
         elif message.text == "🔐 Get my token":
             get_my_token(message)
 
+        elif message.text == "🌍 Group users":
+            pass
+
         elif message.text == "📖 View table":
             view_table(message)
 
@@ -385,7 +407,7 @@ def main():
             delete_record(message)
 
         elif message.text == "🗃️ Get CSV":
-            pass
+            get_csv(message)
 
         elif message.text == "🗑️ Delete my account":
             pass
