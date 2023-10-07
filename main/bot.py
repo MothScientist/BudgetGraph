@@ -112,6 +112,7 @@ def main():
         if len(token) == 0:
             # noinspection HardcodedPassword
             token: str = "unknown"
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
         close_db_main(connection)
         bot.send_message(message.chat.id, f"Your group token:")
         bot.send_message(message.chat.id, f"{token}")
@@ -134,6 +135,7 @@ def main():
             close_db_main(connection)
             bot.send_message(message.chat.id, f"You are not register.")
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
     @bot.message_handler(commands=['add_expense'])
     def add_expense(message):
@@ -154,6 +156,7 @@ def main():
             bot.send_message(message.chat.id, f"You are not register.")
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
     @bot.message_handler(commands=['delete_record'])
     @timeit
@@ -175,6 +178,7 @@ def main():
             bot.send_message(message.chat.id, f"You are not register.")
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
     @bot.message_handler(commands=['view_table'])
     @timeit
@@ -194,10 +198,13 @@ def main():
                 bot.send_message(message.chat.id,
                                  f"ID: {data[i][0]}\nTotal: {data[i][1]}\nUsername: {data[i][2]}"
                                  f"\nTransfer: {data[i][3]}\nDateTime: {data[i][4]}\nDescription: {data[i][5]}")
+
+            logger_bot.info(f"ID: {telegram_id} - view_table")
         else:
             bot.send_message(message.chat.id, f"You are not register.")
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
         close_db_main(connection)
 
     @bot.message_handler(commands=['registration'])
@@ -222,18 +229,25 @@ def main():
     def get_csv(message):
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        group_id: int | bool = bot_db.get_group_id_by_telegram_id(message.from_user.id)
-        close_db_main(connection)
+        telegram_id: int = message.from_user.id
+        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
         if group_id:  # user authorization check
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+            bot_db.update_user_last_login(username)
             create_csv_file(group_id)
             try:
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
                 delete_csv_file(group_id)
+                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
             except FileNotFoundError:
                 bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
+                logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
         else:
             bot.send_message(message.chat.id, f"You are not register.")
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+        close_db_main(connection)
 
     def process_delete_record(message):
         record_id: str = message.text
@@ -249,6 +263,7 @@ def main():
             if group_id and bot_db.check_id_is_exist(group_id, record_id):
                 bot_db.delete_budget_entry_by_id(group_id, record_id)
                 bot.send_message(message.chat.id, "Successfully.")
+
             else:
                 bot.send_message(message.chat.id, "There is no record with this ID.")
 
@@ -324,12 +339,12 @@ def main():
     def process_token(message, username: str, psw_hash: str, psw_salt: str):
 
         token: str = message.text
+        telegram_id: int = message.from_user.id
 
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
 
         if compare_digest(token, "None"):
-            telegram_id: int = message.from_user.id
             user_token: str | bool = bot_db.create_new_group(telegram_id)
 
             # There is a chance to return False if an error occurred while working with the database
@@ -343,11 +358,16 @@ def main():
                                      "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
                     bot.send_message(message.chat.id, "Your token:")
                     bot.send_message(message.chat.id, user_token)
+                    logger_bot.info(f"New user (new group): ID: {telegram_id}, group: {group_id}")
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
+                    logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
+                                     f"psw salt: {psw_salt}, psw hash: {psw_hash}, group id: {group_id}")
 
             else:
                 bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
+                logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
+                                 f"psw salt: {psw_salt}, psw hash: {psw_hash}")
 
         elif len(token) == 32:
             telegram_id: int = message.from_user.id
@@ -359,16 +379,21 @@ def main():
                     bot.send_message(message.chat.id, "Congratulations on registering!")
                     bot.send_sticker(message.chat.id,
                                      "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
+                    logger_bot.info(f"New user: ID: {telegram_id}, group: {group_id}")
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
+                    logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
+                                     f"psw salt: {psw_salt}, psw hash: {psw_hash}, group id: {group_id}")
             else:
                 bot.send_message(message.chat.id, "There is no group with this token or it is full. "
                                                   "Contact the group members for more information, "
                                                   "or create your own group!")
+                logger_bot.info(f"Trying to add to a full group: ID: {telegram_id}, group id: {group_id}")
 
         else:
             bot.send_message(message.chat.id, "This is not a valid token format, "
                                               "please check if it is correct or send 'None'!")
+            logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, ID: {telegram_id}")
 
         close_db_main(connection)
         start(message)
