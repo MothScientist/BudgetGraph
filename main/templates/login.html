@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
     <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
 </head>
-<body>
+<!-- <body>
 
   <header>
       <a href="/">
@@ -59,5 +59,125 @@
         <p><a href="https://www.flaticon.com/free-icons/password" title="password icons">Password icons created by th studio - Flaticon</a></p>
     </div>
   </footer>
+</body> -->
+
+
+<body class="main-container">
+  <header class="header light-block">
+    <p class="logo">Budget Control Project</p>
+  </header>
+
+  <main class="container light-block">
+    <div class="form-wrapper block-color">
+      <div class="links-wrapper">
+        <button onclick="location.href='/'" class="back__button">
+          <img class="link__img" src="../static/img/back-arrow.png" />
+        </button>
+        <div class="social-links">
+          <button onclick="location.href='https://t.me/budget_control1bot'" class="button social-button">
+            <img class="link__img" src="../static/img/telegram.png" />
+          </button>
+          <button onclick="location.href='https://github.com/MothScientist/budget_control'" class="button social-button">
+            <img class="link__img" src="../static/img/github.png" />
+          </button>
+        </div>
+      </div>
+      <h2 class="form-title">Login</h2>
+      <form class="form-area" action="/login" method="POST">
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-text-input"
+          placeholder="Your name (3-20 characters)"
+          maxlength="20"
+        />
+        <div class="hide-show-field">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Password (8-32 characters / at least 1 number and 1 letter)"
+            maxlength="32"
+          />
+          <button
+            type="button"
+            id="toggle-visability"
+            class="button"
+            onclick="togglePasswordVisibility()"
+          >
+            <img
+              id="hide-image-password"
+              src="{{ url_for('static', filename='img/hide.png') }}"
+              alt="Show/Hide Password"
+            />
+          </button>
+        </div>
+        <div class="messages-container">
+          {% for category, messages in get_flashed_messages(True) %}
+          <div class="flash {{ category }}">{{ messages }}</div>
+          {% endfor %}
+        </div>
+        <p>Doesn't have an account? <a href="/registration">Sign up</a></p>
+        <div class="reg-buttons">
+          <button
+            type="submit"
+            id="signup-button"
+            class="reg-button dark"
+          >
+            Sign in!
+          </button>
+          <button type="reset" class="reg-button dark" id="clear-button">
+            Clear
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+
+  <footer class="footer dark-block">
+    <div class="footer-wrapper">
+      <div class="copyrights">
+        <a
+          href="https://www.flaticon.com/free-icons/money"
+          title="money icons"
+          >Money icons created by Freepik - Flaticon</a
+        >
+        <a
+          href="https://www.flaticon.com/free-icons/register"
+          title="register icons"
+          >Register icons created by Prosymbols - Flaticon</a
+        >
+        <a
+          href="https://www.flaticon.com/free-icons/sign-up"
+          title="sign up icons"
+          >Sign up icons created by Freepik - Flaticon</a
+        >
+        <a
+          href="https://www.flaticon.com/free-icons/telegram"
+          title="telegram icons"
+          >Telegram icons created by Pixel perfect - Flaticon</a
+        >
+        <a
+          href="https://www.flaticon.com/free-icons/github"
+          title="github icons"
+          >GitHub's icons created by Pixel perfect - Flaticon</a
+        >
+        <a
+          href="https://www.flaticon.com/free-icons/arrows"
+          title="arrows icons"
+          >Arrows icons created by gravisio - Flaticon</a
+        >
+        <p>
+          Background from
+          <a href="https://abrakadabra.fun">abrakadabra.fun</a>
+        </p>
+      </div>
+    </div>
+  </footer>
 </body>
+
+
+
 </html>
