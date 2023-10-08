@@ -38,7 +38,7 @@ def main():
     @bot.message_handler(commands=['start'])
     def start(message) -> None:
         # Buttons
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
         markup_2 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 
         btn1 = types.KeyboardButton("❓ Help")
@@ -54,8 +54,9 @@ def main():
         btn11 = types.KeyboardButton("🗃️ Get CSV")
         btn12 = types.KeyboardButton("🗑️ Delete my account")
         btn13 = types.KeyboardButton("🚫 Delete group")
+        btn14 = types.KeyboardButton("🔑 Change owner")
 
-        markup_1.add(btn1, btn2, btn3, btn5, btn6, btn7, btn9, btn8, btn10, btn11, btn12, btn13)
+        markup_1.add(btn1, btn2, btn5, btn6, btn7, btn9, btn8, btn10, btn11, btn12, btn13, btn14)
         markup_2.add(btn1, btn2, btn3, btn4)
 
         # check user in our project
@@ -249,6 +250,43 @@ def main():
 
         close_db_main(connection)
 
+    @bot.message_handler(commands=['get_group_users'])
+    @timeit
+    def get_group_users(message):
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if group_id:
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+            bot_db.update_user_last_login(username)
+
+            group_id: int = group_id
+            group_users_list: list = bot_db.get_group_members(group_id)
+            group_users_str: str = ', '.join(str(user) for user in group_users_list)
+
+            bot.send_message(message.chat.id, group_users_str)
+        else:
+            bot.send_message(message.chat.id, f"You are not register.")
+
+        close_db_main(connection)
+
+    @bot.message_handler(commands=['delete_account'])
+    @timeit
+    def delete_account(message):
+        pass
+
+    @bot.message_handler(commands=['delete_group'])
+    @timeit
+    def delete_group(message):
+        pass
+
+    @bot.message_handler(commands=['change_owner'])
+    @timeit
+    def change_owner(message):
+        pass
+
     def process_delete_record(message):
         record_id: str = message.text
         record_id: int | bool = input_number(record_id)
@@ -417,7 +455,7 @@ def main():
             get_my_token(message)
 
         elif message.text == "🌍 Group users":
-            pass
+            get_group_users(message)
 
         elif message.text == "📖 View table":
             view_table(message)
@@ -435,10 +473,13 @@ def main():
             get_csv(message)
 
         elif message.text == "🗑️ Delete my account":
-            pass
+            delete_account(message)
 
         elif message.text == "🚫 Delete group":
-            pass
+            delete_group(message)
+
+        elif message.text == "🔑 Change owner":
+            change_owner(message)
 
     bot.polling(none_stop=True)
 

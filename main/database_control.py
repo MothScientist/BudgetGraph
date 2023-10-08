@@ -356,6 +356,23 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: group id: {group_id}")
             return []
 
+    def get_group_members(self, group_id: int) -> list:
+        """
+
+        :param group_id:
+        :return: list (empty or with usernames of group members)
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE group_id=?", (group_id,))
+            result = self.__cur.fetchall()
+            result_list = [str(row[0]) for row in result]
+            print(result_list)
+            return result_list
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return []
+
     def check_limit_users_in_group(self, token: str) -> bool:
         """
         by token checks the group's filling limit.
