@@ -320,11 +320,31 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: token: {token}")
             return False
 
+    def check_username_is_group_owner(self, username: str, group_id: int) -> bool:
+        """
+
+        :param username:
+        :param group_id:
+        :return: True | False
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
+                               f" (SELECT owner FROM Groups WHERE id = ?)", (group_id,))
+            res = self.__cur.fetchone()
+            if str(res[0]) == username:
+                return True
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
+            return False
+
     def get_group_members_data(self, group_id: int) -> list:
         """
 
         :param group_id:
-        :return:
+        :return: list (empty or with usernames of group members)
         """
         try:
             self.__cur.execute(f"SELECT username, last_login FROM Users WHERE group_id=?", (group_id,))
@@ -433,8 +453,8 @@ class DatabaseQueries:
 
     def update_user_last_login(self, username: str) -> None:
         """
-        changes the user's last login time in the last_login column in the Users table.
-        :return: none
+        Changes the user's last login time in the last_login column in the Users table.
+        :return: None
         """
         try:
             self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime')
@@ -446,10 +466,10 @@ class DatabaseQueries:
 
     def update_group_owner(self, username: str, group_id: int) -> None:
         """
-        changes the owner of a group to another user from that group.
+        Changes the owner of a group to another user from that group.
 
-        additionally, there is a check for the presence of the specified user in the group.
-        :return: none
+        Additionally, there is a check for the presence of the specified user in the group.
+        :return: None
         """
         try:
             telegram_id: int | bool = self.get_telegram_id_by_username(username)
@@ -467,9 +487,9 @@ class DatabaseQueries:
 
     def delete_budget_entry_by_id(self, group_id: int, record_id: int) -> bool:
         """
-        removes an entry from the group budget table.
+        Removes an entry from the group budget table.
         :param group_id:
-        :param record_id: row id in the table
+        :param record_id: Row id in the table
         :return: True | False
         """
         table_name = f"budget_{group_id}"
@@ -484,6 +504,51 @@ class DatabaseQueries:
             return False
 
         else:
+            return True
+
+    def delete_user_from_project(self, username: str) -> bool:
+        """
+        Removes a user from a group (not the owner)
+        :param username:
+        :return: True | False
+        """
+        try:
+            group_id: int | bool = self.get_group_id_by_username(username)
+            if group_id:
+                group_id: int = group_id
+                if not self.check_username_is_group_owner(username, group_id):
+                    self.__cur.execute("""DELETE FROM Users WHERE username = ?""", (username,))
+                    self.__db.commit()
+                else:
+                    logger_database.error(f"Attempting to remove group owner separately from group, username: {username}")
+                    return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: username: {username}")
+            return False
+
+        else:
+            logger_database.error(f"User {username} has been removed from the database and from group #{group_id}")
+            return True
+
+    def delete_group_with_users(self, group_id: int) -> bool:
+        """
+        Deletes the group table along with all its members (including the owner)
+        :param group_id:
+        :return: True | False
+        """
+        try:
+            self.__cur.execute("""DELETE FROM Users WHERE group_id = ?""", (group_id,))
+            self.__cur.execute("""DELETE FROM Groups WHERE id = ?""", (group_id,))
+            self.__cur.execute(f"""DROP TABLE budget_{group_id}""")
+            self.__db.commit()
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return False
+
+        else:
+            logger_database.error(f"Group #{group_id} has been completely deleted")
             return True
 
 
@@ -594,5 +659,5 @@ if __name__ == '__main__':
     create_db()
     # connection = connect_db()
     # bot_db = DatabaseQueries(connection)
-    # print(bot_db.update_group_owner("roman", 1))
+    # print(bot_db.delete_group_with_users(2))
     # close_db_main(connection)
