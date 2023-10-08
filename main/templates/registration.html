@@ -1,70 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/login-registration.css') }}"
+    />
     <script src="{{ url_for('static', filename='js/AcceptButton.js') }}"></script>
     <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
-</head>
-<body>
+  </head>
+  <body class="main-container">
+    <header class="header light-block">
+      <p class="logo">Budget Control Project</p>
+    </header>
 
-  <header>
-      <a href="/">
-        <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home-button">
-      </a>
-
-      <a href="/login">
-        <img src="{{ url_for('static', filename='img/sign-in.png') }}" alt="Sign in" class="sign-in-button">
-      </a>
-
-      <a href="https://t.me/budget_control1bot">
-        <img src="{{ url_for('static', filename='img/telegram.png') }}" alt="Telegram bot" class="tg-button">
-      </a>
-
-      <a href="https://github.com/MothScientist/budget_control">
-        <img src="{{ url_for('static', filename='img/github.png') }}" alt="Github" class="github-button">
-      </a>
-  </header>
-
-  {% for category, messages in get_flashed_messages(True) %}
-  <div class="flash {{ category }}">
-    {{ messages }}<br>
-  </div>
-  {% endfor %}
-
-  <div class="container_2">
-    <div class="form">
-      <div class="header-2">Registration</div>
-      <form action="/registration" method="POST">
-        <input type="text" id="username" name="username" placeholder="Your name (3-20 characters)" maxlength="20">
-        <input type="text" id="telegram-id" name="telegram-id" placeholder="Your telegram ID" maxlength="12">
-
-        <div class="password-field">
-            <input type="password" id="password" name="password" placeholder="Password (8-32 characters / at least 1 number and 1 letter)" maxlength="32">
-            <button type="button" id="toggle-password" onclick="togglePasswordVisibility()">
-                <img id= "password-image" src="{{ url_for('static', filename='img/hide.png') }}" alt="Show/Hide Password">
+    <main class="container light-block">
+      <div class="form-wrapper block-color">
+        <div class="links-wrapper">
+          <button onclick="location.href='/'" class="back__button">
+            <img class="link__img" src="../static/img/back-arrow.png" />
+          </button>
+          <div class="social-links">
+            <button
+              onclick="location.href='https://t.me/budget_control1bot'"
+              class="button social-button"
+            >
+              <img class="link__img" src="../static/img/telegram.png" />
             </button>
+            <button
+              onclick="location.href='https://github.com/MothScientist/budget_control'"
+              class="button social-button"
+            >
+              <img class="link__img" src="../static/img/github.png" />
+            </button>
+          </div>
         </div>
+        <h2 class="form-title">Registration</h2>
+        <form class="form-area" action="/registration" method="POST">
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-text-input"
+            placeholder="Your name (3-20 characters)"
+            maxlength="20"
+          />
+          <input
+            type="text"
+            id="telegram-id"
+            name="telegram-id"
+            class="form-text-input"
+            placeholder="Your telegram ID"
+            maxlength="12"
+          />
+          <div class="hide-show-field">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Password (8-32 characters / at least 1 number and 1 letter)"
+              maxlength="32"
+            />
+            <button
+              type="button"
+              id="toggle-visability"
+              class="button"
+              onclick="togglePasswordVisibility()"
+            >
+              <img
+                id="hide-image-password"
+                src="{{ url_for('static', filename='img/hide.png') }}"
+                alt="Show/Hide Password"
+              />
+            </button>
+          </div>
+          <div class="hide-show-field">
+            <input
+              type="password"
+              id="token"
+              name="token"
+              placeholder="Token (if you are adding to an existing group)"
+              maxlength="32"
+            />
+            <button
+              type="button"
+              id="toggle-visability"
+              class="button"
+              onclick="toggleTokenVisibility()"
+            >
+              <img
+                id="hide-image-token"
+                src="{{ url_for('static', filename='img/hide.png') }}"
+                alt="Show/Hide Password"
+              />
+            </button>
+          </div>
 
+          <label for="agree-checkbox">
+            <input id="agree-checkbox" type="checkbox" required /> I agree with
+            <a href="/conditions">the conditions</a>
+          </label>
+          <div class="messages-container">
+            {% for category, messages in get_flashed_messages(True) %}
+            <div class="flash {{ category }}">{{ messages }}</div>
+            {% endfor %}
+          </div>
+          <p>Already has an account? <a href="/login">Sign in</a></p>
+          <div class="reg-buttons">
+            <button type="submit" id="signup-button" class="reg-button dark">
+              Sign up!
+            </button>
+            <button type="reset" class="reg-button dark" id="clear-button">
+              Clear
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
 
-        <input type="password" id="token" name="token" placeholder="Token (if you are adding to an existing group)" maxlength="32">
-        <button type="submit" id="signup-button" class="link-button" disabled>Sign up!</button>
-        <label for="agree-checkbox">
-          <input id="agree-checkbox" type="checkbox" required> I agree with <a href="/conditions">the conditions</a>
-        </label>
-        <button type="reset" class = "clear-button" id="clear-button">Clear</button>
-      </form>
-    </div>
-  </div>
-
-
-  <footer>
-    <div id="gradient-line"></div>
-    <div class="content">
-        <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
-        <p><a href="https://www.flaticon.com/free-icons/password" title="password icons">Password icons created by th studio - Flaticon</a></p>
-    </div>
-  </footer>
-</body>
+    <footer class="footer dark-block">
+      <div class="footer-wrapper">
+        <div class="copyrights">
+          <a
+            href="https://www.flaticon.com/free-icons/money"
+            title="money icons"
+            >Money icons created by Freepik - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/register"
+            title="register icons"
+            >Register icons created by Prosymbols - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/sign-up"
+            title="sign up icons"
+            >Sign up icons created by Freepik - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/telegram"
+            title="telegram icons"
+            >Telegram icons created by Pixel perfect - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/github"
+            title="github icons"
+            >GitHub's icons created by Pixel perfect - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/arrows"
+            title="arrows icons"
+            >Arrows icons created by gravisio - Flaticon</a
+          >
+          <p>
+            Background from
+            <a href="https://abrakadabra.fun">abrakadabra.fun</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>

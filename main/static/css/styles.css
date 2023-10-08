@@ -72,6 +72,8 @@ p {
 
 
 
+@import url("https://fonts.googleapis.com/css2?family=Schibsted+Grotesk&family=Unica+One&display=swap");
+@import "colors.css";
 
 
 
@@ -81,27 +83,106 @@ html, body{
   box-sizing: border-box;
 }
 
+
+.main-container{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-height: 100vh;
+}
+
+.header {
+  flex: 0 0 auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+
+  padding: 50px 0 20px 0;
+}
+
+.header::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 80vw;
+  height: 1px;
+  background-color: var(--black);
+  top: calc(50% + 15px);
+}
+.logo {
+  color: var(--black);
+  background-color: var(--white);
+  padding: 0 40px;
+  z-index: 1;
+  font-family: "Schibsted Grotesk", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
 .light-block{
-  background-color: #E7ECEF;
+  background-color: var(--white);
 }
 
 .dark-block{
-  background-color: #8B8C89;
+  background-color: var(--white);
 }
 
-.light-blue{
-  background-color: #6096BA;
+.block-color{
+  background-color: var(--block-color);
 }
 
-.dark-blue{
-  background-color: #274C77;
+.dark{
+  background-color: var(--black);
 }
 
+.button{
+  text-decoration: none;
+  text-align: center;
+  box-shadow: none;
+  border: none;
+  background-color: inherit;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.5s ease-in-out;
+}
 
+.footer {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  flex: 0 0 auto;
+}
+.footer-wrapper {
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 80vw;
+  max-width: 80vw;
+}
+.copyrights {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: 15px;
+}
+.copyrights > p {
+  display: inline-block;
+  font-family: "Schibsted Grotesk", sans-serif;
+  font-size: 14px;
+  margin: 0;
+}
 
+.copyrights a {
+  text-decoration: none;
+  font-family: "Schibsted Grotesk", sans-serif;
+  font-size: 14px;
+  color: var(--black);
+  transition: color 0.5s ease-in-out;
+}
 
-
-
+.copyrights a:hover{
+  color: var(--media-hover);
+}
 
 
 
