@@ -115,7 +115,7 @@ def main():
             token: str = "unknown"
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
         close_db_main(connection)
-        bot.send_message(message.chat.id, f"Your group token:")
+        bot.send_message(message.chat.id, "Your group token:")
         bot.send_message(message.chat.id, f"{token}")
 
     @bot.message_handler(commands=['add_income'])
@@ -129,12 +129,12 @@ def main():
             bot_db.update_user_last_login(res)
             close_db_main(connection)
 
-            bot.send_message(message.chat.id, f"Enter the amount of income:")
+            bot.send_message(message.chat.id, "Enter the amount of income:")
             bot.register_next_step_handler(message, process_transfer, False)
 
         else:
             close_db_main(connection)
-            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
@@ -149,12 +149,12 @@ def main():
             bot_db.update_user_last_login(res)
             close_db_main(connection)
 
-            bot.send_message(message.chat.id, f"Enter the amount of expense:")
+            bot.send_message(message.chat.id, "Enter the amount of expense:")
             bot.register_next_step_handler(message, process_transfer, True)
 
         else:
             close_db_main(connection)
-            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
@@ -171,12 +171,12 @@ def main():
             bot_db.update_user_last_login(res)
             close_db_main(connection)
 
-            bot.send_message(message.chat.id, f"Enter the record ID:")
+            bot.send_message(message.chat.id, "Enter the record ID:")
             bot.register_next_step_handler(message, process_delete_record)
 
         else:
             close_db_main(connection)
-            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
@@ -202,7 +202,7 @@ def main():
 
             logger_bot.info(f"ID: {telegram_id} - view_table")
         else:
-            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
@@ -244,7 +244,7 @@ def main():
                 bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
                 logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
         else:
-            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
@@ -268,14 +268,50 @@ def main():
 
             bot.send_message(message.chat.id, group_users_str)
         else:
-            bot.send_message(message.chat.id, f"You are not register.")
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
         close_db_main(connection)
 
     @bot.message_handler(commands=['delete_account'])
     @timeit
     def delete_account(message):
-        pass
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+
+        btn1 = types.KeyboardButton("👍 YES")
+        btn2 = types.KeyboardButton("👎 NO")
+
+        markup_1.add(btn1, btn2)
+
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+
+        telegram_id: int = message.from_user.id
+        username: str | bool = bot_db.get_username_by_telegram_id(telegram_id)
+        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if username and group_id:
+            username: str = username
+            group_id: int = group_id
+
+            bot_db.update_user_last_login(username)
+            user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
+            close_db_main(connection)
+
+            if not user_is_owner:
+                bot.send_message(message.chat.id, "Are you sure you want to remove the account?",
+                                 reply_markup=markup_1)
+                bot.register_next_step_handler(message, process_delete_account, username)
+
+            else:
+                bot.send_message(message.chat.id,"You are the owner of the group: "
+                                 "either transfer the rights to manage another participant, or delete the group.")
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
     @bot.message_handler(commands=['delete_group'])
     @timeit
@@ -286,6 +322,36 @@ def main():
     @timeit
     def change_owner(message):
         pass
+
+    def process_delete_account(message, username: str):
+        user_choice: str = message.text
+
+        if user_choice == "👍 YES":
+            bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
+            bot.send_message(message.chat.id, "[===> In progress ===>]")
+
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            bot_db.delete_user_from_project(username)
+            close_db_main(connection)
+
+            markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            btn1 = types.KeyboardButton("Start")
+            markup_1.add(btn1)
+
+            bot.send_message(message.chat.id, "Your account is completely deleted!", reply_markup=markup_1)
+            logger_bot.info(f"User deleted the account. ID: {message.from_user.id}")
+
+        elif user_choice == "👎 NO":
+            bot.send_message(message.chat.id, "We are glad that you stay with us!")
+            start(message)
+
+        else:
+            bot.send_message(message.chat.id, "Your message is not clear to us, "
+                                              "please, when choosing, use the buttons at the bottom of the screen.")
+            start(message)
+            logger_bot.info(f"Unrecognized message when deleting an account. "
+                            f"ID: {message.from_user.id}, message: {user_choice}")
 
     def process_delete_record(message):
         record_id: str = message.text
@@ -439,7 +505,10 @@ def main():
     @bot.message_handler(content_types=['text'])
     def text(message) -> None:
 
-        if message.text == "❓ Help":
+        if message.text == "Start":
+            start(message)
+
+        elif message.text == "❓ Help":
             help(message)
 
         elif message.text == "📎 Link to GitHub":
