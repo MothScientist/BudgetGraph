@@ -236,10 +236,10 @@ def settings(username):
     group_id: int = dbase.get_group_id_by_token(token)
     group_owner: str = dbase.get_username_group_owner(token)
 
-    group_members_data: list = dbase.get_group_members_data(group_id)
+    group_users_data: list = dbase.get_group_users_data(group_id)
 
     return render_template("settings.html", title=f"Settings - {username}", token=token,
-                           group_owner=group_owner, group_members_data=group_members_data)
+                           group_owner=group_owner, group_users_data=group_users_data)
 
 
 @app.route('/conditions')

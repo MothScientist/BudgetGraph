@@ -263,8 +263,10 @@ def main():
             bot_db.update_user_last_login(username)
 
             group_id: int = group_id
-            group_users_list: list = bot_db.get_group_members(group_id)
-            group_users_str: str = ', '.join(str(user) for user in group_users_list)
+            group_users_list: list = bot_db.get_group_users(group_id)
+            group_owner: str = bot_db.get_group_owner_username(group_id)
+            group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
+                                             else f"{user}" for user in group_users_list)
 
             bot.send_message(message.chat.id, group_users_str)
         else:
@@ -356,7 +358,46 @@ def main():
     @bot.message_handler(commands=['change_owner'])
     @timeit
     def change_owner(message):
-        pass
+        telegram_id: int = message.from_user.id
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if group_id:
+            current_owner: str = bot_db.get_group_owner_username(group_id)
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+            close_db_main(connection)
+            if current_owner == username:
+                bot.send_message(message.chat.id, "Write below the name of the user (from the list)"
+                                              " you want to assign as the owner of the group:")
+                get_group_users(message)
+                bot.register_next_step_handler(message, process_change_owner, group_id)
+            else:
+                bot.send_message(message.chat.id, "Only the current owner can change the group owner.")
+
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+    def process_change_owner(message, group_id: int):
+        new_owner: str = message.text
+
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+
+        group_users: list = bot_db.get_group_users(group_id)
+
+        if new_owner in group_users:
+            if bot_db.update_group_owner(new_owner, group_id):
+                bot.send_message(message.chat.id, "Group owner has been changed.")
+            else:
+                bot.send_message(message.chat.id, "An error occurred while changing the group owner.")
+        else:
+            bot.send_message(message.chat.id, "Check the correct spelling of the username.\n"
+                                              "There is no such username in the group.")
+        close_db_main(connection)
 
     def process_delete_account(message, username: str):
         user_choice: str = message.text
