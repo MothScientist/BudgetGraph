@@ -316,7 +316,42 @@ def main():
     @bot.message_handler(commands=['delete_group'])
     @timeit
     def delete_group(message):
-        pass
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+
+        btn1 = types.KeyboardButton("🌧️ YES")
+        btn2 = types.KeyboardButton("🌤️ NO")
+
+        markup_1.add(btn1, btn2)
+
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+
+        telegram_id: int = message.from_user.id
+        username: str | bool = bot_db.get_username_by_telegram_id(telegram_id)
+        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if username and group_id:
+            username: str = username
+            group_id: int = group_id
+
+            bot_db.update_user_last_login(username)
+            user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
+            close_db_main(connection)
+
+            if user_is_owner:
+                bot.send_message(message.chat.id, "Are you sure you want to delete the group?\n"
+                                                  "(A table and all participants will be deleted)",
+                                 reply_markup=markup_1)
+                bot.register_next_step_handler(message, process_delete_group, group_id)
+
+            else:
+                bot.send_message(message.chat.id, "The group can only be removed by its owner"
+                                                  " - contact the owner of the group, or delete the account.")
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
     @bot.message_handler(commands=['change_owner'])
     @timeit
@@ -352,6 +387,36 @@ def main():
             start(message)
             logger_bot.info(f"Unrecognized message when deleting an account. "
                             f"ID: {message.from_user.id}, message: {user_choice}")
+
+    def process_delete_group(message, group_id: int):
+        user_choice: str = message.text
+
+        if user_choice == "🌧️ YES":
+            bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
+            bot.send_message(message.chat.id, "[===> In progress ===>]")
+
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            bot_db.delete_group_with_users(group_id)
+            close_db_main(connection)
+
+            markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            btn1 = types.KeyboardButton("Start")
+            markup_1.add(btn1)
+
+            bot.send_message(message.chat.id, "The group and users are completely deleted!", reply_markup=markup_1)
+            logger_bot.info(f"User deleted the group. ID: {message.from_user.id}, group #{group_id}")
+
+        elif user_choice == "🌤️ NO":
+            bot.send_message(message.chat.id, "We are glad that you stay with us!")
+            start(message)
+
+        else:
+            bot.send_message(message.chat.id, "Your message is not clear to us, "
+                                              "please, when choosing, use the buttons at the bottom of the screen.")
+            start(message)
+            logger_bot.info(f"Unrecognized message when deleting group. "
+                            f"ID: {message.from_user.id}, message: {user_choice}, group #{group_id}")
 
     def process_delete_record(message):
         record_id: str = message.text
