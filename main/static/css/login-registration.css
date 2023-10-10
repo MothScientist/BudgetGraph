@@ -1,199 +1,168 @@
 @import "styles.css";
-
-.sign-up-button{
-  position: absolute;
-  top: 10px;
-  right: 70px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  width: 3%;
-  height: auto;
+@import "colors.css";
+.container{
+  flex: 1 0 auto;
+  padding-top: 10vh;
 }
-
-.sign-in-button{
-  position: absolute;
-  top: 10px;
-  right: 70px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  width: 3%;
-  height: auto;
-}
-
-.tg-button{
-  position: absolute;
-  top: 8px;
-  right: 145px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  width: 3%;
-  height: auto;
-}
-
-.github-button{
-  position: absolute;
-  top: 8px;
-  right: 220px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  width: 2.8%;
-  height: auto;
-}
-
-.header-1 {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.header-2 {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: -5px;
-  margin-bottom: 10px;
-}
-
-.home-button {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  width: 3.5%;
-  height: auto;
-}
-
-.container_1 {
-  background-color: #E0FFFF;
+.links-wrapper {
   display: flex;
-  flex-direction: column;
-  align-items: normal;
-  justify-content: center;
-  width: 400px;
-  height: 150px;
-  margin: 100px auto;
-  border: 1px solid #ccc;
-  padding: 20px;
+  justify-content: space-between;
+  width: 90%;
+  align-items: flex-start;
+}
+.back__button {
+  height: 35px;
+  width: 35px;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 50%;
+  box-shadow: none;
+  border: none;
+  background-color: inherit;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.5s ease-in-out;
+}
+.link__img {
+  height: 100%;
+  width: 100%;
+  object-fit: scale-down;
 }
 
-.container_2 {
-  background-color: #E0FFFF;
+.social-button{
+  height: 35px;
+  width: 35px;
+  border-radius: 50%;
+  margin: 0 10px;
+}
+
+.form-wrapper {
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 400px;
-  height: 200px;
-  margin: 100px auto;
-  border: 1px solid #ccc;
-  padding: 20px;
+
+  max-width: 40vw;
+  min-width: 40vw;
+padding: 30px 20px;
+font-family: "Schibsted Grotesk", sans-serif;
+  font-size: 16px;
+  border-radius: 35px;
 }
 
-.form{
-  margin-left: -10px;
+.form-title {
+  padding-top: 30px;
+    margin: 0;
+    margin-bottom: 20px;
+    font-family: "Unica One", cursive;
+    font-size: 54px;
 }
-
-
-input[type="text"],
-input[type="password"]{
+.form-area{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  row-gap: 15px;
   width: 100%;
-  margin-bottom: 10px;
-  padding: 5px;
 }
+.form-area a {
+  text-decoration: none;
+  color: var(--white);
+  transition: color 0.2s ease-in-out;
 
-.password-field {
-    position: relative;
+  letter-spacing: 1px;
 }
-
-#toggle-password {
-  position: absolute;
-  top: 40%;
-  right: -10px;
-  transform: translateY(-50%);
-  background-color: transparent;
+.form-area a:hover {
+  color: var(--media-hover);
+}
+.form-text-input{
+  display: block;
+  font-size: 16px;
+  padding: 5px 10px;
+  height: 25px;
+  width: 80%;
+  font-family: "Schibsted Grotesk", sans-serif;
+  padding: 5px 10px;
+  border-radius: 5px;
   border: none;
+}
+.form-text-input:focus{
+  outline: 1px solid var(--black);
+}
+.hide-show-field{
+  height: 25px;
+  width: 80%;
+  padding: 5px 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  background-color: var(--white);
+}
+.hide-show:focus-within{
+  outline: 1px solid var(--black);
+}
+.hide-show-field > input{
+  margin: 0;
+  border: none;
+  font-size: 16px;
+  flex-grow: 2;
+}
+.hide-show-field > input:focus{
   outline: none;
 }
-
-#password {
-    padding-right: 5px;
-}
-
-
-#toggle-password img {
-  background-color: transparent;
-  width: 20px;
+#toggle-visability{
   height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  z-index: 2;
 }
-
-.clear-button {
-  position: fixed;
-  left: 50%;
-  bottom: 350px;
-  transform: translateX(-50%);
-  background-color: #ffbb00;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  color: #fff;
-  padding: 8px 16px;
+#hide-image-password, #hide-image-token{
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.flash {
+  font-family: "Schibsted Grotesk", sans-serif;
+  font-weight: bold;
   font-size: 16px;
-  border-radius: 4px;
-}
-
-.link-button {
-  background-image: linear-gradient(to right, deepskyblue, blue);
-  background-color: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  color: #fff;
-  padding: 0.7% 2.3%;
-  font-size: 16px;
-  border-radius: 4px;
-  animation: gradient 5s ease-in-out infinite;
-}
-
-@keyframes gradient {
-  0% { background: deepskyblue; }
-  50% { background: blue; }
-  100% { background: deepskyblue; }
+  letter-spacing: 1px;
 }
 
 .flash.success{
-  position: fixed;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 237px;
-  padding: 3px;
-  border: 1px solid #21DB56;
-  background: #AEFFC5;
+  color: rgb(15, 156, 15);
 }
-
-.flash.success_token{
-  position: fixed;
-  top: 48%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 500px;
-  padding: 5px;
-  border: 1px solid #21DB56;
-  background: #AEFFC5;
-}
-
 .flash.error{
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  padding: 5px;
-  border: 1px solid #FF4343;
-  background: #FF9C9C;
+  color: rgb(196, 18, 18);
 }
+.flash.success_token{
+  color: rgb(15, 156, 15);
+}
+.reg-button {
+  font-family: "Schibsted Grotesk", sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 1px;
+  height: 40px;
+  width: fit-content;
+  padding: 2px 25px;
+  color: var(--white);
+  text-decoration: none;
+  text-align: center;
+  border-radius: 25px;
+  box-shadow: none;
+  border: none;
+  transition: background-color 0.5s ease-in-out;
+  cursor: pointer;
+}
+.reg-button:hover{
+  background-color: var(--button-hover);
+  }

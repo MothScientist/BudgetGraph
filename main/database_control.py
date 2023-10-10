@@ -168,15 +168,15 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: {username}")
             return False
 
-    def auth_by_username(self, username: str, psw_hash: str, token: str) -> bool:
+    def auth_by_username(self, username: str, psw_hash: str) -> bool:
         """
         Function to confirm user authorization using three parameters
         :return: True | False
         """
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE username = ? AND password_hash = ? AND EXISTS (
-                    SELECT token FROM Groups WHERE Groups.id = Users.group_id AND token = ?)""",
-                               (username, psw_hash, token))
+                    SELECT token FROM Groups WHERE Groups.id = Users.group_id)""",
+                               (username, psw_hash))
             res = self.__cur.fetchone()
             if res:
                 return True
@@ -184,7 +184,7 @@ class DatabaseQueries:
                 return False
 
         except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Params: username: {username}, psw_hash: {psw_hash}, token: {token}")
+            logger_database.error(f"{str(err)}, Params: username: {username}, psw_hash: {psw_hash}")
             return False
 
     def select_data_for_household_table(self, group_id: int, n: int) -> list:

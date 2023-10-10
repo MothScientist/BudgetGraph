@@ -128,11 +128,10 @@ def login():
     if request.method == "POST":
         username: str = request.form["username"]
         psw: str = request.form["password"]
-        token: str = request.form["token"]
         dbase = DatabaseQueries(get_db())
         psw_salt: str = dbase.get_salt_by_username(username)
 
-        if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt), token):
+        if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt)):
 
             session["userLogged"] = username
             dbase.update_user_last_login(username)

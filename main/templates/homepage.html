@@ -1,84 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
-</head>
-<body class="homepage">
-  <header>
-      <div class="logo">
-        <span class="logo-text">Budget Control project</span>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/homepage.css') }}"
+    />
+  </head>
+
+  <body class="main-container">
+    <header class="header light-block">
+      <p class="logo">Budget Control Project</p>
+    </header>
+    <main class="container light-block">
+      <div class="title-block light-block">
+        <h1 class="title-block__title">RULE YOUR FINANCIES</h1>
+        <div class="title-block__slogan">
+          <p>
+            Tired of the money monster lurking in the shadows, gnawing at your
+            wallet? Introducing Budget Control Project, the ultimate weapon to slay the
+            beast and dance on its financial carcass!
+          </p>
+        </div>
+        <div class="title-block__buttons">
+          <button
+            onclick="location.href='/registration'"
+            class="title-block__button dark"
+          >
+            Join now
+          </button>
+          <button
+            onclick="location.href='/login'"
+            class="title-block__button title-block__button-light block-color"
+          >
+            Sign in
+          </button>
+        </div>
       </div>
 
-      <a href="/registration">
-        <img src="{{ url_for('static', filename='img/sign-up.png') }}" alt="Sign up" class="sign-up-button">
-      </a>
-
-      <a href="/login">
-        <img src="{{ url_for('static', filename='img/sign-in.png') }}" alt="Sign in" class="sign-in-button">
-      </a>
-
-      <a href="https://t.me/budget_control1bot">
-        <img src="{{ url_for('static', filename='img/telegram.png') }}" alt="Telegram bot" class="tg-button">
-      </a>
-
-      <a href="https://github.com/MothScientist/budget_control">
-        <img src="{{ url_for('static', filename='img/github.png') }}" alt="Github" class="github-button">
-      </a>
-  </header>
-
-  <div class="about">
-      <ul>
-          <h3>What is this and why?</h3>
-          This project was created to control your personal/family budget.<br><br>
-          We place our main emphasis on complete and unconditional confidentiality and reliability of storing and processing your data.<br><br>
-          Minimalistic design, ease of use and fast communication speed.<br><br>
-          We really hope you join our team!
-      </ul>
-
-      <ul>
-          <h3>How is your data stored and processed?</h3>
-          Dear project visitors,<br>
-          Our team values your confidentiality and privacy.<br><br>
-          Our site strictly complies with all applicable laws and standards regarding the protection of personal information. We take measures to protect your data from unauthorized access, modification, transfer or destruction.<br><br>
-          All information you provide to us is used solely for purposes related to providing our services to you. We do not disclose your information to third parties.<br><br>
-          We also strictly monitor the security of data transmission through our website. All your personal data is transmitted via secure communication channels and stored on reliable servers with physical and electronic security.<br><br>
-          Best regards, control budget project team.
-      </ul>
-
-      <ul>
-          <h3>Can I delete my account and income/expense table?</h3>
-          Sure!<br>
-          We can completely delete your account along with the entire group and income/expense history.
-      </ul>
-
-      <ul>
-          <h3>Support and FAQ</h3>
-          support@support.org
-      </ul>
-  </div>
-
-  <div class="ad-container">
-      <div class="ad-box">
-          <h1>Space for your advertising #1</h1>
+      <div class="card-container">
+        <div class="outer-card dark">
+          <div class="inner-card">
+            <img
+              alt="none"
+              src="../static/img/coins.jpg"
+              class="card__img clip-arrow-right"
+            />
+          </div>
+        </div>
+        <div class="outer-card block-color">
+          <div class="inner-card">
+            <img
+              alt="none"
+              src="../static/img/bankomat.jpg"
+              class="card__img"
+            />
+          </div>
+        </div>
+        <div class="outer-card block-color">
+          <div class="inner-card">
+            <img
+              alt="none"
+              src="../static/img/dollars.jpg"
+              class="card__img clip-arrow-left"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="media dark-block">
+        <div class="media-wrapper">
+          <h3 class="media__title">Don't miss out!</h3>
+          <div class="media__description">
+            <p>
+              Unlock the secrets of Budget Control Project with timely tips and tricks.
+              Sign up for financial freedom!
+            </p>
+          </div>
+          <div  class="media__buttons">
+            <button onclick="location.href='#'" class="media__button">
+              <img class="media__img" src="../static/img/github.png" />
+            </button>
+            <button onclick="location.href='#'" class="media__button">
+              <img class="media__img" src="../static/img/telegram.png" />
+            </button>
+            
+          </div>
+        </div>
       </div>
 
-      <div class="ad-box">
-        <h1>Space for your advertising #2</h1>
+      <div class="faq dark-block">
+        <div class="faq-wrapper">
+          <h3 class="faq__title">Frequently Asked Questions</h3>
+          <div class="questions">
+            <div class="question">
+              <h5 class="question__title">
+                Is Budget Control Project suitable for beginners?
+              </h5>
+              <p class="question__text">
+                Absolutely! Budget Control Project is designed for both beginners and
+                experienced budgeters alike, providing an intuitive platform to
+                manage your finances.
+              </p>
+            </div>
+            <div class="question">
+              <h5 class="question__title">
+                Can I use Budget Control Project on mobile?
+              </h5>
+              <p class="question__text">
+                Indeed! Budget Control Project has a mobile app available so you can
+                control your finances on-the-go.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-  </div>
-
-  <footer>
-      <div id="gradient-line"></div>
-      <div class="content">
-          <p><a href="https://www.flaticon.com/free-icons/money" title="money icons">Money icons created by Freepik - Flaticon</a></p>
-          <p><a href="https://www.flaticon.com/free-icons/register" title="register icons">Register icons created by Prosymbols - Flaticon</a></p>
-          <p><a href="https://www.flaticon.com/free-icons/sign-up" title="sign up icons">Sign up icons created by Freepik - Flaticon</a></p>
-          <p><a href="https://www.flaticon.com/free-icons/telegram" title="telegram icons">Telegram icons created by Pixel perfect - Flaticon</a></p>
-          <a href="https://www.flaticon.com/free-icons/github" title="github icons">GitHub's icons created by Pixel perfect - Flaticon</a>
-          <p>Background from <a href="https://abrakadabra.fun">abrakadabra.fun</a></p>
+    </main>
+    <footer class="footer dark-block">
+      <div class="footer-wrapper">
+        <div class="copyrights">
+          <a
+            href="https://www.flaticon.com/free-icons/money"
+            title="money icons"
+            >Money icons created by Freepik - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/register"
+            title="register icons"
+            >Register icons created by Prosymbols - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/sign-up"
+            title="sign up icons"
+            >Sign up icons created by Freepik - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/telegram"
+            title="telegram icons"
+            >Telegram icons created by Pixel perfect - Flaticon</a
+          >
+          <a
+            href="https://www.flaticon.com/free-icons/github"
+            title="github icons"
+            >GitHub's icons created by Pixel perfect - Flaticon</a
+          >
+          <p>
+            Background from
+            <a href="https://abrakadabra.fun">abrakadabra.fun</a>
+          </p>
+        </div>
       </div>
-  </footer>
-</body>
+    </footer>
+  </body>
 </html>
