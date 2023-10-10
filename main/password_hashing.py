@@ -19,3 +19,6 @@ def getting_hash(secure_key: str, salt: str, iterations=512, key_length=32, hash
     :return: hash in hex format
     """
     return pbkdf2_hmac(hash_algorithm, secure_key.encode('utf-8'), salt.encode('utf-8'), iterations, key_length).hex()
+
+
+# print(getting_hash("34v534v53v5", ""))

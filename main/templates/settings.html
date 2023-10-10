@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+</head>
+
+<body class="settings">
+
+</body>
+<p2>Token: {{ token }}</p2></br>
+<p2>Group owner: {{ group_owner }}</p2></br>
+
+
+
+      <ul>
+        {% for user_data in get_group_users_data %}
+            <ol>
+                ----------------------------</br>
+                Username: {{ user_data[0] }}</br>
+                </br>
+                Last login: {{ user_data[1] }}</br>
+                ----------------------------</br></br>
+            </ol>
+        {% endfor %}
+      </ul>
+
+
+</html>

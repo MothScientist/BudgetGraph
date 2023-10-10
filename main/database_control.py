@@ -24,7 +24,7 @@ class DatabaseQueries:
 
 # Database sampling methods (SELECT)
 
-    def get_username_by_telegram_id(self, telegram_id: int) -> bool | str:
+    def get_username_by_telegram_id(self, telegram_id: int) -> str | bool:
         """
         get username in the Users table by telegram_link value.
         :return: username or False
@@ -40,6 +40,25 @@ class DatabaseQueries:
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
+            return False
+
+    def get_telegram_id_by_username(self, username: str) -> str | bool:
+        """
+
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT telegram_id FROM Users WHERE username = ?""", (username,))
+            res = self.__cur.fetchone()
+
+            if res:  # If a user with this link is found
+                return res[0]
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {username}")
             return False
 
     def get_group_id_by_token(self, token: str) -> int:
@@ -59,10 +78,10 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: {token}")
             return 0
 
-    def get_group_id_by_telegram_id(self, telegram_id: int) -> int | bool:
+    def get_group_id_by_telegram_id(self, telegram_id: int) -> int:
         """
         get the group id using the telegram id.
-        :return: id | False.
+        :return: group id or 0.
         """
         try:
             self.__cur.execute("""SELECT group_id FROM Users WHERE telegram_id = ?""", (telegram_id,))
@@ -71,11 +90,30 @@ class DatabaseQueries:
             if res:
                 return res[0]
             else:
-                return False
+                return 0
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
-            return False
+            return 0
+
+    def get_group_id_by_username(self, username: str) -> int:
+        """
+
+        :param username:
+        :return:
+        """
+        try:
+            self.__cur.execute("""SELECT group_id FROM Users WHERE username = ?""", (username,))
+            res = self.__cur.fetchone()
+
+            if res:
+                return res[0]
+            else:
+                return 0
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: {username}")
+            return 0
 
     def get_token_by_username(self, username: str) -> str:
         """
@@ -159,10 +197,16 @@ class DatabaseQueries:
         table_name = f"budget_{group_id}"
 
         try:
-            self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
-            result = self.__cur.fetchall()
-            result_list = [list(row) for row in result]
-            return result_list
+            if n == 0:
+                self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC")
+                result = self.__cur.fetchall()
+                result_list = [list(row) for row in result]
+                return result_list
+            else:
+                self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
+                result = self.__cur.fetchall()
+                result_list = [list(row) for row in result]
+                return result_list
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: group id: {group_id}, n: {n}, table name: {table_name}")
@@ -257,6 +301,117 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: username: {username}")
             return False
 
+    def get_username_group_owner(self, token: str) -> str | bool:
+        """
+        allows you to get the username of the group owner using the group token.
+        :param token:
+        :return: username | False
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
+                               f" (SELECT owner FROM Groups WHERE token = ?)", (token,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: token: {token}")
+            return False
+
+    def check_username_is_group_owner(self, username: str, group_id: int) -> bool:
+        """
+
+        :param username:
+        :param group_id:
+        :return: True | False
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
+                               f" (SELECT owner FROM Groups WHERE id = ?)", (group_id,))
+            res = self.__cur.fetchone()
+            if str(res[0]) == username:
+                return True
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
+            return False
+
+    def get_group_users_data(self, group_id: int) -> list:
+        """
+
+        :param group_id:
+        :return: list (empty or with usernames of group members)
+        """
+        try:
+            self.__cur.execute(f"SELECT username, last_login FROM Users WHERE group_id=?", (group_id,))
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            return result_list
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return []
+
+    def get_group_owner_username(self, group_id: int) -> str:
+        """
+
+        :param group_id:
+        :return: str
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id = "
+                               f"(SELECT owner FROM Groups WHERE id = ?)", (group_id,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+            else:
+                return ""
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return ""
+
+    def get_group_users(self, group_id: int) -> list:
+        """
+
+        :param group_id:
+        :return: list (empty or with usernames of group members)
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE group_id=?", (group_id,))
+            result = self.__cur.fetchall()
+            result_list = [str(row[0]) for row in result]
+            return result_list
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return []
+
+    def check_limit_users_in_group(self, token: str) -> bool:
+        """
+        by token checks the group's filling limit.
+
+        if there is no group with such a token, it will return False.
+        :param token:
+        :return: bool
+        """
+        try:
+            self.__cur.execute(f"SELECT COUNT(id) FROM Users WHERE group_id ="
+                               f" (SELECT id FROM Groups WHERE token=?)", (token,))
+            res = self.__cur.fetchone()
+            if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
+                return True
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: token: {token}")
+            return False
+
 # Methods for inserting data into a database (INSERT)
 
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
@@ -333,8 +488,8 @@ class DatabaseQueries:
 
     def update_user_last_login(self, username: str) -> None:
         """
-        changes the user's last login time in the last_login column in the Users table.
-        :return: none
+        Changes the user's last login time in the last_login column in the Users table.
+        :return: None
         """
         try:
             self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime')
@@ -344,13 +499,35 @@ class DatabaseQueries:
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: username: {username}")
 
+    def update_group_owner(self, username: str, group_id: int) -> bool:
+        """
+        Changes the owner of a group to another user from that group.
+
+        Additionally, there is a check for the presence of the specified user in the group.
+        :return: True | False
+        """
+        try:
+            telegram_id: int | bool = self.get_telegram_id_by_username(username)
+            if telegram_id and self.get_group_id_by_username(username) == group_id:
+                self.__cur.execute("""UPDATE Groups SET owner = ? WHERE id = ?""", (telegram_id, group_id,))
+                self.__db.commit()
+                return True
+            else:
+                logger_database.error(f"! Update group owner, but the new owner is not in this group: "
+                                      f"username: {username}, group id: {group_id}, telegram ID: {telegram_id}")
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
+            return False
+
 # Methods for deleting database data (DELETE)
 
     def delete_budget_entry_by_id(self, group_id: int, record_id: int) -> bool:
         """
-        removes an entry from the group budget table.
+        Removes an entry from the group budget table.
         :param group_id:
-        :param record_id: row id in the table
+        :param record_id: Row id in the table
         :return: True | False
         """
         table_name = f"budget_{group_id}"
@@ -365,6 +542,52 @@ class DatabaseQueries:
             return False
 
         else:
+            return True
+
+    def delete_user_from_project(self, username: str) -> bool:
+        """
+        Removes a user from a group (not the owner)
+        :param username:
+        :return: True | False
+        """
+        try:
+            group_id: int | bool = self.get_group_id_by_username(username)
+            if group_id:
+                group_id: int = group_id
+                if not self.check_username_is_group_owner(username, group_id):
+                    self.__cur.execute("""DELETE FROM Users WHERE username = ?""", (username,))
+                    self.__db.commit()
+                else:
+                    logger_database.error(f"Attempting to remove group owner separately from group, "
+                                          f"username: {username}")
+                    return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: username: {username}")
+            return False
+
+        else:
+            logger_database.error(f"User {username} has been removed from the database and from group #{group_id}")
+            return True
+
+    def delete_group_with_users(self, group_id: int) -> bool:
+        """
+        Deletes the group table along with all its members (including the owner)
+        :param group_id:
+        :return: True | False
+        """
+        try:
+            self.__cur.execute("""DELETE FROM Users WHERE group_id = ?""", (group_id,))
+            self.__cur.execute("""DELETE FROM Groups WHERE id = ?""", (group_id,))
+            self.__cur.execute(f"""DROP TABLE budget_{group_id}""")
+            self.__db.commit()
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return False
+
+        else:
+            logger_database.error(f"Group #{group_id} has been completely deleted")
             return True
 
 
@@ -473,3 +696,7 @@ def create_table_group(table_name: str) -> None:
 
 if __name__ == '__main__':
     create_db()
+    # connection = connect_db()
+    # bot_db = DatabaseQueries(connection)
+    # print(bot_db.delete_group_with_users(2))
+    # close_db_main(connection)

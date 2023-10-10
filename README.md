@@ -5,13 +5,16 @@ within the scope of its purpose.</br></br>
 
 | Technology                                                                                                   | Version |
 |--------------------------------------------------------------------------------------------------------------|---------|
-| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)       | 3.11.5  |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)       | 2.3.3   |
-| **pyTelegramBotAPI**                                                                                         | 4.13.0  |
+| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)       | 3.12.0  |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)       | 3.0.0   |
+| **pyTelegramBotAPI**                                                                                         | 4.14.0  |
 | ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) | -       |
 
 
 ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+
+## Note about hashlib.pbkdf2_hmac(): 
+#### Changed in version 3.12: Function now only available when Python is built with OpenSSL. The slow pure Python implementation has been removed.
 
 ## Installation:
 ### For Linux:
