@@ -69,26 +69,22 @@ p {
 
 */
 
-
-
-
 @import url("https://fonts.googleapis.com/css2?family=Schibsted+Grotesk&family=Unica+One&display=swap");
 @import "colors.css";
 
-
-
-html, body{
+html,
+body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-
-.main-container{
+.main-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   max-height: 100vh;
+  
 }
 
 .header {
@@ -118,23 +114,25 @@ html, body{
   font-size: 16px;
   font-weight: bold;
 }
-.light-block{
+.light-block {
   background-color: var(--white);
 }
 
-.dark-block{
+.dark-block {
   background-color: var(--white);
 }
 
-.block-color{
+.block-color {
   background-color: var(--block-color);
 }
 
-.dark{
+.dark {
   background-color: var(--black);
 }
-
-.button{
+.dark-button{
+  background-color: var(--forest);
+}
+.button {
   text-decoration: none;
   text-align: center;
   box-shadow: none;
@@ -180,26 +178,24 @@ html, body{
   transition: color 0.5s ease-in-out;
 }
 
-.copyrights a:hover{
+.copyrights a:hover {
   color: var(--media-hover);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.ad-wrapper {
+  padding: 20px 0;
+}
+.ad {
+  margin: 0 auto;
+  width: 728px;
+  height: 90px;
+  background-color: #aaaaaa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ad > p{
+  font-family: "Schibsted Grotesk", sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
