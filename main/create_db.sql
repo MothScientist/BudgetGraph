@@ -11,5 +11,6 @@ CREATE TABLE IF NOT EXISTS Users (
     password_hash text NOT NULL,
     group_id integer NOT NULL,
     telegram_id integer NOT NULL UNIQUE,
-    last_login real NOT NULL
+    last_login real NOT NULL,
+    is_premium integer NOT NULL CHECK (is_premium IN (0, 1))
 );

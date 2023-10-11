@@ -421,7 +421,7 @@ class DatabaseQueries:
         """
         try:
             self.__cur.execute("INSERT INTO Users "
-                               "VALUES(NULL, ?, ?, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'))",
+                               "VALUES(NULL, ?, ?, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), 0)",
                                (username, psw_salt, psw_hash, group_id, telegram_id,))
             self.__db.commit()
 
