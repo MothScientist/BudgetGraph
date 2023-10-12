@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{ title }}</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/login-registration.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}"/>
     <script src="{{ url_for('static', filename='js/AcceptButton.js') }}"></script>
     <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
   </head>
@@ -19,20 +16,18 @@
       <div class="form-wrapper block-color">
         <div class="links-wrapper">
           <button onclick="location.href='/'" class="back__button">
-            <img class="link__img" src="../static/img/back-arrow.png" />
+            <img class="link__img" src="{{ url_for('static', filename='img/back-arrow.png') }}"/>
           </button>
           <div class="social-links">
             <button
               onclick="location.href='https://t.me/budget_control1bot'"
-              class="button social-button"
-            >
-              <img class="link__img" src="../static/img/telegram.png" />
+              class="button social-button">
+              <img class="link__img" src="{{ url_for('static', filename='img/telegram.png') }}"/>
             </button>
             <button
               onclick="location.href='https://github.com/MothScientist/budget_control'"
-              class="button social-button"
-            >
-              <img class="link__img" src="../static/img/github.png" />
+              class="button social-button">
+              <img class="link__img" src="{{ url_for('static', filename='img/github.png') }}"/>
             </button>
           </div>
         </div>

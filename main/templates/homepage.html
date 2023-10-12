@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{ title }}</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/homepage.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}"/>
   </head>
 
   <body class="main-container">
@@ -46,29 +43,17 @@
       <div class="card-container">
         <div class="outer-card block-color">
           <div class="inner-card">
-            <img
-              alt="none"
-              src="../static/img/coins.jpg"
-              class="card__img clip-arrow-right"
-            />
+            <img alt="none" src="{{ url_for('static', filename='img/coins.jpg') }}" class="card__img clip-arrow-right"/>
           </div>
         </div>
         <div class="outer-card block-color">
           <div class="inner-card">
-            <img
-              alt="none"
-              src="../static/img/bankomat.jpg"
-              class="card__img"
-            />
+            <img alt="none" src="{{ url_for('static', filename='img/bankomat.jpg') }}" class="card__img"/>
           </div>
         </div>
         <div class="outer-card block-color">
           <div class="inner-card">
-            <img
-              alt="none"
-              src="../static/img/dollars.jpg"
-              class="card__img clip-arrow-left"
-            />
+            <img alt="none" src="{{ url_for('static', filename='img/dollars.jpg') }}" class="card__img clip-arrow-left"/>
           </div>
         </div>
       </div>
@@ -86,10 +71,10 @@
           </div>
           <div class="media__buttons">
             <button onclick="location.href='#'" class="media__button">
-              <img class="media__img" src="../static/img/github.png" />
+              <img class="media__img" src="{{ url_for('static', filename='img/github.png') }}" />
             </button>
             <button onclick="location.href='#'" class="media__button">
-              <img class="media__img" src="../static/img/telegram.png" />
+              <img class="media__img" src="{{ url_for('static', filename='img/telegram.png') }}" />
             </button>
           </div>
         </div>
@@ -127,32 +112,34 @@
         <div class="copyrights">
           <a
             href="https://www.flaticon.com/free-icons/money"
-            title="money icons"
-            >Money icons created by Freepik - Flaticon</a
-          >
+            title="money icons">
+              Money icons created by Freepik - Flaticon
+          </a>
           <a
             href="https://www.flaticon.com/free-icons/register"
-            title="register icons"
-            >Register icons created by Prosymbols - Flaticon</a
-          >
+            title="register icons">
+              Register icons created by Prosymbols - Flaticon
+          </a>
           <a
             href="https://www.flaticon.com/free-icons/sign-up"
-            title="sign up icons"
-            >Sign up icons created by Freepik - Flaticon</a
-          >
+            title="sign up icons">
+              Sign up icons created by Freepik - Flaticon
+          </a>
           <a
             href="https://www.flaticon.com/free-icons/telegram"
-            title="telegram icons"
-            >Telegram icons created by Pixel perfect - Flaticon</a
-          >
+            title="telegram icons">
+              Telegram icons created by Pixel perfect - Flaticon
+          </a>
           <a
             href="https://www.flaticon.com/free-icons/github"
-            title="github icons"
-            >GitHub's icons created by Pixel perfect - Flaticon</a
-          >
+            title="github icons">
+              GitHub's icons created by Pixel perfect - Flaticon
+          </a>
           <p>
             Background from
-            <a href="https://abrakadabra.fun">abrakadabra.fun</a>
+            <a href="https://abrakadabra.fun">
+                abrakadabra.fun
+            </a>
           </p>
         </div>
       </div>
