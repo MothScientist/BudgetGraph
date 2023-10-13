@@ -69,6 +69,7 @@ def registration():
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
+                        session.pop("userLogged", None)
                         logger_app.info(f"Successful registration: {username}. New group created: id={group_id}.")
                         flash("Registration completed successfully!", category="success")
                         flash(f"{username}, your token: {user_token}", category="success_token")
