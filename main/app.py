@@ -128,6 +128,7 @@ def login():
             logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
             return redirect(url_for("household", username=session["userLogged"]))
         else:
+            session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
             flash("Your account was not found in the database. It may have been deleted.", category="error")
             logger_app.warning(f"Failed registration attempt from browser cookies: {username}.")
 
