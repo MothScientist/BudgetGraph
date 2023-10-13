@@ -252,6 +252,24 @@ class DatabaseQueries:
                                   f"table name: {table_name}")
             return False
 
+    def check_username_is_exist(self, username: str) -> bool:
+        """
+
+        :param username:
+        :return: bool
+        """
+        try:
+            self.__cur.execute(f"SELECT id FROM Users WHERE username = ?", (username,))
+            res = self.__cur.fetchone()
+            if res:
+                return True
+            else:
+                return False
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: username: {username}")
+            return False
+
     def check_token_is_unique(self, token: str) -> bool:  # necessary if you want to reduce the token length
         try:
             self.__cur.execute(f"SELECT * FROM Groups WHERE token = ?", (token,))

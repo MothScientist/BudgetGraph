@@ -121,8 +121,15 @@ def login():
     session.permanent = True
 
     if "userLogged" in session:  # If the client has logged in before
-        logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
-        return redirect(url_for("household", username=session["userLogged"]))
+        dbase = DatabaseQueries(get_db())
+        username = session["userLogged"]
+        user_is_exist: bool = dbase.check_username_is_exist(username)
+        if user_is_exist:
+            logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
+            return redirect(url_for("household", username=session["userLogged"]))
+        else:
+            flash("Your account was not found in the database. It may have been deleted.", category="error")
+            logger_app.warning(f"Failed registration attempt from browser cookies: {username}.")
 
     # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
