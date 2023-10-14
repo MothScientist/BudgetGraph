@@ -32,7 +32,3 @@ def getting_hash(secure_key: str, salt: str,
     :return: hash in hex format
     """
     return pbkdf2_hmac(hash_algorithm, secure_key.encode('utf-8'), salt.encode('utf-8'), iterations, key_length).hex()
-
-
-print(getting_hash("", get_salt()))
-print(get_salt())
