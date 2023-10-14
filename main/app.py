@@ -62,7 +62,7 @@ def registration():
                 telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                 psw_salt: str = get_salt()  # generating salt for a new user
                 dbase = DatabaseQueries(get_db())
-                user_token: str | bool = dbase.create_new_group(telegram_id)  # we get token of the newly created group
+                user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
 
                 if user_token:
 
@@ -165,7 +165,7 @@ def household(username):
 
     dbase = DatabaseQueries(get_db())
     token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0 -> data = []
+    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
 
     if request.method == "POST":
 
@@ -175,7 +175,7 @@ def household(username):
             description = request.form.get("description-1")
 
             if value and description_validator(description):
-                if dbase.add_monetary_transaction_to_db(group_id, username, value, description):
+                if dbase.add_monetary_transaction_to_db(username, value, description):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, income: {value}, description: {description}.")
                     flash("Data added successfully.", category="success")
@@ -193,7 +193,7 @@ def household(username):
             description = request.form.get("description-2")
 
             if value and description_validator(description):
-                if dbase.add_monetary_transaction_to_db(group_id, username, value * (-1), description):
+                if dbase.add_monetary_transaction_to_db(username, value * (-1), description):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
                                     f"username: {username}, expense: {value}, description: {description}.")
                     flash("Data added successfully.", category="success")
@@ -241,7 +241,7 @@ def settings(username):
     dbase = DatabaseQueries(get_db())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)
-    group_owner: str = dbase.get_username_group_owner(token)
+    group_owner: str = dbase.get_username_group_owner_by_token(token)
 
     group_users_data: list = dbase.get_group_users_data(group_id)
 

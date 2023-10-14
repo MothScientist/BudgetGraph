@@ -1,3 +1,4 @@
+# No relevant for the current version of the project!
 ## **Disclaimer**
 All functions in this manual are described with abbreviations and simplified syntax - this is necessary to improve understanding of the principles of the project.</br></br>
 For a more accurate understanding, please look directly at these functions themselves in the project source code.

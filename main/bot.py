@@ -549,10 +549,9 @@ def main():
             bot_db = DatabaseQueries(connection)
 
             telegram_id: int = message.from_user.id
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
 
-            bot_db.add_monetary_transaction_to_db(group_id, username, value, description=description)
+            bot_db.add_monetary_transaction_to_db(username, value, description=description)
 
             close_db_main(connection)
 
@@ -604,7 +603,7 @@ def main():
         bot_db = DatabaseQueries(connection)
 
         if compare_digest(token, "None"):
-            user_token: str | bool = bot_db.create_new_group(telegram_id)
+            user_token: str = bot_db.create_new_group(telegram_id)
 
             # There is a chance to return False if an error occurred while working with the database
             if user_token:

@@ -25,10 +25,6 @@ class DatabaseQueries:
 # Database sampling methods (SELECT)
 
     def get_username_by_telegram_id(self, telegram_id: int) -> str | bool:
-        """
-        get username in the Users table by telegram_link value.
-        :return: username or False
-        """
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE telegram_id = ?""", (telegram_id,))
             res = self.__cur.fetchone()
@@ -42,12 +38,7 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
             return False
 
-    def get_telegram_id_by_username(self, username: str) -> str | bool:
-        """
-
-        :param username:
-        :return:
-        """
+    def get_telegram_id_by_username(self, username: str) -> int:
         try:
             self.__cur.execute("""SELECT telegram_id FROM Users WHERE username = ?""", (username,))
             res = self.__cur.fetchone()
@@ -55,15 +46,14 @@ class DatabaseQueries:
             if res:  # If a user with this link is found
                 return res[0]
             else:
-                return False
+                return 0
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {username}")
-            return False
+            return 0
 
     def get_group_id_by_token(self, token: str) -> int:
         """
-        get the group id using the group token.
         :return: id | 0
         """
         try:
@@ -80,7 +70,6 @@ class DatabaseQueries:
 
     def get_group_id_by_telegram_id(self, telegram_id: int) -> int:
         """
-        get the group id using the telegram id.
         :return: group id or 0.
         """
         try:
@@ -97,11 +86,6 @@ class DatabaseQueries:
             return 0
 
     def get_group_id_by_username(self, username: str) -> int:
-        """
-
-        :param username:
-        :return:
-        """
         try:
             self.__cur.execute("""SELECT group_id FROM Users WHERE username = ?""", (username,))
             res = self.__cur.fetchone()
@@ -117,8 +101,7 @@ class DatabaseQueries:
 
     def get_token_by_username(self, username: str) -> str:
         """
-        get the group token using the username.
-        :return: token | empty line
+        :return: token | empty string
         """
         try:
             self.__cur.execute("""SELECT token FROM Groups WHERE id =
@@ -135,8 +118,7 @@ class DatabaseQueries:
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
         """
-        get the group token using the telegram link.
-        :return: token | empty line.
+        :return: token | empty string
         """
         try:
             self.__cur.execute("""SELECT token FROM Groups WHERE id =
@@ -151,10 +133,9 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
             return ""
 
-    def get_salt_by_username(self, username: str) -> str | bool:
+    def get_salt_by_username(self, username: str) -> str:
         """
-        Get hash salt using username
-        :return: salt | False (if this username is not in the database)
+        :return: salt | empty string (if this username is not in the database)
         """
         try:
             self.__cur.execute("""SELECT psw_salt FROM Users WHERE username = ?""", (username,))
@@ -162,16 +143,15 @@ class DatabaseQueries:
             if res:
                 return str(res[0])
             else:
-                return False
+                return ""
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {username}")
-            return False
+            return ""
 
     def auth_by_username(self, username: str, psw_hash: str) -> bool:
         """
         Function to confirm user authorization using three parameters
-        :return: True | False
         """
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE username = ? AND password_hash = ? AND EXISTS (
@@ -213,11 +193,6 @@ class DatabaseQueries:
             return []
 
     def select_group_users_by_group_id(self, group_id: int) -> list:
-        """
-
-        :param group_id:
-        :return:
-        """
         try:
             self.__cur.execute(f"SELECT username FROM Users WHERE group_id = ?", (group_id,))
             result = self.__cur.fetchall()
@@ -232,12 +207,6 @@ class DatabaseQueries:
             return username_list
 
     def check_id_is_exist(self, group_id: int, record_id: int) -> bool:
-        """
-
-        :param group_id:
-        :param record_id:
-        :return:
-        """
         table_name = f"budget_{group_id}"
         try:
             self.__cur.execute(f"SELECT * FROM {table_name} WHERE id = ?", (record_id,))
@@ -253,11 +222,6 @@ class DatabaseQueries:
             return False
 
     def check_username_is_exist(self, username: str) -> bool:
-        """
-
-        :param username:
-        :return: bool
-        """
         try:
             self.__cur.execute(f"SELECT id FROM Users WHERE username = ?", (username,))
             res = self.__cur.fetchone()
@@ -284,11 +248,6 @@ class DatabaseQueries:
             return False
 
     def check_telegram_id_is_unique(self, telegram_id: int) -> bool:
-        """
-
-        :param telegram_id:
-        :return:
-        """
         try:
             self.__cur.execute(f"SELECT * FROM Users WHERE telegram_id = ?", (telegram_id,))
             res = self.__cur.fetchone()
@@ -302,11 +261,6 @@ class DatabaseQueries:
             return False
 
     def check_username_is_unique(self, username: str) -> bool:
-        """
-
-        :param username:
-        :return:
-        """
         try:
             self.__cur.execute(f"SELECT * FROM Users WHERE username = ?", (username,))
             res = self.__cur.fetchone()
@@ -319,10 +273,8 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: username: {username}")
             return False
 
-    def get_username_group_owner(self, token: str) -> str | bool:
+    def get_username_group_owner_by_token(self, token: str) -> str:
         """
-        allows you to get the username of the group owner using the group token.
-        :param token:
         :return: username | False
         """
         try:
@@ -332,19 +284,13 @@ class DatabaseQueries:
             if res:
                 return str(res[0])
             else:
-                return False
+                return ""
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: token: {token}")
-            return False
+            return ""
 
     def check_username_is_group_owner(self, username: str, group_id: int) -> bool:
-        """
-
-        :param username:
-        :param group_id:
-        :return: True | False
-        """
         try:
             self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
                                f" (SELECT owner FROM Groups WHERE id = ?)", (group_id,))
@@ -360,9 +306,7 @@ class DatabaseQueries:
 
     def get_group_users_data(self, group_id: int) -> list:
         """
-
-        :param group_id:
-        :return: list (empty or with usernames of group members)
+        :return: list (empty or with usernames of group members and last_login row)
         """
         try:
             self.__cur.execute(f"SELECT username, last_login FROM Users WHERE group_id=?", (group_id,))
@@ -375,11 +319,6 @@ class DatabaseQueries:
             return []
 
     def get_group_owner_username(self, group_id: int) -> str:
-        """
-
-        :param group_id:
-        :return: str
-        """
         try:
             self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id = "
                                f"(SELECT owner FROM Groups WHERE id = ?)", (group_id,))
@@ -395,8 +334,6 @@ class DatabaseQueries:
 
     def get_group_users(self, group_id: int) -> list:
         """
-
-        :param group_id:
         :return: list (empty or with usernames of group members)
         """
         try:
@@ -414,8 +351,6 @@ class DatabaseQueries:
         by token checks the group's filling limit.
 
         if there is no group with such a token, it will return False.
-        :param token:
-        :return: bool
         """
         try:
             self.__cur.execute(f"SELECT COUNT(id) FROM Users WHERE group_id ="
@@ -435,7 +370,6 @@ class DatabaseQueries:
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
         """
         Insert a new user to the Users table
-        :return: True | False
         """
         try:
             self.__cur.execute("INSERT INTO Users "
@@ -451,16 +385,14 @@ class DatabaseQueries:
         else:
             return True
 
-    def add_monetary_transaction_to_db(self, group_id: int, username: str, amount: int, description: str = "")\
-            -> bool:
+    def add_monetary_transaction_to_db(self, username: str, amount: int, description: str = "") -> bool:
         """
         submits the "add_expense" and "add_income" forms to the database.
-        :param group_id:
         :param username: the name of the user is making the changes.
         :param amount: value of the deposited amount.
         :param description: optional parameter.
-        :return: true | False
         """
+        group_id: int = self.get_group_id_by_username(username)
         table_name = f"budget_{group_id}"
 
         try:
@@ -478,11 +410,11 @@ class DatabaseQueries:
         else:
             return True
 
-    def create_new_group(self, owner: int) -> str | bool:
+    def create_new_group(self, owner: int) -> str:
         """
         creating a new group in the Groups table and generate a new token for this group.
         :param owner: link to the telegram of the user who initiates the creation of the group.
-        :return: token | False
+        :return: token | empty string
         """
         token = get_token()
         token_is_unique: bool = self.check_token_is_unique(token)
@@ -497,7 +429,7 @@ class DatabaseQueries:
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: owner (telegram id): {owner}")
-            return False
+            return ""
 
         else:
             return token
@@ -522,10 +454,9 @@ class DatabaseQueries:
         Changes the owner of a group to another user from that group.
 
         Additionally, there is a check for the presence of the specified user in the group.
-        :return: True | False
         """
         try:
-            telegram_id: int | bool = self.get_telegram_id_by_username(username)
+            telegram_id: int = self.get_telegram_id_by_username(username)
             if telegram_id and self.get_group_id_by_username(username) == group_id:
                 self.__cur.execute("""UPDATE Groups SET owner = ? WHERE id = ?""", (telegram_id, group_id,))
                 self.__db.commit()
@@ -546,7 +477,6 @@ class DatabaseQueries:
         Removes an entry from the group budget table.
         :param group_id:
         :param record_id: Row id in the table
-        :return: True | False
         """
         table_name = f"budget_{group_id}"
 
@@ -565,8 +495,6 @@ class DatabaseQueries:
     def delete_user_from_project(self, username: str) -> bool:
         """
         Removes a user from a group (not the owner)
-        :param username:
-        :return: True | False
         """
         try:
             group_id: int | bool = self.get_group_id_by_username(username)
@@ -591,8 +519,6 @@ class DatabaseQueries:
     def delete_group_with_users(self, group_id: int) -> bool:
         """
         Deletes the group table along with all its members (including the owner)
-        :param group_id:
-        :return: True | False
         """
         try:
             self.__cur.execute("""DELETE FROM Users WHERE group_id = ?""", (group_id,))
@@ -640,7 +566,6 @@ def get_db():
 def close_db_g(error) -> None:
     """
     Closing a database connection using a Flask application object.
-    :return: None
     """
     logger = logging.getLogger('db_logger')
     if hasattr(g, "link_db"):
@@ -661,8 +586,7 @@ def close_db_main(conn):
 
 def create_db() -> None:
     """
-    Creates two main tables: Users and Groups, using a .sql file describing their structures.
-    :return: None
+    Creates two main tables: Users and Groups, using create_db.sql file describing their structures.
     """
     try:
         conn = connect_db()
@@ -685,7 +609,6 @@ def create_table_group(table_name: str) -> None:
 
     contains table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
     :param table_name: "budget_?"
-    :return: none
     """
     try:
         if not table_name_validator(table_name):
