@@ -1,3 +1,4 @@
+# No relevant for the current version of the project!
 ## **Disclaimer**
 All functions in this manual are described with abbreviations and simplified syntax - this is necessary to improve understanding of the principles of the project.</br></br>
 For a more accurate understanding, please look directly at these functions themselves in the project source code.
@@ -80,7 +81,7 @@ Because we assume that the user should enter this menu exactly 1 time.
 ```python3
 @bot.message_handler(commands=['registration'])
 def registration(message) -> None:
-    res: bool | str = bot_db.get_username_by_telegram_id(message.from_user.id)
+    res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
     
     if not res:
         bot.register_next_step_handler(message, process_username)

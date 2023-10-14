@@ -1,8 +1,12 @@
-from secrets import choice
+import os
+
+# Timeit decorator
+from time_checking import timeit
 
 
-def get_token() -> str:
+@timeit
+def get_token(key_length_bytes: int = 16) -> str:
     """
-    :return: random (entropy-based) character string of length 32
+    :return: random (entropy-based) character string of length 32 (16 bytes)
     """
-    return ''.join(choice("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@%#&*") for _ in range(32))
+    return os.urandom(key_length_bytes).hex()

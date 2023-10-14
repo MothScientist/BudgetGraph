@@ -3,12 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{ title }}</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/login-registration.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}"/>
     <script src="{{ url_for('static', filename='js/AcceptButton.js') }}"></script>
     <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/PreventFormResubmission.js') }}"></script>
   </head>
   <body class="main-container">
     <header class="header light-block">
@@ -19,20 +17,18 @@
       <div class="form-wrapper block-color">
         <div class="links-wrapper">
           <button onclick="location.href='/'" class="back__button">
-            <img class="link__img" src="../static/img/back-arrow.png" />
+            <img class="link__img" src="{{ url_for('static', filename='img/back-arrow.png') }}"/>
           </button>
           <div class="social-links">
             <button
               onclick="location.href='https://t.me/budget_control1bot'"
-              class="button social-button"
-            >
-              <img class="link__img" src="../static/img/telegram.png" />
+              class="button social-button">
+              <img class="link__img" src="{{ url_for('static', filename='img/telegram.png') }}"/>
             </button>
             <button
               onclick="location.href='https://github.com/MothScientist/budget_control'"
-              class="button social-button"
-            >
-              <img class="link__img" src="../static/img/github.png" />
+              class="button social-button">
+              <img class="link__img" src="{{ url_for('static', filename='img/github.png') }}"/>
             </button>
           </div>
         </div>
@@ -108,10 +104,10 @@
           </div>
           <p>Already has an account? <a href="/login">Sign in</a></p>
           <div class="reg-buttons">
-            <button type="submit" id="signup-button" class="reg-button dark">
+            <button type="submit" id="signup-button" class="reg-button dark-button">
               Sign up!
             </button>
-            <button type="reset" class="reg-button dark" id="clear-button">
+            <button type="reset" class="reg-button dark-button" id="clear-button">
               Clear
             </button>
           </div>

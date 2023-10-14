@@ -10,7 +10,8 @@ from database_control import get_db, close_db_g, create_table_group, DatabaseQue
 
 # Validators
 from validators.registration import registration_validator
-from validators.input_number import input_number
+from validators.description import description_validator
+from validators.input_number import input_value
 from validators.token import token_validator
 
 # Logging
@@ -61,7 +62,7 @@ def registration():
                 telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                 psw_salt: str = get_salt()  # generating salt for a new user
                 dbase = DatabaseQueries(get_db())
-                user_token: str | bool = dbase.create_new_group(telegram_id)  # we get token of the newly created group
+                user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
 
                 if user_token:
 
@@ -69,6 +70,7 @@ def registration():
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
+                        session.pop("userLogged", None)
                         logger_app.info(f"Successful registration: {username}. New group created: id={group_id}.")
                         flash("Registration completed successfully!", category="success")
                         flash(f"{username}, your token: {user_token}", category="success_token")
@@ -88,10 +90,8 @@ def registration():
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
 
-                        # redirecting the user to a personal account (he already has a group token)
-                        session["userLogged"] = username
+                        flash("Registration completed successfully!", category="success")
                         logger_app.info(f"Successful registration: {username}. Group: id={group_id}.")
-                        return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
                         logger_app.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
@@ -121,8 +121,16 @@ def login():
     session.permanent = True
 
     if "userLogged" in session:  # If the client has logged in before
-        logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
-        return redirect(url_for("household", username=session["userLogged"]))
+        dbase = DatabaseQueries(get_db())
+        username = session["userLogged"]
+        user_is_exist: bool = dbase.check_username_is_exist(username)
+        if user_is_exist:
+            logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
+            return redirect(url_for("household", username=session["userLogged"]))
+        else:
+            session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
+            flash("Your account was not found in the database. It may have been deleted.", category="error")
+            logger_app.warning(f"Failed registration attempt from browser cookies: {username}.")
 
     # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
@@ -155,51 +163,49 @@ def household(username):
 
     dbase = DatabaseQueries(get_db())
     token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0 -> data = []
+    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
 
     if request.method == "POST":
 
         if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
-            income: str = request.form.get("income")
-            income: int | bool = input_number(income)
+            value: str = request.form.get("income")
+            value: int = input_value(value)
+            description = request.form.get("description-1")
 
-            if not income:
-                flash("Error", category="error")
-
-            else:
-                description_1 = request.form.get("description-1")
-
-                if dbase.add_monetary_transaction_to_db(group_id, username, income, description_1):
+            if value and description_validator(description):
+                if dbase.add_monetary_transaction_to_db(username, value, description):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {income}, description: {description_1}.")
+                                    f"username: {username}, income: {value}, description: {description}.")
                     flash("Data added successfully.", category="success")
                 else:
                     logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {income}, description: {description_1}.")
+                                    f"username: {username}, income: {value}, description: {description}.")
                     flash("Error adding data to database.", category="error")
+
+            else:
+                flash("The value or description is invalid.", category="error")
 
         elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
-            expense: str = request.form.get("expense")
-            expense: int | bool = input_number(expense)
+            value: str = request.form.get("expense")
+            value: int = input_value(value)
+            description = request.form.get("description-2")
 
-            if not expense:
-                flash("Error", category="error")
-
-            else:
-                description_2 = request.form.get("description-2")
-
-                if dbase.add_monetary_transaction_to_db(group_id, username, expense * (-1), description_2):
+            if value and description_validator(description):
+                if dbase.add_monetary_transaction_to_db(username, value * (-1), description):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {expense}, description: {description_2}.")
+                                    f"username: {username}, expense: {value}, description: {description}.")
                     flash("Data added successfully.", category="success")
                 else:
                     logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {expense}, description: {description_2}.")
+                                    f"username: {username}, expense: {value}, description: {description}.")
                     flash("Error adding data to database.", category="error")
+
+            else:
+                flash("The value or description is invalid.", category="error")
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int | bool = input_number(record_id)
+            record_id: int | bool = input_value(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
@@ -233,7 +239,7 @@ def settings(username):
     dbase = DatabaseQueries(get_db())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)
-    group_owner: str = dbase.get_username_group_owner(token)
+    group_owner: str = dbase.get_username_group_owner_by_token(token)
 
     group_users_data: list = dbase.get_group_users_data(group_id)
 

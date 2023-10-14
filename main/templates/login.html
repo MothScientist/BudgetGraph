@@ -5,62 +5,8 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login-registration.css') }}">
     <script src="{{ url_for('static', filename='js/HidePassword.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/PreventFormResubmission.js') }}"></script>
 </head>
-<!-- <body>
-
-  <header>
-      <a href="/">
-        <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home-button">
-      </a>
-
-      <a href="/registration">
-        <img src="{{ url_for('static', filename='img/sign-up.png') }}" alt="Sign up" class="sign-up-button">
-      </a>
-
-      <a href="https://t.me/budget_control1bot">
-        <img src="{{ url_for('static', filename='img/telegram.png') }}" alt="Telegram bot" class="tg-button">
-      </a>
-
-      <a href="https://github.com/MothScientist/budget_control">
-        <img src="{{ url_for('static', filename='img/github.png') }}" alt="Github" class="github-button">
-      </a>
-  </header>
-
-  {% for category, messages in get_flashed_messages(True) %}
-  <div class="flash {{ category }}">
-    {{ messages }}<br>
-  </div>
-  {% endfor %}
-
-  <div class="container_1">
-    <div class="form">
-      <div class="header-1">Login</div>
-      <form action="/login" method="POST">
-        <input type="text" id="username" name="username" placeholder="Your name" maxlength="20">
-        <input type="password" id="token" name="token" placeholder="Token" maxlength="32">
-
-        <div class="password-field">
-        <input type="password" id="password" name="password" placeholder="Password" maxlength="32">
-        <button type="button" id="toggle-password" onclick="togglePasswordVisibility()">
-            <img id= "password-image" src="{{ url_for('static', filename='img/hide.png') }}" alt="Show/Hide Password">
-        </button>
-        </div>
-
-        <button type="submit" class="link-button">Sign in!</button>
-        <button type="reset" class = "clear-button" id="clear-button">Clear</button>
-      </form>
-    </div>
-  </div>
-
-  <footer>
-    <div id="gradient-line"></div>
-    <div class="content">
-        <p><a href="https://www.flaticon.com/free-icons/previous" title="previous icons">Previous icons created by Freepik - Flaticon</a></p>
-        <p><a href="https://www.flaticon.com/free-icons/password" title="password icons">Password icons created by th studio - Flaticon</a></p>
-    </div>
-  </footer>
-</body> -->
-
 
 <body class="main-container">
   <header class="header light-block">
@@ -70,15 +16,23 @@
   <main class="container light-block">
     <div class="form-wrapper block-color">
       <div class="links-wrapper">
-        <button onclick="location.href='/'" class="back__button">
-          <img class="link__img" src="../static/img/back-arrow.png" />
+        <button
+            onclick="location.href='/'"
+            class="back__button">
+          <img class="link__img" src="{{ url_for('static', filename='img/back-arrow.png') }}"/>
         </button>
         <div class="social-links">
-          <button onclick="location.href='https://t.me/budget_control1bot'" class="button social-button">
-            <img class="link__img" src="../static/img/telegram.png" />
+          <button
+            onclick="location.href='https://t.me/budget_control1bot'"
+            class="button social-button">
+
+            <img class="link__img" src="{{ url_for('static', filename='img/telegram.png') }}"/>
           </button>
-          <button onclick="location.href='https://github.com/MothScientist/budget_control'" class="button social-button">
-            <img class="link__img" src="../static/img/github.png" />
+
+          <button
+            onclick="location.href='https://github.com/MothScientist/budget_control'"
+            class="button social-button">
+            <img class="link__img" src="{{ url_for('static', filename='img/github.png') }}"/>
           </button>
         </div>
       </div>
@@ -90,22 +44,19 @@
           name="username"
           class="form-text-input"
           placeholder="Your name (3-20 characters)"
-          maxlength="20"
-        />
+          maxlength="20"/>
         <div class="hide-show-field">
           <input
             type="password"
             id="password"
             name="password"
             placeholder="Password (8-32 characters / at least 1 number and 1 letter)"
-            maxlength="32"
-          />
+            maxlength="32"/>
           <button
             type="button"
             id="toggle-visability"
             class="button"
-            onclick="togglePasswordVisibility()"
-          >
+            onclick="togglePasswordVisibility()">
             <img
               id="hide-image-password"
               src="{{ url_for('static', filename='img/hide.png') }}"
@@ -123,11 +74,13 @@
           <button
             type="submit"
             id="signup-button"
-            class="reg-button dark"
-          >
+            class="reg-button dark-button">
             Sign in!
           </button>
-          <button type="reset" class="reg-button dark" id="clear-button">
+          <button
+            type="reset"
+            class="reg-button dark-button"
+            id="clear-button">
             Clear
           </button>
         </div>
@@ -141,34 +94,34 @@
       <div class="copyrights">
         <a
           href="https://www.flaticon.com/free-icons/money"
-          title="money icons"
-          >Money icons created by Freepik - Flaticon</a
-        >
+          title="money icons">
+            Money icons created by Freepik - Flaticon
+        </a>
         <a
           href="https://www.flaticon.com/free-icons/register"
-          title="register icons"
-          >Register icons created by Prosymbols - Flaticon</a
-        >
+          title="register icons">
+            Register icons created by Prosymbols - Flaticon
+        </a>
         <a
           href="https://www.flaticon.com/free-icons/sign-up"
-          title="sign up icons"
-          >Sign up icons created by Freepik - Flaticon</a
-        >
+          title="sign up icons">
+            Sign up icons created by Freepik - Flaticon
+        </a>
         <a
           href="https://www.flaticon.com/free-icons/telegram"
-          title="telegram icons"
-          >Telegram icons created by Pixel perfect - Flaticon</a
-        >
+          title="telegram icons">
+            Telegram icons created by Pixel perfect - Flaticon
+        </a>
         <a
           href="https://www.flaticon.com/free-icons/github"
-          title="github icons"
-          >GitHub's icons created by Pixel perfect - Flaticon</a
-        >
+          title="github icons">
+            GitHub's icons created by Pixel perfect - Flaticon
+        </a>
         <a
           href="https://www.flaticon.com/free-icons/arrows"
-          title="arrows icons"
-          >Arrows icons created by gravisio - Flaticon</a
-        >
+          title="arrows icons">
+            Arrows icons created by gravisio - Flaticon
+        </a>
         <p>
           Background from
           <a href="https://abrakadabra.fun">abrakadabra.fun</a>
@@ -177,7 +130,5 @@
     </div>
   </footer>
 </body>
-
-
 
 </html>

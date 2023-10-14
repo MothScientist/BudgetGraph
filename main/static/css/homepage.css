@@ -164,6 +164,22 @@ background-color: var(--button-hover);
 .title-block__button-light:hover{
   background-color: var(--button-light-hover);
 }
+
+.premium-button{
+  font-family: "Schibsted Grotesk", sans-serif;
+  color: var(--white);
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 1px;
+  height: 40px;
+  width: fit-content;
+  padding: 2px 25px;
+  border-radius: 10px;
+  background: linear-gradient(to right, #4CAF50, #00bcd4, #2196F3, #9C27B0, #E91E63);
+  transform: skewX(-20deg);
+  border: 4px solid #4430f0;
+}
+
 .card-container {
   display: flex;
   align-items: center;
