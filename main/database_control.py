@@ -694,12 +694,13 @@ def create_table_group(table_name: str) -> None:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        query = (f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY AUTOINCREMENT, "
+        query = (f"CREATE TABLE IF NOT EXISTS {table_name} "
+                 f"(id integer PRIMARY KEY AUTOINCREMENT, "
                  f"total integer NOT NULL, "
                  f"username text NOT NULL, "
                  f"transfer integer NOT NULL, "
                  f"date_time text NOT NULL, "
-                 f"description text NOT NULL);")
+                 f"description text NOT NULL CHECK(LENGTH(description) <= 50));")  # ?
         cursor.execute(query)
 
         conn.commit()
@@ -711,9 +712,13 @@ def create_table_group(table_name: str) -> None:
     except ValueError as err:
         logger_database.error(f"{str(err)}, Value (table name): {table_name}")
 
+    else:
+        logger_database.info(f"Successful table creation: {table_name}")
+
 
 if __name__ == '__main__':
     create_db()
+    # create_table_group("budget_1000")
     # connection = connect_db()
     # bot_db = DatabaseQueries(connection)
     # print(bot_db.delete_group_with_users(2))

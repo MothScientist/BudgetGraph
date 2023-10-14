@@ -15,6 +15,7 @@ from csv_file_generation import create_csv_file, delete_csv_file
 
 # Validators
 from validators.registration import username_validator, password_validator
+from validators.description import description_validator
 from validators.input_number import input_number
 from validators.token import token_validator
 from secrets import compare_digest
@@ -88,6 +89,26 @@ def main():
 
         close_db_main(connection)
 
+    def reply_menu_buttons(message):
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+
+        btn1 = types.KeyboardButton("❓ Help")
+        btn2 = types.KeyboardButton("📎 Link to GitHub")
+        btn3 = types.KeyboardButton("🔐 Get my token")
+        btn4 = types.KeyboardButton("🌍 Group users")
+        btn5 = types.KeyboardButton("📖 View table")
+        btn6 = types.KeyboardButton("📈 Add income")
+        btn7 = types.KeyboardButton("📉 Add expense")
+        btn8 = types.KeyboardButton("❌ Delete record")
+        btn9 = types.KeyboardButton("🗃️ Get CSV")
+        btn10 = types.KeyboardButton("🗑️ Delete my account")
+        btn11 = types.KeyboardButton("🚫 Delete group")
+        btn12 = types.KeyboardButton("🔑 Change owner")
+
+        markup_1.add(btn1, btn2, btn3, btn4, btn5, btn7, btn6, btn8, btn9, btn10, btn11, btn12)
+
+        bot.send_message(message.chat.id, "Let's continue...", reply_markup=markup_1)
+
     @bot.message_handler(commands=['help'])
     def help(message) -> None:
         bot.send_message(message.chat.id, "Support information")
@@ -129,7 +150,7 @@ def main():
             bot_db.update_user_last_login(res)
             close_db_main(connection)
 
-            bot.send_message(message.chat.id, "Enter the amount of income:")
+            bot.send_message(message.chat.id, "Enter the value of income:")
             bot.register_next_step_handler(message, process_transfer, False)
 
         else:
@@ -149,7 +170,7 @@ def main():
             bot_db.update_user_last_login(res)
             close_db_main(connection)
 
-            bot.send_message(message.chat.id, "Enter the amount of expense:")
+            bot.send_message(message.chat.id, "Enter the value of expense:")
             bot.register_next_step_handler(message, process_transfer, True)
 
         else:
@@ -492,10 +513,38 @@ def main():
         :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense) [default=False]
         :return: None
         """
-        transfer: str = message.text
-        transfer: int | bool = input_number(transfer)
+        value: str = message.text
+        value: int = input_number(value)
 
-        if transfer:
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+        btn1 = types.KeyboardButton("No description")
+        markup_1.add(btn1)
+
+        if value:
+
+            if is_negative:
+                value: int = value*(-1)
+            else:
+                value: int = value
+
+            bot.send_message(message.chat.id, "Add description (no more than 50 characters)", reply_markup=markup_1)
+            bot.register_next_step_handler(message, process_add_description_for_transfer, value)
+
+        else:
+            bot.send_message(message.chat.id, "Invalid value or value = 0")
+
+    def process_add_description_for_transfer(message, value: int) -> None:
+        """
+
+        :param: value
+        :return: None
+        """
+        description: str = message.text
+
+        if description_validator(description):
+            if description == "No description":
+                description: str = ""
+
             connection = connect_db()
             bot_db = DatabaseQueries(connection)
 
@@ -503,16 +552,16 @@ def main():
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
 
-            if is_negative:
-                bot_db.add_monetary_transaction_to_db(group_id, username, transfer*(-1))
-            else:
-                bot_db.add_monetary_transaction_to_db(group_id, username, transfer)
+            bot_db.add_monetary_transaction_to_db(group_id, username, value, description=description)
 
             close_db_main(connection)
-            bot.send_message(message.chat.id, "Data added successfully.")
+
+            bot.send_message(message.chat.id, "Entry added successfully!")
 
         else:
-            bot.send_message(message.chat.id, "Invalid value.")
+            bot.send_message(message.chat.id, "Invalid value")
+
+        reply_menu_buttons(message)
 
     def process_username(message):
 
@@ -524,7 +573,7 @@ def main():
             bot.register_next_step_handler(message, process_psw, username)
         else:
             bot.send_message(message.chat.id, "Invalid username format or this username already exists!")
-            start(message)
+            reply_menu_buttons(message)
 
     def process_psw(message, username: str):
 
@@ -544,7 +593,7 @@ def main():
             bot.register_next_step_handler(message, process_token, username, psw, psw_salt)
         else:
             bot.send_message(message.chat.id, "Invalid password format!")
-            start(message)
+            reply_menu_buttons(message)
 
     def process_token(message, username: str, psw_hash: str, psw_salt: str):
 
@@ -606,7 +655,7 @@ def main():
             logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, ID: {telegram_id}")
 
         close_db_main(connection)
-        start(message)
+        reply_menu_buttons(message)
 
     @bot.message_handler(content_types=['text'])
     def text(message) -> None:
