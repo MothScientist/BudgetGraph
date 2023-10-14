@@ -10,7 +10,8 @@ from database_control import get_db, close_db_g, create_table_group, DatabaseQue
 
 # Validators
 from validators.registration import registration_validator
-from validators.input_number import input_number
+from validators.description import description_validator
+from validators.input_number import input_value
 from validators.token import token_validator
 
 # Logging
@@ -169,46 +170,44 @@ def household(username):
     if request.method == "POST":
 
         if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
-            income: str = request.form.get("income")
-            income: int | bool = input_number(income)
+            value: str = request.form.get("income")
+            value: int = input_value(value)
+            description = request.form.get("description-1")
 
-            if not income:
-                flash("Error", category="error")
-
-            else:
-                description_1 = request.form.get("description-1")
-
-                if dbase.add_monetary_transaction_to_db(group_id, username, income, description_1):
+            if value and description_validator(description):
+                if dbase.add_monetary_transaction_to_db(group_id, username, value, description):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {income}, description: {description_1}.")
+                                    f"username: {username}, income: {value}, description: {description}.")
                     flash("Data added successfully.", category="success")
                 else:
                     logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {income}, description: {description_1}.")
+                                    f"username: {username}, income: {value}, description: {description}.")
                     flash("Error adding data to database.", category="error")
+
+            else:
+                flash("The value or description is invalid.", category="error")
 
         elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
-            expense: str = request.form.get("expense")
-            expense: int | bool = input_number(expense)
+            value: str = request.form.get("expense")
+            value: int = input_value(value)
+            description = request.form.get("description-2")
 
-            if not expense:
-                flash("Error", category="error")
-
-            else:
-                description_2 = request.form.get("description-2")
-
-                if dbase.add_monetary_transaction_to_db(group_id, username, expense * (-1), description_2):
+            if value and description_validator(description):
+                if dbase.add_monetary_transaction_to_db(group_id, username, value * (-1), description):
                     logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {expense}, description: {description_2}.")
+                                    f"username: {username}, expense: {value}, description: {description}.")
                     flash("Data added successfully.", category="success")
                 else:
                     logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {expense}, description: {description_2}.")
+                                    f"username: {username}, expense: {value}, description: {description}.")
                     flash("Error adding data to database.", category="error")
+
+            else:
+                flash("The value or description is invalid.", category="error")
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int | bool = input_number(record_id)
+            record_id: int | bool = input_value(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")

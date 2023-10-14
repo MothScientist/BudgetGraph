@@ -16,7 +16,7 @@ from csv_file_generation import create_csv_file, delete_csv_file
 # Validators
 from validators.registration import username_validator, password_validator
 from validators.description import description_validator
-from validators.input_number import input_number
+from validators.input_number import input_value
 from validators.token import token_validator
 from secrets import compare_digest
 
@@ -482,7 +482,7 @@ def main():
 
     def process_delete_record(message):
         record_id: str = message.text
-        record_id: int | bool = input_number(record_id)
+        record_id: int = input_value(record_id)
 
         if record_id:
             connection = connect_db()
@@ -514,7 +514,7 @@ def main():
         :return: None
         """
         value: str = message.text
-        value: int = input_number(value)
+        value: int = input_value(value)
 
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
         btn1 = types.KeyboardButton("No description")
