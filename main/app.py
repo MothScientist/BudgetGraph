@@ -90,10 +90,8 @@ def registration():
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
 
-                        # redirecting the user to a personal account (he already has a group token)
-                        session["userLogged"] = username
+                        flash("Registration completed successfully!", category="success")
                         logger_app.info(f"Successful registration: {username}. Group: id={group_id}.")
-                        return redirect(url_for("household", username=session["userLogged"], token="token"))
 
                     else:
                         logger_app.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
