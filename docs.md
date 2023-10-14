@@ -81,7 +81,7 @@ Because we assume that the user should enter this menu exactly 1 time.
 ```python3
 @bot.message_handler(commands=['registration'])
 def registration(message) -> None:
-    res: bool | str = bot_db.get_username_by_telegram_id(message.from_user.id)
+    res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
     
     if not res:
         bot.register_next_step_handler(message, process_username)

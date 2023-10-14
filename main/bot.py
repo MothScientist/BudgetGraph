@@ -66,7 +66,7 @@ def main():
 
         telegram_id: int = message.from_user.id
 
-        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+        res: str = bot_db.get_username_by_telegram_id(telegram_id)
 
         if res:
             bot_db.update_user_last_login(res)
@@ -144,7 +144,7 @@ def main():
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
-        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+        res: str = bot_db.get_username_by_telegram_id(telegram_id)
 
         if res:  # user authorization check
             bot_db.update_user_last_login(res)
@@ -164,7 +164,7 @@ def main():
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
-        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+        res: str = bot_db.get_username_by_telegram_id(telegram_id)
 
         if res:  # user authorization check
             bot_db.update_user_last_login(res)
@@ -186,7 +186,7 @@ def main():
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
-        res: bool | str = bot_db.get_username_by_telegram_id(telegram_id)
+        res: str = bot_db.get_username_by_telegram_id(telegram_id)
 
         if res:  # user authorization check
             bot_db.update_user_last_login(res)
@@ -208,13 +208,12 @@ def main():
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
-        group_id = bot_db.get_group_id_by_telegram_id(telegram_id)
-        if group_id:  # user authorization check
-            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        if username:  # user authorization check
             bot_db.update_user_last_login(username)
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
             data: list = bot_db.select_data_for_household_table(int(group_id), 10)
-            # group_id is int if it passed the check above
 
             for i in range(len(data)):
                 bot.send_message(message.chat.id,
@@ -235,7 +234,7 @@ def main():
 
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        res: bool | str = bot_db.get_username_by_telegram_id(message.from_user.id)
+        res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
         close_db_main(connection)
 
         if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
@@ -252,10 +251,10 @@ def main():
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
-        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
-        if group_id:  # user authorization check
-            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        if username:  # user authorization check
             bot_db.update_user_last_login(username)
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
             create_csv_file(group_id)
             try:
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
@@ -277,11 +276,12 @@ def main():
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
-        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
 
-        if group_id:
-            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        if username:
             bot_db.update_user_last_login(username)
+
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
             group_id: int = group_id
             group_users_list: list = bot_db.get_group_users(group_id)
@@ -311,8 +311,8 @@ def main():
         bot_db = DatabaseQueries(connection)
 
         telegram_id: int = message.from_user.id
-        username: str | bool = bot_db.get_username_by_telegram_id(telegram_id)
-        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
         if username and group_id:
             username: str = username
@@ -350,8 +350,8 @@ def main():
         bot_db = DatabaseQueries(connection)
 
         telegram_id: int = message.from_user.id
-        username: str | bool = bot_db.get_username_by_telegram_id(telegram_id)
-        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
         if username and group_id:
             username: str = username
@@ -382,7 +382,7 @@ def main():
         telegram_id: int = message.from_user.id
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        group_id: int | bool = bot_db.get_group_id_by_telegram_id(telegram_id)
+        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
         if group_id:
             current_owner: str = bot_db.get_group_owner_username(group_id)

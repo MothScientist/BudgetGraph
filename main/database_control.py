@@ -24,7 +24,7 @@ class DatabaseQueries:
 
 # Database sampling methods (SELECT)
 
-    def get_username_by_telegram_id(self, telegram_id: int) -> str | bool:
+    def get_username_by_telegram_id(self, telegram_id: int) -> str:
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE telegram_id = ?""", (telegram_id,))
             res = self.__cur.fetchone()
@@ -32,11 +32,11 @@ class DatabaseQueries:
             if res:  # If a user with this link is found
                 return res[0]
             else:
-                return False
+                return ""
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: {telegram_id}")
-            return False
+            return ""
 
     def get_telegram_id_by_username(self, username: str) -> int:
         try:
