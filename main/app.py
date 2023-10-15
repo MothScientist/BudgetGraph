@@ -11,7 +11,7 @@ from database_control import get_db, close_db_g, create_table_group, DatabaseQue
 # Validators
 from validators.registration import registration_validator
 from validators.description import description_validator
-from validators.input_number import input_value
+from validators.correction_and_validation_entered_number import correction_and_validation_entered_number
 from validators.token import token_validator
 
 # Logging
@@ -169,7 +169,7 @@ def household(username):
 
         if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
             value: str = request.form.get("income")
-            value: int = input_value(value)
+            value: int = correction_and_validation_entered_number(value)
             description = request.form.get("description-1")
 
             if value and description_validator(description):
@@ -187,7 +187,7 @@ def household(username):
 
         elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
             value: str = request.form.get("expense")
-            value: int = input_value(value)
+            value: int = correction_and_validation_entered_number(value)
             description = request.form.get("description-2")
 
             if value and description_validator(description):
@@ -205,7 +205,7 @@ def household(username):
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int | bool = input_value(record_id)
+            record_id: int | bool = correction_and_validation_entered_number(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")

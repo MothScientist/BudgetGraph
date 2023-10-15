@@ -1,9 +1,9 @@
 import re
 
 
-def input_value(number: str) -> int:
+def correction_and_validation_entered_number(number: str) -> int:
     """
-    Validation of a number that can be misspelled as characters within a string.
+    Validation and transformation of a number that can be misspelled as characters within a string.
 
     For example, 10a00 -> 1000.
     :param number: Number as a string value.
