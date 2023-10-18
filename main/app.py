@@ -277,4 +277,4 @@ def page_not_found(error):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)  # change on False before upload on server
+    app.run(debug=True, host='0.0.0.0')  # change on False before upload on server
