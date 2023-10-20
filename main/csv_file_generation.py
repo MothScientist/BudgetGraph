@@ -38,9 +38,3 @@ def delete_csv_file(group_id: int):
         logger_csv.error(f"The CSV file to delete was not found. Group #{group_id}")
     except PermissionError:
         logger_csv.error(f"The CSV file to delete busy with another process. Group #{group_id}")
-
-
-if __name__ == '__main__':
-    pass
-    # create_csv_file(1)
-    # delete_csv_file(1)
