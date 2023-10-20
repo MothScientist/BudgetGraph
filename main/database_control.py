@@ -641,12 +641,3 @@ def create_table_group(table_name: str) -> None:
 
     else:
         logger_database.info(f"Successful table creation: {table_name}")
-
-
-if __name__ == '__main__':
-    create_db()
-    # create_table_group("budget_1000")
-    # connection = connect_db()
-    # bot_db = DatabaseQueries(connection)
-    # print(bot_db.delete_group_with_users(2))
-    # close_db_main(connection)

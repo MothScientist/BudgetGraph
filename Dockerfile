@@ -10,7 +10,8 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
+CMD ["python", "main/create_database.py"]
+
 CMD ["sh", "./run.sh"]
 
 EXPOSE 5000
-
