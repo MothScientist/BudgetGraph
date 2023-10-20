@@ -5,7 +5,6 @@
 .jpg
 .env
 !create_db.sql
-docs.md
 ### Databases ###
 *.sqlite3
 *.sqlite

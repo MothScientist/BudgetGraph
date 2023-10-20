@@ -171,34 +171,3 @@ async def telegram_id_validator(telegram_id: str) -> bool:
     else:
         return False
 ```
-
-### Login
-#### Bot
-Authorization in telegram occurs without user participation; when sending the /start command, we automatically check the presence of this telegram ID in the database.
-```python3
-telegram_id: int = message.from_user.id
-res: bool | str = get_username_by_telegram_id(telegram_id)
-
-    if res:
-        update_user_last_login(res)
-```
-#### Site
-First, we check the user session in the browser cookies
-```python3
-if "userLogged" in session:
-    return redirect(url_for("household", username=session["userLogged"]))
-```
-If not, then we display the html registration page, where we then check the correctness of the entered data in accordance with the information stored in the database.
-```python3
-    if request.method == "POST":
-        username: str = request.form["username"]
-        psw: str = request.form["password"]
-        token: str = request.form["token"
-        psw_salt: str = get_salt_by_username(username)
-
-        if psw_salt and auth_by_username(username, getting_hash(psw, psw_salt), token):
-
-            session["userLogged"] = username
-            update_user_last_login(username)
-            return redirect(url_for("household", username=session["userLogged"]))
-```
