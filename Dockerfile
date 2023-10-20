@@ -11,7 +11,7 @@ RUN pip install -r requirements.txt
 # Change working directory to /app/main
 WORKDIR /app/main
 
-RUN python create_database.py && rm create_database.py && rm create_db.sql
+RUN python creating_db_and_directories.py && rm creating_db_and_directories.py && rm create_db.sql
 
 # Change back to /app
 WORKDIR /app
