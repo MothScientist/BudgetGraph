@@ -385,12 +385,15 @@ class DatabaseQueries:
         else:
             return True
 
-    def add_monetary_transaction_to_db(self, username: str, amount: int, description: str = "") -> bool:
+    def add_monetary_transaction_to_db(self, username: str, amount: int, record_date: str,
+                                       description: str, category="") -> bool:
         """
         submits the "add_expense" and "add_income" forms to the database.
         :param username: the name of the user is making the changes.
         :param amount: value of the deposited amount.
+        :param category:
         :param description: optional parameter.
+        :param record_date:
         """
         group_id: int = self.get_group_id_by_username(username)
         table_name = f"budget_{group_id}"
@@ -398,8 +401,8 @@ class DatabaseQueries:
         try:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
-                f" ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), ?)",
-                (amount, username, amount, description))
+                f" ?, ?, ?, ?, ?)",
+                (amount, username, amount, category, record_date, description))
             self.__db.commit()
 
         except sqlite3.Error as err:
@@ -442,7 +445,7 @@ class DatabaseQueries:
         :return: None
         """
         try:
-            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime')
+            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M', 'now', 'localtime')
             WHERE username = ?""", (username,))
             self.__db.commit()
 
@@ -622,7 +625,8 @@ def create_table_group(table_name: str) -> None:
                  f"total integer NOT NULL, "
                  f"username text NOT NULL, "
                  f"transfer integer NOT NULL, "
-                 f"date_time text NOT NULL, "
+                 f"category text NOT NULL, "
+                 f"record_date text NOT NULL, "
                  f"description text NOT NULL CHECK(LENGTH(description) <= 50));")  # ?
         cursor.execute(query)
 

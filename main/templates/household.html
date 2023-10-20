@@ -56,6 +56,7 @@
           <form action="/household/{{ username }}" method="POST">
             <input type="text" id="income" name="income" placeholder="Income" maxlength="10">
             <input type="text" id="description-1" name="description-1" placeholder="Description (up to 50 characters)" maxlength="50">
+            <input type="date"  id="record_date" name="record_date">
             <button type="submit" name="submit-button-1" id="submit-button-1">Add to table</button>
             <button type="reset" id="clear-button-1">Clear</button>
           </form>
@@ -69,6 +70,7 @@
           <form action="/household/{{ username }}" method="POST">
             <input type="text" id="expense" name="expense" placeholder="Expense" maxlength="10">
             <input type="text" id="description-2" name="description-2" placeholder="Description (up to 50 characters)" maxlength="50">
+            <input type="date" id="record_date" name="record_date">
             <button type="submit" name="submit-button-2" id="submit-button-2">Add to table</button>
             <button type="reset" id="clear-button-2">Clear</button>
           </form>

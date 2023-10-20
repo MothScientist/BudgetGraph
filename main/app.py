@@ -11,6 +11,7 @@ from database_control import get_db, close_db_g, create_table_group, DatabaseQue
 # Validators
 from validators.registration import registration_validator
 from validators.description import description_validator
+from validators.record_date import record_date_validator
 from validators.correction_and_validation_entered_number import correction_and_validation_entered_number
 from validators.token import token_validator
 
@@ -170,38 +171,60 @@ def household(username):
         if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
             value: str = request.form.get("income")
             value: int = correction_and_validation_entered_number(value)
+            record_date: str = record_date_validator(request.form.get("record_date"))
             description = request.form.get("description-1")
 
             if value and description_validator(description):
-                if dbase.add_monetary_transaction_to_db(username, value, description):
-                    logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {value}, description: {description}.")
+                if dbase.add_monetary_transaction_to_db(username, value, record_date, description):
+                    logger_app.info(f"Successfully adding data to database: "
+                                    f"table: budget_{group_id}, "
+                                    f"username: {username}, "
+                                    f"income: {value}, "
+                                    f"date: {record_date}, "
+                                    f"description: {description}.")
+
                     flash("Data added successfully.", category="success")
                 else:
-                    logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {value}, description: {description}.")
-                    flash("Error adding data to database.", category="error")
+                    logger_app.info(f"Error adding data to database: "
+                                    f"table: budget_{group_id}, "
+                                    f"username: {username}, "
+                                    f"income: {value}, "
+                                    f"date: {record_date}, "
+                                    f"description: {description}.")
+
+                    flash("Error adding data to database", category="error")
 
             else:
-                flash("The value or description is invalid.", category="error")
+                flash("The value, description or date format is invalid", category="error")
 
         elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
             value: str = request.form.get("expense")
             value: int = correction_and_validation_entered_number(value)
+            record_date: str = record_date_validator(request.form.get("record_date"))
             description = request.form.get("description-2")
 
             if value and description_validator(description):
-                if dbase.add_monetary_transaction_to_db(username, value * (-1), description):
-                    logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {value}, description: {description}.")
-                    flash("Data added successfully.", category="success")
+                if dbase.add_monetary_transaction_to_db(username, value * (-1), record_date, description):
+                    logger_app.info(f"Successfully adding data to database: "
+                                    f"table: budget_{group_id}, "
+                                    f"username: {username}, "
+                                    f"expense: {value}, "
+                                    f"date: {record_date}, "
+                                    f"description: {description}.")
+
+                    flash("Data added successfully", category="success")
                 else:
-                    logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {value}, description: {description}.")
-                    flash("Error adding data to database.", category="error")
+                    logger_app.info(f"Error adding data to database: "
+                                    f"table: budget_{group_id}, "
+                                    f"username: {username}, "
+                                    f"expense: {value}, "
+                                    f"date: {record_date}, "
+                                    f"description: {description}.")
+
+                    flash("Error adding data to database", category="error")
 
             else:
-                flash("The value or description is invalid.", category="error")
+                flash("The value, description or date format is invalid", category="error")
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
@@ -221,7 +244,7 @@ def household(username):
                     flash("Error deleting a record from the database. Check that the entered data is correct.",
                           category="error")
 
-    headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
+    headers: list[str] = ["№", "Total", "Username", "Transfer", "Category", "DateTime", "Description"]
     data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html", title=f"Budget control - {username}",
