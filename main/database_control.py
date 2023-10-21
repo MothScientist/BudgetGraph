@@ -385,12 +385,12 @@ class DatabaseQueries:
         else:
             return True
 
-    def add_monetary_transaction_to_db(self, username: str, amount: int, record_date: str,
+    def add_monetary_transaction_to_db(self, username: str, value: int, record_date: str,
                                        description: str, category="") -> bool:
         """
         submits the "add_expense" and "add_income" forms to the database.
         :param username: the name of the user is making the changes.
-        :param amount: value of the deposited amount.
+        :param value: value of the deposited amount.
         :param category:
         :param description: optional parameter.
         :param record_date:
@@ -402,12 +402,12 @@ class DatabaseQueries:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
                 f" ?, ?, ?, ?, ?)",
-                (amount, username, amount, category, record_date, description))
+                (value, username, value, category, record_date, description))
             self.__db.commit()
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: group id: {group_id}, table name: {table_name}, "
-                                  f"username: {username}, amount: {amount}, description: {description}")
+                                  f"username: {username}, value: {value}, description: {description}")
             return False
 
         else:
