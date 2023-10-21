@@ -227,10 +227,17 @@ def main():
 
             data: list = bot_db.select_data_for_household_table(int(group_id), 10)
 
-            for i in range(len(data)):
-                bot.send_message(message.chat.id,
-                                 f"ID: {data[i][0]}\nTotal: {data[i][1]}\nUsername: {data[i][2]}"
-                                 f"\nTransfer: {data[i][3]}\nDateTime: {data[i][4]}\nDescription: {data[i][5]}")
+            bot.send_message(message.chat.id,
+                             '\n'.join([
+                                           f"ID: {item[0]}\n"
+                                           f"Total: {item[1]}\n"
+                                           f"Username: {item[2]}\n"
+                                           f"Transfer: {item[3]}\n"
+                                           f"Category: {item[4]}\n"
+                                           f"DateTime: {item[5]}\n"
+                                           f"Description: {item[6]}\n\n"
+                                           for item in data
+                             ]))
 
             logger_bot.info(f"ID: {telegram_id} - view_table")
         else:
