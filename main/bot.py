@@ -11,7 +11,7 @@ from telebot import types
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
 # CSV files
-from csv_file_generation import create_csv_file, delete_csv_file
+from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
 # Validators
 from validators.registration import username_validator, password_validator
@@ -89,7 +89,7 @@ def main():
 
         close_db_main(connection)
 
-    def reply_menu_buttons(message):
+    def reply_menu_buttons_register(message):
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
 
         btn1 = types.KeyboardButton("❓ Help")
@@ -107,7 +107,19 @@ def main():
 
         markup_1.add(btn1, btn2, btn3, btn4, btn5, btn7, btn6, btn8, btn9, btn10, btn11, btn12)
 
-        bot.send_message(message.chat.id, "Let's continue...", reply_markup=markup_1)
+        bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
+
+    def reply_menu_buttons_not_register(message):
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+
+        btn1 = types.KeyboardButton("❓ Help")
+        btn2 = types.KeyboardButton("📎 Link to GitHub")
+        btn3 = types.KeyboardButton("💻 My Telegram ID")
+        btn4 = types.KeyboardButton("🤡 I want to register")
+
+        markup_1.add(btn1, btn2, btn3, btn4)
+
+        bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
 
     @bot.message_handler(commands=['help'])
     def help(message) -> None:
@@ -551,7 +563,7 @@ def main():
             telegram_id: int = message.from_user.id
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
 
-            bot_db.add_monetary_transaction_to_db(username, value, description=description)
+            bot_db.add_monetary_transaction_to_db(username, value, "", description=description)
 
             close_db_main(connection)
 
@@ -560,7 +572,7 @@ def main():
         else:
             bot.send_message(message.chat.id, "Invalid value")
 
-        reply_menu_buttons(message)
+        reply_menu_buttons_register(message)
 
     def process_username(message):
 
@@ -572,7 +584,7 @@ def main():
             bot.register_next_step_handler(message, process_psw, username)
         else:
             bot.send_message(message.chat.id, "Invalid username format or this username already exists!")
-            reply_menu_buttons(message)
+            reply_menu_buttons_not_register(message)
 
     def process_psw(message, username: str):
 
@@ -592,7 +604,7 @@ def main():
             bot.register_next_step_handler(message, process_token, username, psw, psw_salt)
         else:
             bot.send_message(message.chat.id, "Invalid password format!")
-            reply_menu_buttons(message)
+            reply_menu_buttons_not_register(message)
 
     def process_token(message, username: str, psw_hash: str, psw_salt: str):
 
@@ -617,15 +629,18 @@ def main():
                     bot.send_message(message.chat.id, "Your token:")
                     bot.send_message(message.chat.id, user_token)
                     logger_bot.info(f"New user (new group): ID: {telegram_id}, group: {group_id}")
+                    reply_menu_buttons_register(message)
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
                     logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
                                      f"psw salt: {psw_salt}, psw hash: {psw_hash}, group id: {group_id}")
+                    reply_menu_buttons_not_register(message)
 
             else:
                 bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
                 logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
                                  f"psw salt: {psw_salt}, psw hash: {psw_hash}")
+                reply_menu_buttons_not_register(message)
 
         elif len(token) == 32:
             telegram_id: int = message.from_user.id
@@ -638,6 +653,7 @@ def main():
                     bot.send_sticker(message.chat.id,
                                      "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
                     logger_bot.info(f"New user: ID: {telegram_id}, group: {group_id}")
+                    reply_menu_buttons_register(message)
                 else:
                     bot.send_message(message.chat.id, "Error creating a new user. Contact technical support!")
                     logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
@@ -652,9 +668,9 @@ def main():
             bot.send_message(message.chat.id, "This is not a valid token format, "
                                               "please check if it is correct or send 'None'!")
             logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, ID: {telegram_id}")
+            reply_menu_buttons_not_register(message)
 
         close_db_main(connection)
-        reply_menu_buttons(message)
 
     @bot.message_handler(content_types=['text'])
     def text(message) -> None:
