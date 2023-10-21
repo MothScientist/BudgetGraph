@@ -14,10 +14,11 @@ from database_control import DatabaseQueries, connect_db, close_db_main, create_
 from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
 # Validators
-from validators.registration import username_validator, password_validator
-from validators.description import description_validator
-from validators.correction_and_validation_entered_number import correction_and_validation_entered_number
-from validators.token import token_validator
+from validators.registration import username_validation, password_validation
+from validators.description import description_validation
+from validators.correction_number import correction_number
+from validators.correction_date import correction_date
+from validators.token import token_validation
 from secrets import compare_digest
 
 # Logging
@@ -501,7 +502,7 @@ def main():
 
     def process_delete_record(message):
         record_id: str = message.text
-        record_id: int = correction_and_validation_entered_number(record_id)
+        record_id: int = correction_number(record_id)
 
         if record_id:
             connection = connect_db()
@@ -533,7 +534,7 @@ def main():
         :return: None
         """
         value: str = message.text
-        value: int = correction_and_validation_entered_number(value)
+        value: int = correction_number(value)
 
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
         btn1 = types.KeyboardButton("No description")
@@ -560,7 +561,7 @@ def main():
         """
         description: str = message.text
 
-        if description_validator(description):
+        if description_validation(description):
             if description == "No description":
                 description: str = ""
 
@@ -585,7 +586,7 @@ def main():
 
         username: str = message.text
 
-        if asyncio.run(username_validator(username)):
+        if asyncio.run(username_validation(username)):
             bot.send_message(message.chat.id, "Accepted the data! Let's continue!")
             bot.send_message(message.chat.id, "Enter your password (8-32 characters / at least 1 number and 1 letter):")
             bot.register_next_step_handler(message, process_psw, username)
@@ -601,7 +602,7 @@ def main():
 
         psw: str = message.text
 
-        if asyncio.run(password_validator(psw)):
+        if asyncio.run(password_validation(psw)):
             psw_salt: str = get_salt()
             psw: str = getting_hash(psw, psw_salt)
 
@@ -626,7 +627,7 @@ def main():
 
             # There is a chance to return False if an error occurred while working with the database
             if user_token:
-                group_id: int = token_validator(user_token)
+                group_id: int = token_validation(user_token)
 
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                     create_table_group(f"budget_{group_id}")
@@ -651,7 +652,7 @@ def main():
 
         elif len(token) == 32:
             telegram_id: int = message.from_user.id
-            group_id: int = token_validator(token)
+            group_id: int = token_validation(token)
             group_not_full: bool = bot_db.check_limit_users_in_group(token)
 
             if group_id and group_not_full:

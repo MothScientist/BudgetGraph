@@ -1,4 +1,4 @@
-def description_validator(description: str) -> bool:
+def description_validation(description: str) -> bool:
     if len(description) <= 50:
         return True
     else:

@@ -1,7 +1,7 @@
 import re
 
 
-def correction_and_validation_entered_number(number: str) -> int:
+def correction_number(number: str) -> int:
     """
     Validation and transformation of a number that can be misspelled as characters within a string.
 

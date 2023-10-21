@@ -1,7 +1,7 @@
 import re
 
 
-def table_name_validator(table_name: str) -> bool:
+def table_name_validation(table_name: str) -> bool:
     """
     Checks if the database name matches the format "budget_N",
     where N is the id of the group to which this database belongs.

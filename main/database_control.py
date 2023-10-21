@@ -5,7 +5,7 @@ import os
 from token_generation import get_token
 
 # Validators
-from validators.table_name import table_name_validator
+from validators.table_name import table_name_validation
 
 # Logging
 import logging
@@ -620,7 +620,7 @@ def create_table_group(table_name: str) -> None:
     :param table_name: "budget_?"
     """
     try:
-        if not table_name_validator(table_name):
+        if not table_name_validation(table_name):
             raise ValueError("Possible SQL injection attempt")
 
         conn = sqlite3.connect(db_path)

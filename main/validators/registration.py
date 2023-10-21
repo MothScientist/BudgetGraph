@@ -7,7 +7,7 @@ import asyncio
 from time_checking import timeit
 
 
-async def username_validator(username: str) -> bool:
+async def username_validation(username: str) -> bool:
     connection = connect_db()
     dbase = DatabaseQueries(connection)
     username_is_unique = dbase.check_username_is_unique(username)
@@ -20,14 +20,14 @@ async def username_validator(username: str) -> bool:
         return False
 
 
-async def password_validator(psw: str) -> bool:
+async def password_validation(psw: str) -> bool:
     if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,32}$', psw):
         return True
     else:
         return False
 
 
-async def telegram_id_validator(telegram_id: str) -> bool:
+async def telegram_id_validation(telegram_id: str) -> bool:
     if re.match(r'^[1-9]\d{2,11}$', telegram_id):
         telegram_id: int = int(telegram_id)
     else:
@@ -45,7 +45,7 @@ async def telegram_id_validator(telegram_id: str) -> bool:
 
 
 @timeit
-async def registration_validator(username: str, psw: str, telegram_id: str) -> bool:
+async def registration_validation(username: str, psw: str, telegram_id: str) -> bool:
     """
     :param username: 3 to 15 characters
     :param psw: 4 to 128 characters
@@ -54,9 +54,9 @@ async def registration_validator(username: str, psw: str, telegram_id: str) -> b
     """
 
     username_is_valid, password_is_valid, telegram_id_is_valid = await asyncio.gather(
-        username_validator(username),
-        password_validator(psw),
-        telegram_id_validator(telegram_id),
+        username_validation(username),
+        password_validation(psw),
+        telegram_id_validation(telegram_id),
     )
 
     if username_is_valid:

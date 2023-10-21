@@ -9,11 +9,11 @@ import asyncio
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
 # Validators
-from validators.registration import registration_validator
-from validators.description import description_validator
-from validators.record_date import record_date_validator
-from validators.correction_and_validation_entered_number import correction_and_validation_entered_number
-from validators.token import token_validator
+from validators.registration import registration_validation
+from validators.description import description_validation
+from validators.correction_date import correction_date
+from validators.correction_number import correction_number
+from validators.token import token_validation
 
 # Logging
 from log_settings import setup_logger
@@ -58,7 +58,7 @@ def registration():
 
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
-            if asyncio.run(registration_validator(username, psw, telegram_id)):
+            if asyncio.run(registration_validation(username, psw, telegram_id)):
 
                 telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                 psw_salt: str = get_salt()  # generating salt for a new user
@@ -67,7 +67,7 @@ def registration():
 
                 if user_token:
 
-                    group_id: int = token_validator(user_token)
+                    group_id: int = token_validation(user_token)
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
@@ -78,10 +78,10 @@ def registration():
 
         # User is added to an existing group
         if len(token) == 32:
-            if asyncio.run(registration_validator(username, psw, telegram_id)):
+            if asyncio.run(registration_validation(username, psw, telegram_id)):
 
                 dbase = DatabaseQueries(get_db())
-                group_id: int = token_validator(token)  # getting group id by token
+                group_id: int = token_validation(token)  # getting group id by token
                 group_not_full = dbase.check_limit_users_in_group(token)  # checking places in the group
 
                 if group_id and group_not_full:
@@ -170,11 +170,11 @@ def household(username):
 
         if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
             value: str = request.form.get("income")
-            value: int = correction_and_validation_entered_number(value)
-            record_date: str = record_date_validator(request.form.get("record_date"))
+            value: int = correction_number(value)
+            record_date: str = correction_date(request.form.get("record_date"))
             description = request.form.get("description-1")
 
-            if value and description_validator(description):
+            if value and description_validation(description):
                 if dbase.add_monetary_transaction_to_db(username, value, record_date, description):
                     logger_app.info(f"Successfully adding data to database: "
                                     f"table: budget_{group_id}, "
@@ -199,11 +199,11 @@ def household(username):
 
         elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
             value: str = request.form.get("expense")
-            value: int = correction_and_validation_entered_number(value)
-            record_date: str = record_date_validator(request.form.get("record_date"))
+            value: int = correction_number(value)
+            record_date: str = correction_date(request.form.get("record_date"))
             description = request.form.get("description-2")
 
-            if value and description_validator(description):
+            if value and description_validation(description):
                 if dbase.add_monetary_transaction_to_db(username, value * (-1), record_date, description):
                     logger_app.info(f"Successfully adding data to database: "
                                     f"table: budget_{group_id}, "
@@ -228,7 +228,7 @@ def household(username):
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int | bool = correction_and_validation_entered_number(record_id)
+            record_id: int | bool = correction_number(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
