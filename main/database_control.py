@@ -11,6 +11,9 @@ from validators.table_name import table_name_validator
 import logging
 from log_settings import setup_logger
 
+# Timeit decorator
+from time_checking import timeit
+
 load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")
 
@@ -24,6 +27,7 @@ class DatabaseQueries:
 
 # Database sampling methods (SELECT)
 
+    @timeit
     def get_username_by_telegram_id(self, telegram_id: int) -> str:
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE telegram_id = ?""", (telegram_id,))
@@ -367,6 +371,7 @@ class DatabaseQueries:
 
 # Methods for inserting data into a database (INSERT)
 
+    @timeit
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
         """
         Insert a new user to the Users table
@@ -385,6 +390,7 @@ class DatabaseQueries:
         else:
             return True
 
+    @timeit
     def add_monetary_transaction_to_db(self, username: str, value: int, record_date: str,
                                        description: str, category="") -> bool:
         """
