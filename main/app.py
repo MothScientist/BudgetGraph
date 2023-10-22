@@ -20,8 +20,6 @@ from log_settings import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
 
-os.makedirs("logs", exist_ok=True)  # Creating a directory for later storing application logs there.
-
 app = Flask(__name__)
 app.config.from_object(__name__)
 
@@ -50,7 +48,6 @@ def registration():
     user registration page
     """
     if request.method == "POST":
-
         username: str = request.form["username"]
         psw: str = request.form["password"]
         telegram_id: str = request.form["telegram-id"]
@@ -59,14 +56,12 @@ def registration():
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
             if asyncio.run(registration_validation(username, psw, telegram_id)):
-
                 telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                 psw_salt: str = get_salt()  # generating salt for a new user
                 dbase = DatabaseQueries(get_db())
                 user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
 
                 if user_token:
-
                     group_id: int = token_validation(user_token)
                     create_table_group(f"budget_{group_id}")
 
@@ -79,13 +74,11 @@ def registration():
         # User is added to an existing group
         if len(token) == 32:
             if asyncio.run(registration_validation(username, psw, telegram_id)):
-
                 dbase = DatabaseQueries(get_db())
                 group_id: int = token_validation(token)  # getting group id by token
                 group_not_full = dbase.check_limit_users_in_group(token)  # checking places in the group
 
                 if group_id and group_not_full:
-
                     telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                     psw_salt: str = get_salt()  # generating salt for a new user
 
@@ -93,7 +86,6 @@ def registration():
 
                         flash("Registration completed successfully!", category="success")
                         logger_app.info(f"Successful registration: {username}. Group: id={group_id}.")
-
                     else:
                         logger_app.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
                         flash("Error creating user. Please try again and if the problem persists, "
@@ -141,12 +133,10 @@ def login():
         psw_salt: str = dbase.get_salt_by_username(username)
 
         if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt)):
-
             session["userLogged"] = username
             dbase.update_user_last_login(username)
             logger_app.info(f"Successful authorization: {username}.")
             return redirect(url_for("household", username=session["userLogged"]))
-
         else:
             flash("This user doesn't exist.", category="error")
         # request.args - GET, request.form - POST
@@ -167,11 +157,10 @@ def household(username):
     group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
 
     if request.method == "POST":
-
         if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
             value: str = request.form.get("income")
             value: int = correction_number(value)
-            record_date: str = correction_date(request.form.get("record_date"))
+            record_date: str = asyncio.run(correction_date(request.form.get("record_date")))  # YYYY-MM-DD -> DD/MM/YYYY
             description = request.form.get("description-1")
 
             if value and description_validation(description):
@@ -200,7 +189,7 @@ def household(username):
         elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
             value: str = request.form.get("expense")
             value: int = correction_number(value)
-            record_date: str = correction_date(request.form.get("record_date"))
+            record_date: str = asyncio.run(correction_date(request.form.get("record_date")))  # YYYY-MM-DD -> DD/MM/YYYY
             description = request.form.get("description-2")
 
             if value and description_validation(description):
@@ -232,7 +221,6 @@ def household(username):
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
-
             else:
                 if dbase.delete_budget_entry_by_id(group_id, record_id):
                     logger_app.info(f"Successful deletion record from database: table: budget_{group_id}, "
@@ -263,9 +251,7 @@ def settings(username):
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)
     group_owner: str = dbase.get_username_group_owner_by_token(token)
-
     group_users_data: list = dbase.get_group_users_data(group_id)
-
     return render_template("settings.html", title=f"Settings - {username}", token=token,
                            group_owner=group_owner, group_users_data=group_users_data)
 

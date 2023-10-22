@@ -12,8 +12,7 @@ def setup_logger(log_file: str, logger_name: str, level=logging.INFO):
     :param level: (default=logging.INFO) if necessary, you can specify a specific logging level for individual handler.
     :return: logger
     """
-    if not os.path.exists("logs"):  # Checks the presence of a directory for logging
-        os.makedirs("logs")  # Creates a directory for logs when creating a database
+    os.makedirs("logs", exist_ok=True)  # Creates a directory for logs when creating a database
 
     logger = logging.getLogger(logger_name)  # use unique logger per file
     logger.setLevel(level)

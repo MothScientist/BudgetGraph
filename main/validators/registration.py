@@ -1,10 +1,39 @@
+import asyncio
+import re
 from flask import flash
 from database_control import DatabaseQueries, connect_db, close_db_main
-import re
-import asyncio
 
 # Timeit decorator
 from time_checking import timeit
+
+
+@timeit
+async def registration_validation(username: str, psw: str, telegram_id: str) -> bool:
+    """
+    :param username: 3 to 15 characters
+    :param psw: 4 to 128 characters
+    :param telegram_id:
+    :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
+    """
+
+    username_is_valid, password_is_valid, telegram_id_is_valid = await asyncio.gather(
+        username_validation(username),
+        password_validation(psw),
+        telegram_id_validation(telegram_id)
+    )
+
+    if username_is_valid:
+        if password_is_valid:
+            if telegram_id_is_valid:
+                return True
+            else:
+                flash("Error - invalid telegram ID.", category="error")
+        else:  # each error has its own flash message so that the user knows where he made a mistake
+            flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
+                  category="error")
+    else:
+        flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
+    return False
 
 
 async def username_validation(username: str) -> bool:
@@ -42,36 +71,3 @@ async def telegram_id_validation(telegram_id: str) -> bool:
         return True
     else:
         return False
-
-
-@timeit
-async def registration_validation(username: str, psw: str, telegram_id: str) -> bool:
-    """
-    :param username: 3 to 15 characters
-    :param psw: 4 to 128 characters
-    :param telegram_id:
-    :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
-    """
-
-    username_is_valid, password_is_valid, telegram_id_is_valid = await asyncio.gather(
-        username_validation(username),
-        password_validation(psw),
-        telegram_id_validation(telegram_id),
-    )
-
-    if username_is_valid:
-        if password_is_valid:
-            if telegram_id_is_valid:
-                return True
-            else:
-                flash("Error - invalid telegram ID.", category="error")
-        else:  # each error has its own flash message so that the user knows where he made a mistake
-            flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
-                  category="error")
-    else:
-        flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
-    return False
-
-
-if __name__ == '__main__':
-    pass
