@@ -17,7 +17,7 @@ from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 from validators.registration import username_validation, password_validation
 from validators.description import description_validation
 from validators.correction_number import correction_number
-from validators.correction_date import correction_date
+from validators.date import date_validation
 from validators.token import token_validation
 from secrets import compare_digest
 

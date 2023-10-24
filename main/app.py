@@ -11,7 +11,7 @@ from database_control import get_db, close_db_g, create_table_group, DatabaseQue
 # Validators
 from validators.registration import registration_validation
 from validators.description import description_validation
-from validators.correction_date import correction_date
+from validators.date import date_validation
 from validators.correction_number import correction_number
 from validators.token import token_validation
 
@@ -157,67 +157,43 @@ def household(username):
     group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
 
     if request.method == "POST":
-        if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
-            value: str = request.form.get("income")
+        if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
+            value: str = request.form.get("transfer")
             value: int = correction_number(value)
-            record_date: str = asyncio.run(correction_date(request.form.get("record_date")))  # YYYY-MM-DD -> DD/MM/YYYY
-            description = request.form.get("description-1")
+            value: int = value
+            record_date: str = request.form.get("record-date")
+            record_date_is_valid: bool = asyncio.run(date_validation(record_date))
+            category: str = request.form.get("category")
+            description = request.form.get("description")
+            if "submit-button-2" in request.form:
+                value: int = value * (-1)
 
-            if value and description_validation(description):
-                if dbase.add_monetary_transaction_to_db(username, value, record_date, description):
-                    logger_app.info(f"Successfully adding data to database: "
-                                    f"table: budget_{group_id}, "
-                                    f"username: {username}, "
-                                    f"income: {value}, "
-                                    f"date: {record_date}, "
-                                    f"description: {description}.")
+            if value:
+                if record_date_is_valid:
+                    record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
+                    if description_validation(description):
+                        if dbase.add_monetary_transaction_to_db(username, value, record_date, description, category=category):
+                            logger_app.info(f"Successfully adding data to database: "
+                                            f"operation: {request.form}"
+                                            f"table: budget_{group_id}")
 
-                    flash("Data added successfully.", category="success")
+                            flash("Data added successfully.", category="success")
+                        else:
+                            logger_app.error(f"Error adding data to database: "
+                                             f"operation: {request.form}"
+                                             f"table: budget_{group_id}")
+
+                            flash("Error adding data to database", category="error")
+                    else:
+                        flash("Description format is invalid", category="error")
                 else:
-                    logger_app.info(f"Error adding data to database: "
-                                    f"table: budget_{group_id}, "
-                                    f"username: {username}, "
-                                    f"income: {value}, "
-                                    f"date: {record_date}, "
-                                    f"description: {description}.")
-
-                    flash("Error adding data to database", category="error")
-
+                    flash("Date format is invalid", category="error")
             else:
-                flash("The value, description or date format is invalid", category="error")
-
-        elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
-            value: str = request.form.get("expense")
-            value: int = correction_number(value)
-            record_date: str = asyncio.run(correction_date(request.form.get("record_date")))  # YYYY-MM-DD -> DD/MM/YYYY
-            description = request.form.get("description-2")
-
-            if value and description_validation(description):
-                if dbase.add_monetary_transaction_to_db(username, value * (-1), record_date, description):
-                    logger_app.info(f"Successfully adding data to database: "
-                                    f"table: budget_{group_id}, "
-                                    f"username: {username}, "
-                                    f"expense: {value}, "
-                                    f"date: {record_date}, "
-                                    f"description: {description}.")
-
-                    flash("Data added successfully", category="success")
-                else:
-                    logger_app.info(f"Error adding data to database: "
-                                    f"table: budget_{group_id}, "
-                                    f"username: {username}, "
-                                    f"expense: {value}, "
-                                    f"date: {record_date}, "
-                                    f"description: {description}.")
-
-                    flash("Error adding data to database", category="error")
-
-            else:
-                flash("The value, description or date format is invalid", category="error")
+                flash("The value format is invalid", category="error")
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int | bool = correction_number(record_id)
+            record_id: int = correction_number(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
@@ -232,11 +208,13 @@ def household(username):
                     flash("Error deleting a record from the database. Check that the entered data is correct.",
                           category="error")
 
-    headers: list[str] = ["№", "Total", "Username", "Transfer", "Category", "DateTime", "Description"]
+    category_list = ["Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
+                     "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Other"]
+    headers: list[str] = ["№", "Total", "Username", "Transfer", "Category", "Date", "Description"]
     data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html", title=f"Budget control - {username}",
-                           token=token, username=username, data=data, headers=headers)
+                           token=token, username=username, data=data, headers=headers, category_list=category_list)
 
 
 @app.route('/settings/<username>')
