@@ -172,7 +172,7 @@ def household(username):
                 if record_date_is_valid:
                     record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
                     if description_validation(description):
-                        if dbase.add_monetary_transaction_to_db(username, value, record_date, description, category=category):
+                        if dbase.add_monetary_transaction_to_db(username, value, record_date, category, description):
                             logger_app.info(f"Successfully adding data to database: "
                                             f"operation: {request.form}"
                                             f"table: budget_{group_id}")
@@ -209,7 +209,8 @@ def household(username):
                           category="error")
 
     category_list = ["Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
-                     "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Other"]
+                     "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Sale", "Salary",
+                     "Other"]
     headers: list[str] = ["№", "Total", "Username", "Transfer", "Category", "Date", "Description"]
     data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 

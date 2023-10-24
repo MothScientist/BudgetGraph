@@ -391,8 +391,8 @@ class DatabaseQueries:
             return True
 
     @timeit
-    def add_monetary_transaction_to_db(self, username: str, value: int, record_date: str,
-                                       description: str, category="") -> bool:
+    def add_monetary_transaction_to_db(self, username: str, value: int, record_date: str, category,
+                                       description: str) -> bool:
         """
         submits the "add_expense" and "add_income" forms to the database.
         :param username: the name of the user is making the changes.
