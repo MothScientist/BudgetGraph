@@ -17,7 +17,7 @@ within the scope of its purpose.</br></br>
 #### Changed in version 3.12: Function now only available when Python is built with OpenSSL. The slow pure Python implementation has been removed.
 
 ## Installation:
-### For Linux:
+### For Linux (with Docker):
 1. Clone the repository:</br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
@@ -35,7 +35,27 @@ within the scope of its purpose.</br></br>
 5. Running a bash script: </br> 
 ```./deploy.sh``` </br>
 
-### For Windows:
+### For Windows (with Docker Desktop):
+1. Clone the repository: </br>
+```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
+
+2. Go to the project directory:</br>
+```cd main``` </br></br>
+
+3. Create .env file: </br>
+```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
+```BOT_TOKEN="your_token"```</br>
+```DATABASE="db_name.sqlite3"```</br></br>
+
+4. Return to the previous directory:</br>
+```cd ..```</br></br>
+
+5. Run Docker Desktop</br></br>
+
+6. Running a PowerShell script: </br> 
+```./run_on_windows_with_docker_desktop.ps1``` </br>
+
+### For Windows (without Docker Desktop):
 1. Clone the repository: </br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
@@ -50,26 +70,28 @@ within the scope of its purpose.</br></br>
 ```cd ..``` </br></br>
 
 5. Running a PowerShell script: </br> 
-```./run_windows.ps1``` </br>
+```./run_on_windows_without_container.ps1``` </br>
 
-### For all:
+### For all users:
 1. Clone the repository: </br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
-2. Install backend dependencies: </br> 
+2. Make sure you have the version of Python used in the project installed. </br></br>
+
+3. Install backend dependencies: </br> 
 ```pip install -r requirements.txt``` </br></br>
 
-3. Go to the project directory:</br>
+4. Go to the project directory:</br>
 ```cd main``` </br></br>
 
-4. Create .env file: </br>
+5. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
 ```DATABASE="db_name.sqlite3"```</br></br>
 
-5. Database creation: </br> 
-```python database_control.py``` </br></br>
+6. Database and directories creation: </br> 
+```python creating_db_and_directoriespy``` </br></br>
 
-6. Running project files: </br>
+7. Running project files: </br>
 ```python app.py``` </br>
 ```python bot.py``` </br></br>

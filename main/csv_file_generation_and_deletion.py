@@ -22,7 +22,7 @@ def create_csv_file(group_id: int):
 
     with open(f"csv_tables/table_{group_id}.csv", 'w', newline='') as csvfile:
         filewriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        filewriter.writerow(["ID", "TOTAL", "USERNAME", "TRANSFER", "DATE_TIME", "DESCRIPTION"])
+        filewriter.writerow(["ID", "TOTAL", "USERNAME", "TRANSFER", "CATEGORY","DATE_TIME", "DESCRIPTION"])
         for record in data:
             filewriter.writerow(record)
 
@@ -38,9 +38,3 @@ def delete_csv_file(group_id: int):
         logger_csv.error(f"The CSV file to delete was not found. Group #{group_id}")
     except PermissionError:
         logger_csv.error(f"The CSV file to delete busy with another process. Group #{group_id}")
-
-
-if __name__ == '__main__':
-    pass
-    # create_csv_file(1)
-    # delete_csv_file(1)

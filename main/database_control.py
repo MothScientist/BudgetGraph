@@ -5,11 +5,14 @@ import os
 from token_generation import get_token
 
 # Validators
-from validators.table_name import table_name_validator
+from validators.table_name import table_name_validation
 
 # Logging
 import logging
 from log_settings import setup_logger
+
+# Timeit decorator
+from time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")
@@ -24,6 +27,7 @@ class DatabaseQueries:
 
 # Database sampling methods (SELECT)
 
+    @timeit
     def get_username_by_telegram_id(self, telegram_id: int) -> str:
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE telegram_id = ?""", (telegram_id,))
@@ -367,6 +371,7 @@ class DatabaseQueries:
 
 # Methods for inserting data into a database (INSERT)
 
+    @timeit
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
         """
         Insert a new user to the Users table
@@ -385,12 +390,16 @@ class DatabaseQueries:
         else:
             return True
 
-    def add_monetary_transaction_to_db(self, username: str, amount: int, description: str = "") -> bool:
+    @timeit
+    def add_monetary_transaction_to_db(self, username: str, value: int, record_date: str, category,
+                                       description: str) -> bool:
         """
         submits the "add_expense" and "add_income" forms to the database.
         :param username: the name of the user is making the changes.
-        :param amount: value of the deposited amount.
+        :param value: value of the deposited amount.
+        :param category:
         :param description: optional parameter.
+        :param record_date:
         """
         group_id: int = self.get_group_id_by_username(username)
         table_name = f"budget_{group_id}"
@@ -398,13 +407,13 @@ class DatabaseQueries:
         try:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
-                f" ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), ?)",
-                (amount, username, amount, description))
+                f" ?, ?, ?, ?, ?)",
+                (value, username, value, category, record_date, description))
             self.__db.commit()
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: group id: {group_id}, table name: {table_name}, "
-                                  f"username: {username}, amount: {amount}, description: {description}")
+                                  f"username: {username}, value: {value}, description: {description}")
             return False
 
         else:
@@ -442,7 +451,7 @@ class DatabaseQueries:
         :return: None
         """
         try:
-            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime')
+            self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M', 'now', 'localtime')
             WHERE username = ?""", (username,))
             self.__db.commit()
 
@@ -611,7 +620,7 @@ def create_table_group(table_name: str) -> None:
     :param table_name: "budget_?"
     """
     try:
-        if not table_name_validator(table_name):
+        if not table_name_validation(table_name):
             raise ValueError("Possible SQL injection attempt")
 
         conn = sqlite3.connect(db_path)
@@ -622,7 +631,8 @@ def create_table_group(table_name: str) -> None:
                  f"total integer NOT NULL, "
                  f"username text NOT NULL, "
                  f"transfer integer NOT NULL, "
-                 f"date_time text NOT NULL, "
+                 f"category text NOT NULL, "
+                 f"record_date text NOT NULL, "
                  f"description text NOT NULL CHECK(LENGTH(description) <= 50));")  # ?
         cursor.execute(query)
 
@@ -637,12 +647,3 @@ def create_table_group(table_name: str) -> None:
 
     else:
         logger_database.info(f"Successful table creation: {table_name}")
-
-
-if __name__ == '__main__':
-    create_db()
-    # create_table_group("budget_1000")
-    # connection = connect_db()
-    # bot_db = DatabaseQueries(connection)
-    # print(bot_db.delete_group_with_users(2))
-    # close_db_main(connection)

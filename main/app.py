@@ -9,17 +9,16 @@ import asyncio
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
 # Validators
-from validators.registration import registration_validator
-from validators.description import description_validator
-from validators.input_number import input_value
-from validators.token import token_validator
+from validators.registration import registration_validation
+from validators.description import description_validation
+from validators.date import date_validation
+from validators.correction_number import correction_number
+from validators.token import token_validation
 
 # Logging
 from log_settings import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
-
-os.makedirs("logs", exist_ok=True)  # Creating a directory for later storing application logs there.
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -49,7 +48,6 @@ def registration():
     user registration page
     """
     if request.method == "POST":
-
         username: str = request.form["username"]
         psw: str = request.form["password"]
         telegram_id: str = request.form["telegram-id"]
@@ -57,16 +55,14 @@ def registration():
 
         # If the token field is empty
         if len(request.form['token']) == 0:  # user creates a new group
-            if asyncio.run(registration_validator(username, psw, telegram_id)):
-
+            if asyncio.run(registration_validation(username, psw, telegram_id)):
                 telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                 psw_salt: str = get_salt()  # generating salt for a new user
                 dbase = DatabaseQueries(get_db())
                 user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
 
                 if user_token:
-
-                    group_id: int = token_validator(user_token)
+                    group_id: int = token_validation(user_token)
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
@@ -77,14 +73,12 @@ def registration():
 
         # User is added to an existing group
         if len(token) == 32:
-            if asyncio.run(registration_validator(username, psw, telegram_id)):
-
+            if asyncio.run(registration_validation(username, psw, telegram_id)):
                 dbase = DatabaseQueries(get_db())
-                group_id: int = token_validator(token)  # getting group id by token
+                group_id: int = token_validation(token)  # getting group id by token
                 group_not_full = dbase.check_limit_users_in_group(token)  # checking places in the group
 
                 if group_id and group_not_full:
-
                     telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                     psw_salt: str = get_salt()  # generating salt for a new user
 
@@ -92,7 +86,6 @@ def registration():
 
                         flash("Registration completed successfully!", category="success")
                         logger_app.info(f"Successful registration: {username}. Group: id={group_id}.")
-
                     else:
                         logger_app.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
                         flash("Error creating user. Please try again and if the problem persists, "
@@ -140,12 +133,10 @@ def login():
         psw_salt: str = dbase.get_salt_by_username(username)
 
         if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt)):
-
             session["userLogged"] = username
             dbase.update_user_last_login(username)
             logger_app.info(f"Successful authorization: {username}.")
             return redirect(url_for("household", username=session["userLogged"]))
-
         else:
             flash("This user doesn't exist.", category="error")
         # request.args - GET, request.form - POST
@@ -166,50 +157,46 @@ def household(username):
     group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
 
     if request.method == "POST":
+        if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
+            value: str = request.form.get("transfer")
+            value: int = correction_number(value)
+            value: int = value
+            record_date: str = request.form.get("record-date")
+            record_date_is_valid: bool = asyncio.run(date_validation(record_date))
+            category: str = request.form.get("category")
+            description = request.form.get("description")
+            if "submit-button-2" in request.form:
+                value: int = value * (-1)
 
-        if "submit-button-1" in request.form:  # Processing the "Add to table" button for form 1
-            value: str = request.form.get("income")
-            value: int = input_value(value)
-            description = request.form.get("description-1")
+            if value:
+                if record_date_is_valid:
+                    record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
+                    if description_validation(description):
+                        if dbase.add_monetary_transaction_to_db(username, value, record_date, category, description):
+                            logger_app.info(f"Successfully adding data to database: "
+                                            f"operation: {request.form}"
+                                            f"table: budget_{group_id}")
 
-            if value and description_validator(description):
-                if dbase.add_monetary_transaction_to_db(username, value, description):
-                    logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {value}, description: {description}.")
-                    flash("Data added successfully.", category="success")
+                            flash("Data added successfully.", category="success")
+                        else:
+                            logger_app.error(f"Error adding data to database: "
+                                             f"operation: {request.form}"
+                                             f"table: budget_{group_id}")
+
+                            flash("Error adding data to database", category="error")
+                    else:
+                        flash("Description format is invalid", category="error")
                 else:
-                    logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, income: {value}, description: {description}.")
-                    flash("Error adding data to database.", category="error")
-
+                    flash("Date format is invalid", category="error")
             else:
-                flash("The value or description is invalid.", category="error")
-
-        elif "submit-button-2" in request.form:  # Processing the "Add to table" button for form 2
-            value: str = request.form.get("expense")
-            value: int = input_value(value)
-            description = request.form.get("description-2")
-
-            if value and description_validator(description):
-                if dbase.add_monetary_transaction_to_db(username, value * (-1), description):
-                    logger_app.info(f"Successfully adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {value}, description: {description}.")
-                    flash("Data added successfully.", category="success")
-                else:
-                    logger_app.info(f"Error adding data to database: table: budget_{group_id}, "
-                                    f"username: {username}, expense: {value}, description: {description}.")
-                    flash("Error adding data to database.", category="error")
-
-            else:
-                flash("The value or description is invalid.", category="error")
+                flash("The value format is invalid", category="error")
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int | bool = input_value(record_id)
+            record_id: int = correction_number(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
-
             else:
                 if dbase.delete_budget_entry_by_id(group_id, record_id):
                     logger_app.info(f"Successful deletion record from database: table: budget_{group_id}, "
@@ -221,11 +208,14 @@ def household(username):
                     flash("Error deleting a record from the database. Check that the entered data is correct.",
                           category="error")
 
-    headers: list[str] = ["№", "Total", "Username", "Transfer", "DateTime", "Description"]
+    category_list = ["Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
+                     "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Sale", "Salary",
+                     "Other"]
+    headers: list[str] = ["№", "Total", "Username", "Transfer", "Category", "Date", "Description"]
     data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html", title=f"Budget control - {username}",
-                           token=token, username=username, data=data, headers=headers)
+                           token=token, username=username, data=data, headers=headers, category_list=category_list)
 
 
 @app.route('/settings/<username>')
@@ -240,9 +230,7 @@ def settings(username):
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)
     group_owner: str = dbase.get_username_group_owner_by_token(token)
-
     group_users_data: list = dbase.get_group_users_data(group_id)
-
     return render_template("settings.html", title=f"Settings - {username}", token=token,
                            group_owner=group_owner, group_users_data=group_users_data)
 
@@ -277,4 +265,4 @@ def page_not_found(error):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)  # change on False before upload on server
+    app.run(debug=True, host='0.0.0.0')  # change on False before upload on server

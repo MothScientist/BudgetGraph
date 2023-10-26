@@ -54,23 +54,17 @@
           <img src="{{ url_for('static', filename='img/income.png') }}" alt="Income" class="income-img">
           <div class="header-1">Add income</div>
           <form action="/household/{{ username }}" method="POST">
-            <input type="text" id="income" name="income" placeholder="Income" maxlength="10">
-            <input type="text" id="description-1" name="description-1" placeholder="Description (up to 50 characters)" maxlength="50">
-            <button type="submit" name="submit-button-1" id="submit-button-1">Add to table</button>
+            <input type="text" id="transfer" name="transfer" placeholder="Transfer" maxlength="10">
+            <input type="date"  id="record-date" name="record-date">
+            <select id="category" name="category">
+                {% for category in category_list %}
+                <option>{{ category }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" id="description" name="description" placeholder="Description (up to 50 characters)" maxlength="50">
+            <button type="submit" name="submit-button-1" id="submit-button-1">Add to income</button>
+            <button type="submit" name="submit-button-2" id="submit-button-2">Add to expense</button>
             <button type="reset" id="clear-button-1">Clear</button>
-          </form>
-
-      </div>
-
-      <div class="add-form-2">
-
-          <img src="{{ url_for('static', filename='img/expense.png') }}" alt="Expense" class="expense-img">
-          <div class="header-2">Add expense</div>
-          <form action="/household/{{ username }}" method="POST">
-            <input type="text" id="expense" name="expense" placeholder="Expense" maxlength="10">
-            <input type="text" id="description-2" name="description-2" placeholder="Description (up to 50 characters)" maxlength="50">
-            <button type="submit" name="submit-button-2" id="submit-button-2">Add to table</button>
-            <button type="reset" id="clear-button-2">Clear</button>
           </form>
 
       </div>

@@ -1,10 +1,9 @@
-#.jpeg
-#.sql
+.jpeg
+.sql
 .png
 .pdf
 .jpg
 .env
-!chatbot_dialog_flowchart.jpeg
 !create_db.sql
 ### Databases ###
 *.sqlite3
