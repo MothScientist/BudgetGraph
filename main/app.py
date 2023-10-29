@@ -251,7 +251,7 @@ def logout():
     """
     logger_app.info(f"Successful logout: {session['userLogged']}.")
     session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
-    return redirect(url_for('homepage'))  # redirecting the user to another page, such as the homepage
+    return redirect(url_for('login'))  # redirecting the user to another page, such as the homepage
 
 
 @app.errorhandler(401)
