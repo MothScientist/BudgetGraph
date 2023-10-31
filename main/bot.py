@@ -378,11 +378,12 @@ def main():
             create_csv_file(group_id)
             try:
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
-                delete_csv_file(group_id)
-                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
             except FileNotFoundError:
                 bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
                 logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
+            else:
+                delete_csv_file(group_id)
+                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
         else:
             bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
