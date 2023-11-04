@@ -1,4 +1,4 @@
-<image src="readme_images/homepage.png" alt="Текст с описанием картинки">
+<image src="images/homepage.png" alt="homepage">
 
 ## <font color="cyan">Project objectives:</font>
 - ### <font color="lime">Full details of your income and expenses (website and bot)</font>
