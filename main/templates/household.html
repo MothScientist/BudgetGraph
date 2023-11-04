@@ -12,7 +12,6 @@
       <a href="/">
         <img src="{{ url_for('static', filename='img/turn-back.png') }}" alt="Back to home page" class="home-button">
       </a>
-
       <a href="/logout">
         <img src="{{ url_for('static', filename='img/logout.png') }}" alt="Login out" class="logout_button">
       </a>
@@ -29,7 +28,6 @@
 
   <div class="table-wrapper">
     <table>
-
       <tr>
         {% for header in headers %}
           <th>{{ header }}</th>
@@ -43,7 +41,6 @@
           {% endfor %}
         </tr>
       {% endfor %}
-
     </table>
   </div>
 
