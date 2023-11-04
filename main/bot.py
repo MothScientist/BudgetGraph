@@ -202,6 +202,97 @@ def main():
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
+    def process_transfer(message, is_negative: bool = False) -> None:
+        """
+        Adds income and expense to the database. Accepts an unvalidated value,
+        performs validation and enters it into the database.
+
+        If the value == 0, then it will be regarded as False.
+        :param message:
+        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense) [default=False]
+        :return: None
+        """
+        value: str = message.text
+        value: int = correction_number(value)
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+        today_date: str = str(date.today())
+        btn1 = types.KeyboardButton(f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}")
+        markup_1.add(btn1)
+
+        if value:
+            if is_negative:
+                value: int = value*(-1)
+            else:
+                value: int = value
+            bot.send_message(message.chat.id, "Set the date (DD/MM/YYYY)", reply_markup=markup_1)
+            bot.register_next_step_handler(message, process_add_date_for_transfer, value)
+        else:
+            bot.send_message(message.chat.id, "Invalid date format")
+            reply_menu_buttons_register(message)
+
+    def process_add_date_for_transfer(message, value: int) -> None:
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+        btn1 = types.KeyboardButton("Supermarkets")
+        btn2 = types.KeyboardButton("Restaurants")
+        btn3 = types.KeyboardButton("Clothes")
+        btn4 = types.KeyboardButton("Medicine")
+        btn5 = types.KeyboardButton("Transport")
+        btn6 = types.KeyboardButton("Devices")
+        btn7 = types.KeyboardButton("Education")
+        btn8 = types.KeyboardButton("Services")
+        btn9 = types.KeyboardButton("Travel")
+        btn10 = types.KeyboardButton("Housing")
+        btn11 = types.KeyboardButton("Transfers")
+        btn12 = types.KeyboardButton("Investments")
+        btn13 = types.KeyboardButton("Hobby")
+        btn14 = types.KeyboardButton("Jewelry")
+        btn15 = types.KeyboardButton("Sale")
+        btn16 = types.KeyboardButton("Salary")
+        btn17 = types.KeyboardButton("Other")
+        markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14,
+                     btn15, btn16, btn17)
+
+        record_date: str = message.text
+        record_date_is_valid: bool = asyncio.run(date_validation(record_date)) # DD/MM/YYYY
+
+        if record_date_is_valid:
+            bot.send_message(message.chat.id, "Select the required category", reply_markup=markup_1)
+            bot.register_next_step_handler(message, process_add_category_for_transfer, value, record_date)
+        else:
+            bot.send_message(message.chat.id, "Invalid date format")
+            reply_menu_buttons_register(message)
+
+    def process_add_category_for_transfer(message, value: int, record_date: str) -> None:
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+        btn1 = types.KeyboardButton("No description")
+        markup_1.add(btn1)
+        category: str = message.text
+        category_is_valid: bool = category_validation(category)
+        if category_is_valid:
+            bot.send_message(message.chat.id, "Add description (no more than 50 characters)", reply_markup=markup_1)
+            bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, category)
+        else:
+            bot.send_message(message.chat.id, "Invalid category format")
+            reply_menu_buttons_register(message)
+
+    def process_add_description_for_transfer(message, value: int, record_date: str, category: str) -> None:
+        description: str = message.text
+        description_is_valid: bool = description_validation(description)
+        if description_is_valid:
+            if description == "No description":
+                description: str = ""
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            telegram_id: int = message.from_user.id
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+            bot_db.add_monetary_transaction_to_db(username, value, record_date, category, description)
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "Entry added successfully!")
+        else:
+            bot.send_message(message.chat.id, "Invalid value")
+
+        reply_menu_buttons_register(message)
+
     @bot.message_handler(commands=['delete_record'])
     @timeit
     def delete_record(message):
@@ -287,11 +378,12 @@ def main():
             create_csv_file(group_id)
             try:
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
-                delete_csv_file(group_id)
-                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
             except FileNotFoundError:
                 bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
                 logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
+            else:
+                delete_csv_file(group_id)
+                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
         else:
             bot.send_message(message.chat.id, "You are not register.")
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
@@ -519,102 +611,6 @@ def main():
             close_db_main(connection)
         else:
             bot.send_message(message.chat.id, "Invalid value.")
-
-    def process_transfer(message, is_negative: bool = False) -> None:
-        """
-        Adds income and expense to the database. Accepts an unvalidated value,
-        performs validation and enters it into the database.
-
-        If the value == 0, then it will be regarded as False.
-        :param message:
-        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense) [default=False]
-        :return: None
-        """
-        value: str = message.text
-        value: int = correction_number(value)
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-        today_date: str = str(date.today())
-        btn1 = types.KeyboardButton(f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}")
-        markup_1.add(btn1)
-
-        if value:
-            if is_negative:
-                value: int = value*(-1)
-            else:
-                value: int = value
-            bot.send_message(message.chat.id, "Set the date (DD/MM/YYYY)", reply_markup=markup_1)
-            bot.register_next_step_handler(message, process_add_date_for_transfer, value)
-        else:
-            bot.send_message(message.chat.id, "Invalid date format")
-            reply_menu_buttons_register(message)
-
-    def process_add_date_for_transfer(message, value: int) -> None:
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-        btn1 = types.KeyboardButton("Supermarkets")
-        btn2 = types.KeyboardButton("Restaurants")
-        btn3 = types.KeyboardButton("Clothes")
-        btn4 = types.KeyboardButton("Medicine")
-        btn5 = types.KeyboardButton("Transport")
-        btn6 = types.KeyboardButton("Devices")
-        btn7 = types.KeyboardButton("Education")
-        btn8 = types.KeyboardButton("Services")
-        btn9 = types.KeyboardButton("Travel")
-        btn10 = types.KeyboardButton("Housing")
-        btn11 = types.KeyboardButton("Transfers")
-        btn12 = types.KeyboardButton("Investments")
-        btn13 = types.KeyboardButton("Hobby")
-        btn14 = types.KeyboardButton("Jewelry")
-        btn15 = types.KeyboardButton("Sale")
-        btn16 = types.KeyboardButton("Salary")
-        btn17 = types.KeyboardButton("Other")
-        markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14,
-                     btn15, btn16, btn17)
-
-        record_date: str = message.text
-        today_date: str = str(date.today())
-        if record_date != f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}":
-            record_date_is_valid: bool = asyncio.run(date_validation(record_date))
-        else:
-            record_date_is_valid: bool = True
-
-        if record_date_is_valid:
-            record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
-            bot.send_message(message.chat.id, "Select the required category", reply_markup=markup_1)
-            bot.register_next_step_handler(message, process_add_category_for_transfer, value, record_date)
-        else:
-            bot.send_message(message.chat.id, "Invalid date format")
-            reply_menu_buttons_register(message)
-
-    def process_add_category_for_transfer(message, value: int, record_date: str) -> None:
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-        btn1 = types.KeyboardButton("No description")
-        markup_1.add(btn1)
-        category: str = message.text
-        category_is_valid: bool = category_validation(category)
-        if category_is_valid:
-            bot.send_message(message.chat.id, "Add description (no more than 50 characters)", reply_markup=markup_1)
-            bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, category)
-        else:
-            bot.send_message(message.chat.id, "Invalid category format")
-            reply_menu_buttons_register(message)
-
-    def process_add_description_for_transfer(message, value: int, record_date: str, category: str) -> None:
-        description: str = message.text
-        description_is_valid: bool = description_validation(description)
-        if description_is_valid:
-            if description == "No description":
-                description: str = ""
-            connection = connect_db()
-            bot_db = DatabaseQueries(connection)
-            telegram_id: int = message.from_user.id
-            username: str = bot_db.get_username_by_telegram_id(telegram_id)
-            bot_db.add_monetary_transaction_to_db(username, value, record_date, category, description)
-            close_db_main(connection)
-            bot.send_message(message.chat.id, "Entry added successfully!")
-        else:
-            bot.send_message(message.chat.id, "Invalid value")
-
-        reply_menu_buttons_register(message)
 
     def process_username(message):
         username: str = message.text

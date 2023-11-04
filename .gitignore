@@ -4,6 +4,7 @@
 .pdf
 .jpg
 .env
+images/money_image_bot.png
 !create_db.sql
 ### Databases ###
 *.sqlite3
