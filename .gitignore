@@ -4,6 +4,7 @@
 .pdf
 .jpg
 .env
+/images
 !create_db.sql
 ### Databases ###
 *.sqlite3
