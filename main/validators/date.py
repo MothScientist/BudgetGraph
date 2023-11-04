@@ -7,14 +7,18 @@ from time_checking import timeit
 
 
 @timeit
-async def date_validation(entered_date: str) -> bool:
+async def date_validation(entered_date: str) -> bool:  # entered date in format YYYY-MM-DD (
     if not await check_date_in_correct_format(entered_date):
         return False
 
+    _day: str = entered_date[:2]
+    _month: str = entered_date[3:5]
+    _year: str = entered_date[-4:]
+
     year_is_correct, month_is_correct, day_is_correct = await asyncio.gather(
-        check_year_is_correct(entered_date[:4]),  # YYYY
-        check_month_is_correct(entered_date[5:7]),  # MM
-        check_day_is_correct(entered_date[:4], entered_date[5:7], entered_date[-2:])  # DD
+        check_day_is_correct(_year, _month, _day),  # DD
+        check_month_is_correct(_month),  # MM
+        check_year_is_correct(_year)  # YYYY
     )
 
     if year_is_correct and month_is_correct and day_is_correct:
@@ -24,7 +28,7 @@ async def date_validation(entered_date: str) -> bool:
 
 
 async def check_date_in_correct_format(entered_date: str) -> bool:  # YYYY-MM-DD
-    if re.match(r'^20(1|2)\d-(0|1)\d-(0|1|2|3)\d$', entered_date):
+    if re.match(r'^(0|1|2|3)\d/(0|1)\d/20(1|2)\d$', entered_date):
         return True
     return False
 

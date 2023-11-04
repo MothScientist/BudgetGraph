@@ -162,6 +162,7 @@ def household(username):
             value: int = correction_number(value)
             value: int = value
             record_date: str = request.form.get("record-date")
+            record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}" # YYYY-MM-DD -> DD/MM/YYYY
             record_date_is_valid: bool = asyncio.run(date_validation(record_date))
             category: str = request.form.get("category")
             description = request.form.get("description")
@@ -170,7 +171,6 @@ def household(username):
 
             if value:
                 if record_date_is_valid:
-                    record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
                     if description_validation(description):
                         if dbase.add_monetary_transaction_to_db(username, value, record_date, category, description):
                             logger_app.info(f"Successfully adding data to database: "
