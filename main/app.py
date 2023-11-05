@@ -235,6 +235,11 @@ def settings(username):
                            group_owner=group_owner, group_users_data=group_users_data)
 
 
+@app.route('/about_premium')
+def about_premium():
+    return render_template("about_premium.html", title="About the premium subscription")
+
+
 @app.route('/conditions')
 def conditions():
     """
