@@ -9,7 +9,7 @@ import asyncio
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
 # Validators
-from validators.registration import registration_validation
+from registration import registration_validation
 from validators.description import description_validation
 from validators.date import date_validation
 from validators.correction_number import correction_number

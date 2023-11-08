@@ -14,7 +14,7 @@ from database_control import DatabaseQueries, connect_db, close_db_main, create_
 from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
 # Validators
-from validators.registration import username_validation, password_validation
+from budget_control.main.registration import username_validation, password_validation
 from validators.description import description_validation
 from validators.correction_number import correction_number
 from validators.category import category_validation
