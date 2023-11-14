@@ -366,7 +366,6 @@ def main():
             bot_db.update_user_last_login(username)
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
             create_csv_file(group_id)
-
             try:
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
             except FileNotFoundError:
@@ -392,9 +391,7 @@ def main():
 
         if username:
             bot_db.update_user_last_login(username)
-
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
             group_users_list: list = bot_db.get_group_users(group_id)
             group_owner: str = bot_db.get_group_owner_username(group_id)
             group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
@@ -424,11 +421,10 @@ def main():
                 if len(group_users_list) == 1:
                     bot.send_message(message.chat.id, "There is only 1 member in this group.")
                 else:
-                    group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
-                                                     else f"{user}" for user in group_users_list)
+                    group_users_str: str = '\n'.join(f"{user}" for user in group_users_list if user != group_owner)
                     bot.send_message(message.chat.id, f"Write below the name of the user (from the list) you want "
                                                       f"to assign as the owner of the group: \n{group_users_str}")
-                    bot.register_next_step_handler(message, process_change_owner, group_id)
+                    bot.register_next_step_handler(message, process_change_owner, group_id, group_owner)
             else:
                 close_db_main(connection)
                 bot.send_message(message.chat.id, "Only the current owner can change the group owner.")
@@ -438,13 +434,15 @@ def main():
             bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
-    def process_change_owner(message, group_id: int):
+    def process_change_owner(message, group_id: int, group_owner: str):
         new_owner: str = message.text
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         group_users: list = bot_db.get_group_users(group_id)
 
-        if new_owner in group_users:
+        if new_owner == group_owner:
+            bot.send_message(message.chat.id, "This is the current owner of the group.")
+        elif new_owner in group_users:
             if bot_db.update_group_owner(new_owner, group_id):
                 bot.send_message(message.chat.id, "Group owner has been changed.")
             else:
