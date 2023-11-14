@@ -404,11 +404,7 @@ def main():
 
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
-            group_id: int = group_id
-            group_users_list: list = bot_db.get_group_users(group_id)
-            group_owner: str = bot_db.get_group_owner_username(group_id)
-            group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
-                                             else f"{user}" for user in group_users_list)
+            group_users_str: str = get_str_with_group_users(group_id)
 
             bot.send_message(message.chat.id, group_users_str)
         else:
@@ -422,15 +418,12 @@ def main():
     @timeit
     def delete_account(message):
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-
         btn1 = types.KeyboardButton("👍 YES")
         btn2 = types.KeyboardButton("👎 NO")
-
         markup_1.add(btn1, btn2)
 
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-
         telegram_id: int = message.from_user.id
         username: str = bot_db.get_username_by_telegram_id(telegram_id)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
@@ -501,15 +494,21 @@ def main():
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
         if group_id:
-            current_owner: str = bot_db.get_group_owner_username(group_id)
+            group_owner: str = bot_db.get_group_owner_username(group_id)
             username: str = bot_db.get_username_by_telegram_id(telegram_id)
-            close_db_main(connection)
-            if current_owner == username:
-                bot.send_message(message.chat.id, "Write below the name of the user (from the list)"
-                                              " you want to assign as the owner of the group:")
-                get_group_users(message)
-                bot.register_next_step_handler(message, process_change_owner, group_id)
+            if group_owner == username:
+                group_users_list: list = bot_db.get_group_users(group_id)
+                close_db_main(connection)
+                if len(group_users_list) == 1:
+                    bot.send_message(message.chat.id, "There is only 1 member in this group.")
+                else:
+                    group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
+                                                     else f"{user}" for user in group_users_list)
+                    bot.send_message(message.chat.id, f"Write below the name of the user (from the list) you want "
+                                                      f"to assign as the owner of the group: \n{group_users_str}")
+                    bot.register_next_step_handler(message, process_change_owner, group_id)
             else:
+                close_db_main(connection)
                 bot.send_message(message.chat.id, "Only the current owner can change the group owner.")
 
         else:
@@ -735,6 +734,16 @@ def main():
             pass
         elif message.text == "↩️ Back":
             reply_menu_buttons_register(message)
+
+    def get_str_with_group_users(group_id: int) -> str:
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        group_users_list: list = bot_db.get_group_users(group_id)
+        group_owner: str = bot_db.get_group_owner_username(group_id)
+        group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
+                                         else f"{user}" for user in group_users_list)
+        close_db_main(connection)
+        return group_users_str
 
     bot.polling(none_stop=True)
 
