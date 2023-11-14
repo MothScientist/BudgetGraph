@@ -403,7 +403,8 @@ class DatabaseQueries:
         """
         group_id: int = self.get_group_id_by_username(username)
         table_name = f"budget_{group_id}"
-
+        # In the table must be entered with the user's name in the text format because the user can later be deleted,
+        # but their entries must remain in the table until it is deleted or cleared by the group owner.
         try:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
