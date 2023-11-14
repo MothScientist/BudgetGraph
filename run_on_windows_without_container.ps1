@@ -6,8 +6,8 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 cd main
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-# Executing the creating_db_and_directories.py file
-python creating_db_and_directories.py
+# Executing the build_project.py file
+python build_project.py
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 # Running app.py and bot.py

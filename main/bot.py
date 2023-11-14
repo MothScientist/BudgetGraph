@@ -14,7 +14,7 @@ from database_control import DatabaseQueries, connect_db, close_db_main, create_
 from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
 # Validators
-from budget_control.main.registration import username_validation, password_validation
+from validators.registration import username_validation, password_validation
 from validators.description import description_validation
 from validators.correction_number import correction_number
 from validators.category import category_validation
@@ -253,7 +253,7 @@ def main():
                      btn15, btn16, btn17)
 
         record_date: str = message.text
-        record_date_is_valid: bool = asyncio.run(date_validation(record_date)) # DD/MM/YYYY
+        record_date_is_valid: bool = asyncio.run(date_validation(record_date))  # DD/MM/YYYY
 
         if record_date_is_valid:
             bot.send_message(message.chat.id, "Select the required category", reply_markup=markup_1)
@@ -315,39 +315,6 @@ def main():
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
 
-    @bot.message_handler(commands=['view_table'])
-    @timeit
-    def view_table(message) -> None:
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        telegram_id: int = message.from_user.id
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-        if username:  # user authorization check
-            bot_db.update_user_last_login(username)
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
-            data: list = bot_db.select_data_for_household_table(int(group_id), 10)
-
-            bot.send_message(message.chat.id,
-                             '\n'.join([
-                                           f"ID: {item[0]}\n"
-                                           f"Total: {item[1]}\n"
-                                           f"Username: {item[2]}\n"
-                                           f"Transfer: {item[3]}\n"
-                                           f"Category: {item[4]}\n"
-                                           f"DateTime: {item[5]}\n"
-                                           f"Description: {item[6]}\n\n"
-                                           for item in data
-                             ]))
-
-            logger_bot.info(f"ID: {telegram_id} - view_table")
-        else:
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id,
-                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-        close_db_main(connection)
-
     @bot.message_handler(commands=['registration'])
     @timeit
     def registration(message) -> None:
@@ -364,6 +331,42 @@ def main():
         else:
             bot.send_message(message.chat.id, "You are already registered!")
             start(message)
+
+    @bot.message_handler(commands=['view_table'])
+    @timeit
+    def view_table(message) -> None:
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        if username:  # user authorization check
+            bot_db.update_user_last_login(username)
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+            data: list = bot_db.select_data_for_household_table(int(group_id), 10)
+
+            if data:
+                bot.send_message(message.chat.id,
+                                 '\n'.join([
+                                     f"ID: {item[0]}\n"
+                                     f"Total: {item[1]}\n"
+                                     f"Username: {item[2]}\n"
+                                     f"Transfer: {item[3]}\n"
+                                     f"Category: {item[4]}\n"
+                                     f"DateTime: {item[5]}\n"
+                                     f"Description: {item[6]}\n\n"
+                                     for item in data
+                                 ]))
+            else:
+                bot.send_message(message.chat.id, "Your records table is empty")
+
+            logger_bot.info(f"ID: {telegram_id} - view_table")
+        else:
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id,
+                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+        close_db_main(connection)
 
     @bot.message_handler(commands=['get_csv'])
     @timeit
@@ -404,7 +407,10 @@ def main():
 
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
 
-            group_users_str: str = get_str_with_group_users(group_id)
+            group_users_list: list = bot_db.get_group_users(group_id)
+            group_owner: str = bot_db.get_group_owner_username(group_id)
+            group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
+                                             else f"{user}" for user in group_users_list)
 
             bot.send_message(message.chat.id, group_users_str)
         else:
@@ -734,16 +740,6 @@ def main():
             pass
         elif message.text == "↩️ Back":
             reply_menu_buttons_register(message)
-
-    def get_str_with_group_users(group_id: int) -> str:
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        group_users_list: list = bot_db.get_group_users(group_id)
-        group_owner: str = bot_db.get_group_owner_username(group_id)
-        group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
-                                         else f"{user}" for user in group_users_list)
-        close_db_main(connection)
-        return group_users_str
 
     bot.polling(none_stop=True)
 

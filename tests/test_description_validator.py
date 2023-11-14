@@ -1,6 +1,6 @@
 import unittest
 
-from budget_control.main.validators.description import description_validation
+from validators.description import description_validation
 
 
 class TestDescriptionValidator(unittest.TestCase):

@@ -10,7 +10,6 @@ async def date_validation(entered_date: str) -> bool:  # entered date in format 
     _day: int = int(entered_date[:2])
     _month: int = int(entered_date[3:5])
     _year: int = int(entered_date[-4:])
-
     year_is_correct, month_is_correct, day_is_correct = await asyncio.gather(
         check_day_is_correct(_year, _month, _day),  # DD
         check_month_is_correct(_month, _year),  # MM
@@ -42,7 +41,7 @@ async def check_month_is_correct(entered_month: int, entered_year: int) -> bool:
         return False
 
     current_month: int = datetime.now().month
-    current_year: int = datetime.now().month
+    current_year: int = datetime.now().year
 
     if entered_year == current_year and entered_month > current_month:
         return False
@@ -58,8 +57,8 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
     current_month: int = datetime.now().month
     current_year: int = datetime.now().year
 
-    if current_year == entered_year and current_month == entered_month and entered_day <= current_day:
-        return True
+    if current_year == entered_year and current_month == entered_month and entered_day > current_day:
+        return False
 
     if entered_month == 2:
         if check_year_is_leap(entered_year) and entered_day <= 29:
