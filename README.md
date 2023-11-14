@@ -1,3 +1,5 @@
+![GIF](images/budget_donuts.gif)
+
 <image src="images/homepage.png" alt="homepage">
 
 ## <font color="cyan">Project objectives:</font>
