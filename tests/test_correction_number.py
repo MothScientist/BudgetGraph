@@ -1,6 +1,6 @@
 import unittest
 
-from budget_control.main.validators.correction_number import correction_number
+from validators.correction_number import correction_number
 
 
 class TestCorrectionNumber(unittest.TestCase):

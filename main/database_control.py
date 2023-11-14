@@ -540,7 +540,7 @@ class DatabaseQueries:
             return False
 
         else:
-            logger_database.error(f"Group #{group_id} has been completely deleted")
+            logger_database.info(f"Group #{group_id} has been completely deleted")
             return True
 
 

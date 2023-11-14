@@ -1,6 +1,6 @@
 import unittest
 
-from budget_control.main.validators.table_name import table_name_validation
+from validators.table_name import table_name_validation
 
 
 class TestTableNameValidator(unittest.TestCase):

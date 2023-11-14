@@ -162,6 +162,7 @@ def household(username):
             value: int = correction_number(value)
             value: int = value
             record_date: str = request.form.get("record-date")
+            record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}" # YYYY-MM-DD -> DD/MM/YYYY
             record_date_is_valid: bool = asyncio.run(date_validation(record_date))
             category: str = request.form.get("category")
             description = request.form.get("description")
@@ -170,7 +171,6 @@ def household(username):
 
             if value:
                 if record_date_is_valid:
-                    record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
                     if description_validation(description):
                         if dbase.add_monetary_transaction_to_db(username, value, record_date, category, description):
                             logger_app.info(f"Successfully adding data to database: "
@@ -235,6 +235,11 @@ def settings(username):
                            group_owner=group_owner, group_users_data=group_users_data)
 
 
+@app.route('/about_premium')
+def about_premium():
+    return render_template("about_premium.html", title="About the premium subscription")
+
+
 @app.route('/conditions')
 def conditions():
     """
@@ -251,7 +256,7 @@ def logout():
     """
     logger_app.info(f"Successful logout: {session['userLogged']}.")
     session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
-    return redirect(url_for('homepage'))  # redirecting the user to another page, such as the homepage
+    return redirect(url_for('login'))  # redirecting the user to another page, such as the homepage
 
 
 @app.errorhandler(401)

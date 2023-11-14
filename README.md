@@ -1,23 +1,29 @@
-A microservice using **Flask**, which has a very simple web interface and a **telegram bot**
-(as the main communication channel between the client and the program).</br></br>
-This service allows you to control your/family/team budget, receive advanced statistics and has flexible functionality 
-within the scope of its purpose.</br></br>
+![GIF](images/budget_donuts.gif)
 
-| Technology                                                                                                   | Version |
-|--------------------------------------------------------------------------------------------------------------|---------|
-| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)       | 3.12.0  |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)       | 3.0.0   |
-| **pyTelegramBotAPI**                                                                                         | 4.14.0  |
-| ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) | -       |
+<image src="images/homepage.png" alt="homepage">
+
+## <font color="cyan">Project objectives:</font>
+- ### <font color="lime">Full details of your income and expenses (website and bot)</font>
+- ### <font color="lime">Creating temporary groups (for example, to track travel expenses)</font>
+- ### <font color="lime">Analytics in text and graphic format</font>
+- ### <font color="lime">Flexible group management</font>
+
+
+| Technology             | Version                           |
+|------------------------|-----------------------------------|
+| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)         | <font color="white">3.12.0</font> |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)          | <font color="white">3.0.0</font>  |
+| **pyTelegramBotAPI**   | <font color="white">4.14.0</font> |
+| ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)         | <font color="white">-</font>      |
 
 
 ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 
-## Note about hashlib.pbkdf2_hmac(): 
-#### Changed in version 3.12: Function now only available when Python is built with OpenSSL. The slow pure Python implementation has been removed.
+## Note about <font color="red">hashlib.pbkdf2_hmac()</font>: 
+#### Changed in version 3.12: <u>Function now only available when Python is built with OpenSSL</u>. The slow pure Python implementation has been removed.
 
-## Installation:
-### For Linux (with Docker):
+# <font color="white">Installation</font>:
+### For Linux (with <font color="DeepSkyBlue">Docker</font>):
 1. Clone the repository:</br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
@@ -35,7 +41,7 @@ within the scope of its purpose.</br></br>
 5. Running a bash script: </br> 
 ```./deploy.sh``` </br>
 
-### For Windows (with Docker Desktop):
+### For Windows (with <font color="DeepSkyBlue">Docker Desktop</font>):
 1. Clone the repository: </br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
@@ -55,7 +61,7 @@ within the scope of its purpose.</br></br>
 6. Running a PowerShell script: </br> 
 ```./run_on_windows_with_docker_desktop.ps1``` </br>
 
-### For Windows (without Docker Desktop):
+### For Windows (without <font color="DeepSkyBlue">Docker Desktop</font>):
 1. Clone the repository: </br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 

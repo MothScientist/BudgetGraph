@@ -43,44 +43,30 @@ def main():
 
     @bot.message_handler(commands=['start'])
     def start(message) -> None:
-        # Buttons
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-        markup_2 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-        btn1 = types.KeyboardButton("❓ Help")
-        btn2 = types.KeyboardButton("📎 Link to GitHub")
-        btn3 = types.KeyboardButton("💻 My Telegram ID")
-        btn4 = types.KeyboardButton("🤡 I want to register")
-        btn5 = types.KeyboardButton("🔐 Get my token")
-        btn6 = types.KeyboardButton("💵 Table manage")
-        btn7 = types.KeyboardButton("💻 Group settings")
-        markup_1.add(btn1, btn2, btn5, btn6, btn7)
-        markup_2.add(btn1, btn2, btn3, btn4)
-
         # check user in our project
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-
         telegram_id: int = message.from_user.id
-
         res: str = bot_db.get_username_by_telegram_id(telegram_id)
 
         if res:
             bot_db.update_user_last_login(res)
 
-            # to send a sticker from a car in .webp format no larger than 512x512 pixel
-            # sticker = open("D:\\telebot\\stickers\\stick_name.webp)", "rb")
+            # to send a sticker in .webp format no larger than 512x512 pixel
+            # sticker = open("H:\telebot\stickers\stick_name.webp", "rb")
             # bot.send_sticker(message.chat.id, sticker)
 
-            bot.send_message(message.chat.id, f"Hello, {res}!\nWe recognized you. Welcome!", reply_markup=markup_1)
+            bot.send_message(message.chat.id, f"Hello, {res}!\nWe recognized you. Welcome!")
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
+            reply_menu_buttons_register(message)
             logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
         else:
             bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name}!\n"
-                                            f"We didn't recognize you. Would you like to register in the project?",
-                             reply_markup=markup_2)
+                                            f"We didn't recognize you. Would you like to register in the project?")
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
+            reply_menu_buttons_not_register(message)
             logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
 
         close_db_main(connection)
@@ -92,17 +78,16 @@ def main():
         btn3 = types.KeyboardButton("🔐 Get my token")
         btn4 = types.KeyboardButton("💵 Table manage")
         btn5 = types.KeyboardButton("💻 Group settings")
-        markup_1.add(btn1, btn2, btn3, btn4, btn5)
+        btn6 = types.KeyboardButton("⭐ Premium")
+        markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
         bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
 
     def reply_menu_buttons_not_register(message):
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-
         btn1 = types.KeyboardButton("❓ Help")
         btn2 = types.KeyboardButton("📎 Link to GitHub")
         btn3 = types.KeyboardButton("💻 My Telegram ID")
         btn4 = types.KeyboardButton("🤡 I want to register")
-
         markup_1.add(btn1, btn2, btn3, btn4)
 
         bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
@@ -126,7 +111,7 @@ def main():
         btn2 = types.KeyboardButton("🗑️ Delete my account")
         btn3 = types.KeyboardButton("🚫 Delete group")
         btn4 = types.KeyboardButton("🔑 Change owner")
-        btn5 = types.KeyboardButton(" Delete user")
+        btn5 = types.KeyboardButton("🤖 Delete user")
         btn6 = types.KeyboardButton("↩️ Back")
         markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
         bot.send_message(message.chat.id, "Click the button you need (Group settings)", reply_markup=markup_1)
@@ -146,6 +131,10 @@ def main():
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("github.com", url="https://github.com/MothScientist/budget_control"))
         bot.send_message(message.chat.id, "Our open-source project on Github:", reply_markup=markup)
+
+    @bot.message_handler(commands=['premium'])
+    def premium(message):
+        pass
 
     @bot.message_handler(commands=['get_my_token'])
     def get_my_token(message) -> None:
@@ -171,7 +160,6 @@ def main():
         if res:  # user authorization check
             bot_db.update_user_last_login(res)
             close_db_main(connection)
-
             bot.send_message(message.chat.id, "Enter the value of income:")
             bot.register_next_step_handler(message, process_transfer, False)
 
@@ -191,7 +179,6 @@ def main():
         if res:  # user authorization check
             bot_db.update_user_last_login(res)
             close_db_main(connection)
-
             bot.send_message(message.chat.id, "Enter the value of expense:")
             bot.register_next_step_handler(message, process_transfer, True)
 
@@ -201,324 +188,6 @@ def main():
             bot.send_sticker(message.chat.id,
                              "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
             logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-    @bot.message_handler(commands=['delete_record'])
-    @timeit
-    def delete_record(message):
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        telegram_id: int = message.from_user.id
-        res: str = bot_db.get_username_by_telegram_id(telegram_id)
-
-        if res:  # user authorization check
-            bot_db.update_user_last_login(res)
-            close_db_main(connection)
-
-            bot.send_message(message.chat.id, "Enter the record ID:")
-            bot.register_next_step_handler(message, process_delete_record)
-
-        else:
-            close_db_main(connection)
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id,
-                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-    @bot.message_handler(commands=['view_table'])
-    @timeit
-    def view_table(message) -> None:
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        telegram_id: int = message.from_user.id
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-        if username:  # user authorization check
-            bot_db.update_user_last_login(username)
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
-            data: list = bot_db.select_data_for_household_table(int(group_id), 10)
-
-            bot.send_message(message.chat.id,
-                             '\n'.join([
-                                           f"ID: {item[0]}\n"
-                                           f"Total: {item[1]}\n"
-                                           f"Username: {item[2]}\n"
-                                           f"Transfer: {item[3]}\n"
-                                           f"Category: {item[4]}\n"
-                                           f"DateTime: {item[5]}\n"
-                                           f"Description: {item[6]}\n\n"
-                                           for item in data
-                             ]))
-
-            logger_bot.info(f"ID: {telegram_id} - view_table")
-        else:
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id,
-                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-        close_db_main(connection)
-
-    @bot.message_handler(commands=['registration'])
-    @timeit
-    def registration(message) -> None:
-
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
-        close_db_main(connection)
-
-        if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
-            bot.send_message(message.chat.id, "Let's start registration!")
-            bot.send_message(message.chat.id, "Enter your name (3-20 characters):")
-            bot.register_next_step_handler(message, process_username)
-        else:
-            bot.send_message(message.chat.id, "You are already registered!")
-            start(message)
-
-    @bot.message_handler(commands=['get_csv'])
-    @timeit
-    def get_csv(message):
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        telegram_id: int = message.from_user.id
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-        if username:  # user authorization check
-            bot_db.update_user_last_login(username)
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-            create_csv_file(group_id)
-            try:
-                bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
-                delete_csv_file(group_id)
-                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
-            except FileNotFoundError:
-                bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
-                logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
-        else:
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-        close_db_main(connection)
-
-    @bot.message_handler(commands=['get_group_users'])
-    @timeit
-    def get_group_users(message):
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        telegram_id: int = message.from_user.id
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-
-        if username:
-            bot_db.update_user_last_login(username)
-
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
-            group_id: int = group_id
-            group_users_list: list = bot_db.get_group_users(group_id)
-            group_owner: str = bot_db.get_group_owner_username(group_id)
-            group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
-                                             else f"{user}" for user in group_users_list)
-
-            bot.send_message(message.chat.id, group_users_str)
-        else:
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-        close_db_main(connection)
-
-    @bot.message_handler(commands=['delete_account'])
-    @timeit
-    def delete_account(message):
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-
-        btn1 = types.KeyboardButton("👍 YES")
-        btn2 = types.KeyboardButton("👎 NO")
-
-        markup_1.add(btn1, btn2)
-
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-
-        telegram_id: int = message.from_user.id
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
-        if username and group_id:
-            username: str = username
-            group_id: int = group_id
-
-            bot_db.update_user_last_login(username)
-            user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
-            close_db_main(connection)
-
-            if not user_is_owner:
-                bot.send_message(message.chat.id, "Are you sure you want to remove the account?",
-                                 reply_markup=markup_1)
-                bot.register_next_step_handler(message, process_delete_account, username)
-
-            else:
-                bot.send_message(message.chat.id,"You are the owner of the group: "
-                                 "either transfer the rights to manage another participant, or delete the group.")
-        else:
-            close_db_main(connection)
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-    @bot.message_handler(commands=['delete_group'])
-    @timeit
-    def delete_group(message):
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-        btn1 = types.KeyboardButton("🌧️ YES")
-        btn2 = types.KeyboardButton("🌤️ NO")
-        markup_1.add(btn1, btn2)
-
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        telegram_id: int = message.from_user.id
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
-        if username and group_id:
-            username: str = username
-            group_id: int = group_id
-            bot_db.update_user_last_login(username)
-            user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
-            close_db_main(connection)
-
-            if user_is_owner:
-                bot.send_message(message.chat.id, "Are you sure you want to delete the group?\n"
-                                                  "(A table and all participants will be deleted)",
-                                 reply_markup=markup_1)
-                bot.register_next_step_handler(message, process_delete_group, group_id)
-            else:
-                bot.send_message(message.chat.id, "The group can only be removed by its owner"
-                                                  " - contact the owner of the group, or delete the account.")
-        else:
-            close_db_main(connection)
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-    @bot.message_handler(commands=['change_owner'])
-    @timeit
-    def change_owner(message):
-        telegram_id: int = message.from_user.id
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-
-        if group_id:
-            current_owner: str = bot_db.get_group_owner_username(group_id)
-            username: str = bot_db.get_username_by_telegram_id(telegram_id)
-            close_db_main(connection)
-            if current_owner == username:
-                bot.send_message(message.chat.id, "Write below the name of the user (from the list)"
-                                              " you want to assign as the owner of the group:")
-                get_group_users(message)
-                bot.register_next_step_handler(message, process_change_owner, group_id)
-            else:
-                bot.send_message(message.chat.id, "Only the current owner can change the group owner.")
-
-        else:
-            close_db_main(connection)
-            bot.send_message(message.chat.id, "You are not register.")
-            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
-            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
-
-    def process_change_owner(message, group_id: int):
-        new_owner: str = message.text
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
-        group_users: list = bot_db.get_group_users(group_id)
-
-        if new_owner in group_users:
-            if bot_db.update_group_owner(new_owner, group_id):
-                bot.send_message(message.chat.id, "Group owner has been changed.")
-            else:
-                bot.send_message(message.chat.id, "An error occurred while changing the group owner.")
-        else:
-            bot.send_message(message.chat.id, "Check the correct spelling of the username.\n"
-                                              "There is no such username in the group.")
-        close_db_main(connection)
-
-    def process_delete_account(message, username: str):
-        user_choice: str = message.text
-
-        if user_choice == "👍 YES":
-            bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
-            bot.send_message(message.chat.id, "[===> In progress ===>]")
-
-            connection = connect_db()
-            bot_db = DatabaseQueries(connection)
-            bot_db.delete_user_from_project(username)
-            close_db_main(connection)
-
-            markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-            btn1 = types.KeyboardButton("Start")
-            markup_1.add(btn1)
-
-            bot.send_message(message.chat.id, "Your account is completely deleted!", reply_markup=markup_1)
-            logger_bot.info(f"User deleted the account. ID: {message.from_user.id}")
-
-        elif user_choice == "👎 NO":
-            bot.send_message(message.chat.id, "We are glad that you stay with us!")
-            start(message)
-
-        else:
-            bot.send_message(message.chat.id, "Your message is not clear to us, "
-                                              "please, when choosing, use the buttons at the bottom of the screen.")
-            start(message)
-            logger_bot.info(f"Unrecognized message when deleting an account. "
-                            f"ID: {message.from_user.id}, message: {user_choice}")
-
-    def process_delete_group(message, group_id: int):
-        user_choice: str = message.text
-
-        if user_choice == "🌧️ YES":
-            bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
-            bot.send_message(message.chat.id, "[===> In progress ===>]")
-
-            connection = connect_db()
-            bot_db = DatabaseQueries(connection)
-            bot_db.delete_group_with_users(group_id)
-            close_db_main(connection)
-
-            markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-            btn1 = types.KeyboardButton("Start")
-            markup_1.add(btn1)
-
-            bot.send_message(message.chat.id, "The group and users are completely deleted!", reply_markup=markup_1)
-            logger_bot.info(f"User deleted the group. ID: {message.from_user.id}, group #{group_id}")
-
-        elif user_choice == "🌤️ NO":
-            bot.send_message(message.chat.id, "We are glad that you stay with us!")
-            start(message)
-
-        else:
-            bot.send_message(message.chat.id, "Your message is not clear to us, "
-                                              "please, when choosing, use the buttons at the bottom of the screen.")
-            start(message)
-            logger_bot.info(f"Unrecognized message when deleting group. "
-                            f"ID: {message.from_user.id}, message: {user_choice}, group #{group_id}")
-
-    def process_delete_record(message):
-        record_id: str = message.text
-        record_id: int = correction_number(record_id)
-
-        if record_id:
-            connection = connect_db()
-            bot_db = DatabaseQueries(connection)
-            telegram_id: int = message.from_user.id
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-            if group_id and bot_db.check_id_is_exist(group_id, record_id):
-                bot_db.delete_budget_entry_by_id(group_id, record_id)
-                bot.send_message(message.chat.id, "Successfully.")
-            else:
-                bot.send_message(message.chat.id, "There is no record with this ID.")
-            close_db_main(connection)
-        else:
-            bot.send_message(message.chat.id, "Invalid value.")
 
     def process_transfer(message, is_negative: bool = False) -> None:
         """
@@ -571,14 +240,9 @@ def main():
                      btn15, btn16, btn17)
 
         record_date: str = message.text
-        today_date: str = str(date.today())
-        if record_date != f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}":
-            record_date_is_valid: bool = asyncio.run(date_validation(record_date))
-        else:
-            record_date_is_valid: bool = True
+        record_date_is_valid: bool = asyncio.run(date_validation(record_date))  # DD/MM/YYYY
 
         if record_date_is_valid:
-            record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # DD/MM/YYYY
             bot.send_message(message.chat.id, "Select the required category", reply_markup=markup_1)
             bot.register_next_step_handler(message, process_add_category_for_transfer, value, record_date)
         else:
@@ -591,6 +255,7 @@ def main():
         markup_1.add(btn1)
         category: str = message.text
         category_is_valid: bool = category_validation(category)
+
         if category_is_valid:
             bot.send_message(message.chat.id, "Add description (no more than 50 characters)", reply_markup=markup_1)
             bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, category)
@@ -601,6 +266,7 @@ def main():
     def process_add_description_for_transfer(message, value: int, record_date: str, category: str) -> None:
         description: str = message.text
         description_is_valid: bool = description_validation(description)
+
         if description_is_valid:
             if description == "No description":
                 description: str = ""
@@ -615,6 +281,328 @@ def main():
             bot.send_message(message.chat.id, "Invalid value")
 
         reply_menu_buttons_register(message)
+
+    @bot.message_handler(commands=['delete_record'])
+    @timeit
+    def delete_record(message):
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        res: str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if res:  # user authorization check
+            bot_db.update_user_last_login(res)
+            close_db_main(connection)
+
+            bot.send_message(message.chat.id, "Enter the record ID:")
+            bot.register_next_step_handler(message, process_delete_record)
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id,
+                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+    @bot.message_handler(commands=['registration'])
+    @timeit
+    def registration(message) -> None:
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
+        close_db_main(connection)
+
+        if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
+            bot.send_message(message.chat.id, "Let's start registration!")
+            bot.send_message(message.chat.id, "Enter your name (3-20 characters):")
+            bot.register_next_step_handler(message, process_username)
+        else:
+            bot.send_message(message.chat.id, "You are already registered!")
+            start(message)
+
+    @bot.message_handler(commands=['view_table'])
+    @timeit
+    def view_table(message) -> None:
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if username:  # user authorization check
+            bot_db.update_user_last_login(username)
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+            data: list = bot_db.select_data_for_household_table(int(group_id), 10)
+            if data:
+                bot.send_message(message.chat.id,
+                                 '\n'.join([
+                                     f"ID: {item[0]}\n"
+                                     f"Total: {item[1]}\n"
+                                     f"Username: {item[2]}\n"
+                                     f"Transfer: {item[3]}\n"
+                                     f"Category: {item[4]}\n"
+                                     f"DateTime: {item[5]}\n"
+                                     f"Description: {item[6]}\n\n"
+                                     for item in data
+                                 ]))
+            else:
+                bot.send_message(message.chat.id, "Your records table is empty")
+
+            logger_bot.info(f"ID: {telegram_id} - view_table")
+        else:
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id,
+                             "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+        close_db_main(connection)
+
+    @bot.message_handler(commands=['get_csv'])
+    @timeit
+    def get_csv(message):
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if username:  # user authorization check
+            bot_db.update_user_last_login(username)
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+            create_csv_file(group_id)
+
+            try:
+                bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
+            except FileNotFoundError:
+                bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
+                logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
+            else:
+                delete_csv_file(group_id)
+                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
+        else:
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+        close_db_main(connection)
+
+    @bot.message_handler(commands=['get_group_users'])
+    @timeit
+    def get_group_users(message):
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+
+        if username:
+            bot_db.update_user_last_login(username)
+
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+            group_users_list: list = bot_db.get_group_users(group_id)
+            group_owner: str = bot_db.get_group_owner_username(group_id)
+            group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
+                                             else f"{user}" for user in group_users_list)
+            bot.send_message(message.chat.id, group_users_str)
+        else:
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+        close_db_main(connection)
+
+    @bot.message_handler(commands=['change_owner'])
+    @timeit
+    def change_owner(message):
+        telegram_id: int = message.from_user.id
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if group_id:
+            group_owner: str = bot_db.get_group_owner_username(group_id)
+            username: str = bot_db.get_username_by_telegram_id(telegram_id)
+            if group_owner == username:
+                group_users_list: list = bot_db.get_group_users(group_id)
+                close_db_main(connection)
+                if len(group_users_list) == 1:
+                    bot.send_message(message.chat.id, "There is only 1 member in this group.")
+                else:
+                    group_users_str: str = '\n'.join(f"{user} (owner)" if user == group_owner
+                                                     else f"{user}" for user in group_users_list)
+                    bot.send_message(message.chat.id, f"Write below the name of the user (from the list) you want "
+                                                      f"to assign as the owner of the group: \n{group_users_str}")
+                    bot.register_next_step_handler(message, process_change_owner, group_id)
+            else:
+                close_db_main(connection)
+                bot.send_message(message.chat.id, "Only the current owner can change the group owner.")
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+    def process_change_owner(message, group_id: int):
+        new_owner: str = message.text
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        group_users: list = bot_db.get_group_users(group_id)
+
+        if new_owner in group_users:
+            if bot_db.update_group_owner(new_owner, group_id):
+                bot.send_message(message.chat.id, "Group owner has been changed.")
+            else:
+                bot.send_message(message.chat.id, "An error occurred while changing the group owner.")
+        else:
+            bot.send_message(message.chat.id, "Check the correct spelling of the username.\n"
+                                              "There is no such username in the group.")
+        close_db_main(connection)
+
+    @bot.message_handler(commands=['delete_account'])
+    @timeit
+    def delete_account(message):
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+        btn1 = types.KeyboardButton("👍 YES")
+        btn2 = types.KeyboardButton("👎 NO")
+        markup_1.add(btn1, btn2)
+
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if username and group_id:
+            username: str = username
+            group_id: int = group_id
+            bot_db.update_user_last_login(username)
+            user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
+            close_db_main(connection)
+
+            if not user_is_owner:
+                bot.send_message(message.chat.id, "Are you sure you want to remove the account?",
+                                 reply_markup=markup_1)
+                bot.register_next_step_handler(message, process_delete_account, username)
+            else:
+                bot.send_message(message.chat.id, "You are the owner of the group: either transfer the rights to "
+                                                  "manage another participant, or delete the group.")
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+    def process_delete_account(message, username: str):
+        user_choice: str = message.text
+
+        if user_choice == "👍 YES":
+            bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
+            bot.send_message(message.chat.id, "[===> In progress ===>]")
+
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            bot_db.delete_user_from_project(username)
+            close_db_main(connection)
+
+            markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            btn1 = types.KeyboardButton("Start")
+            markup_1.add(btn1)
+
+            bot.send_message(message.chat.id, "Your account is completely deleted!", reply_markup=markup_1)
+            logger_bot.info(f"User deleted the account. ID: {message.from_user.id}")
+
+        elif user_choice == "👎 NO":
+            bot.send_message(message.chat.id, "We are glad that you stay with us!")
+            start(message)
+
+        else:
+            bot.send_message(message.chat.id, "Your message is not clear to us, "
+                                              "please, when choosing, use the buttons at the bottom of the screen.")
+            start(message)
+            logger_bot.info(f"Unrecognized message when deleting an account. "
+                            f"ID: {message.from_user.id}, message: {user_choice}")
+
+    @bot.message_handler(commands=['delete_user'])
+    @timeit
+    def delete_user(message):
+        pass
+
+    @bot.message_handler(commands=['delete_group'])
+    @timeit
+    def delete_group(message):
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+        btn1 = types.KeyboardButton("🌧️ YES")
+        btn2 = types.KeyboardButton("🌤️ NO")
+        markup_1.add(btn1, btn2)
+
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        telegram_id: int = message.from_user.id
+        username: str = bot_db.get_username_by_telegram_id(telegram_id)
+        group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+
+        if username and group_id:
+            username: str = username
+            group_id: int = group_id
+            bot_db.update_user_last_login(username)
+            user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
+            close_db_main(connection)
+
+            if user_is_owner:
+                bot.send_message(message.chat.id, "Are you sure you want to delete the group?\n"
+                                                  "(A table and all participants will be deleted)",
+                                 reply_markup=markup_1)
+                bot.register_next_step_handler(message, process_delete_group, group_id)
+            else:
+                bot.send_message(message.chat.id, "The group can only be removed by its owner"
+                                                  " - contact the owner of the group, or delete the account.")
+        else:
+            close_db_main(connection)
+            bot.send_message(message.chat.id, "You are not register.")
+            bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
+            logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+
+    def process_delete_group(message, group_id: int):
+        user_choice: str = message.text
+
+        if user_choice == "🌧️ YES":
+            bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
+            bot.send_message(message.chat.id, "[===> In progress ===>]")
+
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            bot_db.delete_group_with_users(group_id)
+            close_db_main(connection)
+
+            markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            btn1 = types.KeyboardButton("Start")
+            markup_1.add(btn1)
+
+            bot.send_message(message.chat.id, "The group and users are completely deleted!", reply_markup=markup_1)
+            logger_bot.info(f"User deleted the group. ID: {message.from_user.id}, group #{group_id}")
+        elif user_choice == "🌤️ NO":
+            bot.send_message(message.chat.id, "We are glad that you stay with us!")
+            start(message)
+        else:
+            bot.send_message(message.chat.id, "Your message is not clear to us, "
+                                              "please, when choosing, use the buttons at the bottom of the screen.")
+            start(message)
+            logger_bot.info(f"Unrecognized message when deleting group. "
+                            f"ID: {message.from_user.id}, message: {user_choice}, group #{group_id}")
+
+    def process_delete_record(message):
+        record_id: str = message.text
+        record_id: int = correction_number(record_id)
+
+        if record_id:
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            telegram_id: int = message.from_user.id
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+            if group_id and bot_db.check_id_is_exist(group_id, record_id):
+                bot_db.delete_budget_entry_by_id(group_id, record_id)
+                bot.send_message(message.chat.id, "Successfully.")
+            else:
+                bot.send_message(message.chat.id, "There is no record with this ID.")
+            close_db_main(connection)
+        else:
+            bot.send_message(message.chat.id, "Invalid value.")
 
     def process_username(message):
         username: str = message.text
@@ -652,7 +640,6 @@ def main():
             # There is a chance to return False if an error occurred while working with the database
             if user_token:
                 group_id: int = token_validation(user_token)
-
                 if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                     create_table_group(f"budget_{group_id}")
                     bot.send_message(message.chat.id, "Congratulations on registering!")
@@ -727,6 +714,8 @@ def main():
             get_csv(message)
         elif message.text == "💻 Group settings":
             group_settings_get_buttons(message)
+        elif message.text == "⭐ Premium":
+            premium(message)
         elif message.text == "🌍 Group users":
             get_group_users(message)
         elif message.text == "🗑️ Delete my account":
@@ -735,8 +724,8 @@ def main():
             delete_group(message)
         elif message.text == "🔑 Change owner":
             change_owner(message)
-        elif message.text == " Delete user":
-            pass
+        elif message.text == "🤖 Delete user":
+            delete_user(message)
         elif message.text == "↩️ Back":
             reply_menu_buttons_register(message)
 
