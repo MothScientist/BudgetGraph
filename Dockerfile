@@ -1,20 +1,23 @@
 FROM python:3.12.0
 
-COPY requirements.txt /app/
-COPY main /app/main
-COPY run.sh /app/
+COPY requirements.txt /budget_control/
+COPY main /budget_control/main
+COPY main /budget_control/validators
+COPY run.sh /budget_control/
 
-WORKDIR /app
+WORKDIR /budget_control
 
 RUN pip install -r requirements.txt
 
 # Change working directory to /app/main
-WORKDIR /app/main
+WORKDIR /budget_control/main
 
-RUN python creating_db_and_directories.py && rm creating_db_and_directories.py && rm create_db.sql
+RUN python build_project.py && rm build_project.py
+
+RUN rm create_db.sql
 
 # Change back to /app
-WORKDIR /app
+WORKDIR /budget_control
 
 CMD ["sh", "./run.sh"]
 
