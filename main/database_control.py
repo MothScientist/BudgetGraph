@@ -523,7 +523,7 @@ class DatabaseQueries:
             return False
 
         else:
-            logger_database.error(f"User {username} has been removed from the database and from group #{group_id}")
+            logger_database.info(f"User {username} has been removed from the database and from group #{group_id}")
             return True
 
     def delete_group_with_users(self, group_id: int) -> bool:
