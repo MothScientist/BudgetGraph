@@ -403,7 +403,8 @@ class DatabaseQueries:
         """
         group_id: int = self.get_group_id_by_username(username)
         table_name = f"budget_{group_id}"
-
+        # In the table must be entered with the user's name in the text format because the user can later be deleted,
+        # but their entries must remain in the table until it is deleted or cleared by the group owner.
         try:
             self.__cur.execute(
                 f"INSERT INTO {table_name} VALUES (NULL, COALESCE((SELECT SUM(transfer) FROM {table_name}), 0) + ?,"
@@ -522,7 +523,7 @@ class DatabaseQueries:
             return False
 
         else:
-            logger_database.error(f"User {username} has been removed from the database and from group #{group_id}")
+            logger_database.info(f"User {username} has been removed from the database and from group #{group_id}")
             return True
 
     def delete_group_with_users(self, group_id: int) -> bool:
