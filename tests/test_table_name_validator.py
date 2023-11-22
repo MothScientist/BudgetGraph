@@ -32,6 +32,18 @@ class TestTableNameValidator(unittest.TestCase):
         res = type(table_name_validation("budget_100"))
         self.assertEqual(res, bool)
 
+    def test_table_name_validator_8(self):
+        res = table_name_validation("budget_0")
+        self.assertEqual(res, False)
+
+    def test_table_name_validator_9(self):
+        res = table_name_validation("budget_")
+        self.assertEqual(res, False)
+
+    def test_table_name_validator_10(self):
+        res = table_name_validation("budget")
+        self.assertEqual(res, False)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,6 @@
 import unittest
 
-from budget_control.main.password_hashing import getting_hash, get_salt
+from password_hashing import getting_hash, get_salt
 
 
 class TestPasswordHashing(unittest.TestCase):

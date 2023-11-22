@@ -49,6 +49,7 @@ if not logger.hasHandlers():
 A decorator required at the development stage. Useful for code optimization, helps to find unexpected errors in the code. When actually using the project, it is necessary to comment it out, as this affects performance due to unnecessary calculations.
 
 Collects data on the operating time of functions in a log file.
+
 ```python3
 from log_settings import setup_logger
 import time
@@ -67,6 +68,7 @@ def timeit(func):
         return result
 
     return wrapper
+
 
 @timeit
 def func(*args):

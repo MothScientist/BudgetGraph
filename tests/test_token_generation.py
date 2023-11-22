@@ -1,6 +1,6 @@
 import unittest
 
-from budget_control.main.token_generation import get_token
+from token_generation import get_token
 
 
 class TestTokenGeneration(unittest.TestCase):

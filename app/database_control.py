@@ -1,17 +1,13 @@
 from flask import g
 import sqlite3
 from dotenv import load_dotenv
-import os
-from token_generation import get_token
-
-# Validators
+import logging
 from validators.table_name import table_name_validation
 
-# Logging
-import logging
-from log_settings import setup_logger
+import os
 
-# Timeit decorator
+from token_generation import get_token
+from log_settings import setup_logger
 from time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
@@ -554,7 +550,7 @@ def connect_db():
     try:
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
-        logger.debug("Database connection (main): OPEN")
+        logger.debug("Database connection (app): OPEN")
         return conn
 
     except sqlite3.Error as err:
@@ -591,12 +587,12 @@ def close_db_main(conn):
     logger = logging.getLogger('db_logger')
     if conn:
         conn.close()
-        logger.debug("Database connection (main): CLOSED")
+        logger.debug("Database connection (app): CLOSED")
 
 
 def create_db() -> None:
     """
-    Creates two main tables: Users and Groups, using create_db.sql file describing their structures.
+    Creates two app tables: Users and Groups, using create_db.sql file describing their structures.
     """
     try:
         conn = connect_db()

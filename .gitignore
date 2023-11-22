@@ -3,7 +3,7 @@
 .png
 .pdf
 .jpg
-main/.env
+app/.env
 presentation/money_image_bot.png
 !create_db.sql
 ### Databases ###
@@ -153,7 +153,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-main/.env
+.env
 .venv
 env/
 venv/

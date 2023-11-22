@@ -2,18 +2,15 @@ from os import getenv
 from dotenv import load_dotenv
 from password_hashing import getting_hash, get_salt
 import asyncio
+from datetime import date
 
-# Telegram bot
 import telebot
 from telebot import types
 
-# Database
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
-# CSV files
 from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
-# Validators
 from validators.registration import username_validation, password_validation
 from validators.description import description_validation
 from validators.correction_number import correction_number
@@ -22,14 +19,8 @@ from validators.date import date_validation
 from validators.token import token_validation
 from secrets import compare_digest
 
-# Logging
 from log_settings import setup_logger
-
-# Timeit decorator
 from time_checking import timeit
-
-# Date
-from datetime import date
 
 
 def main():

@@ -2,20 +2,17 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-from password_hashing import getting_hash, get_salt
 import asyncio
 
-# Database
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
-# Validators
 from validators.registration import registration_validation
 from validators.description import description_validation
 from validators.date import date_validation
 from validators.correction_number import correction_number
 from validators.token import token_validation
 
-# Logging
+from password_hashing import getting_hash, get_salt
 from log_settings import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
