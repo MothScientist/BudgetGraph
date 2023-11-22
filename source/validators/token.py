@@ -1,6 +1,10 @@
 from database_control import DatabaseQueries, connect_db, close_db_main
 
+# Timeit decorator
+from time_checking import timeit
 
+
+@timeit
 def token_validation(token: str) -> int:
     """
     :param token: checking if the token exists in the database

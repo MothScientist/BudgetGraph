@@ -1,6 +1,10 @@
 import re
 
+# Timeit decorator
+from time_checking import timeit
 
+
+@timeit
 def table_name_validation(table_name: str) -> bool:
     """
     Checks if the database name matches the format "budget_N",

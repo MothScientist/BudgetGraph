@@ -189,6 +189,7 @@ def main():
             bot.send_message(message.chat.id, "Invalid date format")
             reply_menu_buttons_register(message)
 
+    @timeit
     def process_add_date_for_transfer(message, value: int) -> None:
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
         btn1 = types.KeyboardButton("Supermarkets")
@@ -394,8 +395,8 @@ def main():
             bot_db = DatabaseQueries(connection)
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
             close_db_main(connection)
-            create_csv_file(group_id)
             try:
+                create_csv_file(group_id)
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
             except FileNotFoundError:
                 bot.send_message(message.chat.id, "Error. Try again later or report the problem to technical support.")
