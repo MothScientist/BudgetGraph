@@ -3,8 +3,8 @@
 .png
 .pdf
 .jpg
-.env
-images/money_image_bot.png
+main/.env
+presentation/money_image_bot.png
 !create_db.sql
 ### Databases ###
 *.sqlite3
@@ -153,7 +153,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+main/.env
 .venv
 env/
 venv/

@@ -1,8 +1,8 @@
 FROM python:3.12.0
 
 COPY requirements.txt /budget_control/
-COPY main /budget_control/main
-COPY main /budget_control/validators
+COPY app /budget_control/main
+COPY app /budget_control/validators
 COPY run.sh /budget_control/
 
 WORKDIR /budget_control

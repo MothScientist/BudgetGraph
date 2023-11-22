@@ -260,12 +260,12 @@ def logout():
 
 
 @app.errorhandler(401)
-def page_not_found(error):
+def page_not_found(error):  # do not remove the parameter
     return render_template("error401.html", title="UNAUTHORIZED"), 401
 
 
 @app.errorhandler(404)
-def page_not_found(error):
+def page_not_found(error):  # do not remove the parameter
     return render_template("error404.html", title="PAGE NOT FOUND"), 404
 
 
