@@ -42,11 +42,9 @@ def main():
 
         if res:
             bot_db.update_user_last_login(res)
-
             # to send a sticker in .webp format no larger than 512x512 pixel
             # sticker = open("H:\telebot\stickers\stick_name.webp", "rb")
             # bot.send_sticker(message.chat.id, sticker)
-
             bot.send_message(message.chat.id, f"Hello, {res}!\nWe recognized you. Welcome!")
             bot.send_sticker(message.chat.id,
                              "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
@@ -83,7 +81,6 @@ def main():
 
         bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
 
-    @bot.message_handler(commands=['table_manage_get_buttons'])
     def table_manage_get_buttons(message):
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         btn1 = types.KeyboardButton("📖 View table")
@@ -95,7 +92,6 @@ def main():
         markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
         bot.send_message(message.chat.id, "Click the button you need (Table manage)", reply_markup=markup_1)
 
-    @bot.message_handler(commands=['group_settings_get_buttons'])
     def group_settings_get_buttons(message):
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         btn1 = types.KeyboardButton("🌍 Group users")
@@ -106,6 +102,16 @@ def main():
         btn6 = types.KeyboardButton("↩️ Back")
         markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
         bot.send_message(message.chat.id, "Click the button you need (Group settings)", reply_markup=markup_1)
+
+    def reply_buttons(message):
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
+        close_db_main(connection)
+        if res:
+            reply_menu_buttons_register(message)
+        else:
+            reply_menu_buttons_not_register(message)
 
     @bot.message_handler(commands=['help'])
     def help(message) -> None:
@@ -152,66 +158,47 @@ def main():
             bot.send_message(message.chat.id, "Enter the value of expense:")
             bot.register_next_step_handler(message, process_transfer, True)
 
-    def process_transfer(message, is_negative: bool = False) -> None:
+    def process_transfer(message, is_negative: bool) -> None:
         """
         Adds income and expense to the database. Accepts an unvalidated value,
         performs validation and enters it into the database.
 
-        If the value == 0, then it will be regarded as False.
+        If value == 0 then it will be rejected
         :param message:
-        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense) [default=False]
+        :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense)
         :return: None
         """
         value: str = message.text
         value: int = correction_number(value)
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
         today_date: str = str(date.today())
         btn1 = types.KeyboardButton(f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}")
         markup_1.add(btn1)
 
         if value:
-            if is_negative:
-                value: int = value*(-1)
-            else:
-                value: int = value
+            value: int = value * (-1 if is_negative else 1)
             bot.send_message(message.chat.id, "Set the date (DD/MM/YYYY)", reply_markup=markup_1)
             bot.register_next_step_handler(message, process_add_date_for_transfer, value)
         else:
-            bot.send_message(message.chat.id, "Invalid date format")
-            reply_menu_buttons_register(message)
+            bot.send_message(message.chat.id, "Invalid value format")
 
-    @timeit
     def process_add_date_for_transfer(message, value: int) -> None:
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-        btn1 = types.KeyboardButton("Supermarkets")
-        btn2 = types.KeyboardButton("Restaurants")
-        btn3 = types.KeyboardButton("Clothes")
-        btn4 = types.KeyboardButton("Medicine")
-        btn5 = types.KeyboardButton("Transport")
-        btn6 = types.KeyboardButton("Devices")
-        btn7 = types.KeyboardButton("Education")
-        btn8 = types.KeyboardButton("Services")
-        btn9 = types.KeyboardButton("Travel")
-        btn10 = types.KeyboardButton("Housing")
-        btn11 = types.KeyboardButton("Transfers")
-        btn12 = types.KeyboardButton("Investments")
-        btn13 = types.KeyboardButton("Hobby")
-        btn14 = types.KeyboardButton("Jewelry")
-        btn15 = types.KeyboardButton("Sale")
-        btn16 = types.KeyboardButton("Salary")
-        btn17 = types.KeyboardButton("Other")
-        markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14,
-                     btn15, btn16, btn17)
+        button_labels = ["Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
+                         "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Sale",
+                         "Salary", "Other"]
+        buttons = [types.KeyboardButton(label) for label in button_labels]
+        markup_1.add(*buttons)
 
         record_date: str = message.text
         record_date_is_valid: bool = asyncio.run(date_validation(record_date))  # DD/MM/YYYY
 
         if record_date_is_valid:
-            bot.send_message(message.chat.id, "Select the required category", reply_markup=markup_1)
+            bot.send_message(message.chat.id, "Select category:", reply_markup=markup_1)
             bot.register_next_step_handler(message, process_add_category_for_transfer, value, record_date)
         else:
             bot.send_message(message.chat.id, "Invalid date format")
-            reply_menu_buttons_register(message)
+            reply_buttons(message)
 
     def process_add_category_for_transfer(message, value: int, record_date: str) -> None:
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
@@ -225,7 +212,7 @@ def main():
             bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, category)
         else:
             bot.send_message(message.chat.id, "Invalid category format")
-            reply_menu_buttons_register(message)
+            reply_buttons(message)
 
     def process_add_description_for_transfer(message, value: int, record_date: str, category: str) -> None:
         description: str = message.text
@@ -253,7 +240,28 @@ def main():
             bot.send_message(message.chat.id, "Enter the record ID:")
             bot.register_next_step_handler(message, process_delete_record)
 
-    # There is no need to use the check_user_registration function in this function, since its use here is unnecessary
+    def process_delete_record(message):
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+        btn1 = types.KeyboardButton("❌ Delete record")
+        btn2 = types.KeyboardButton("↩️ Back to menu")
+        markup_1.add(btn1, btn2)
+        record_id: str = message.text
+        record_id: int = correction_number(record_id)
+
+        if record_id:
+            connection = connect_db()
+            bot_db = DatabaseQueries(connection)
+            telegram_id: int = message.from_user.id
+            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+            if group_id and bot_db.check_id_is_exist(group_id, record_id):
+                bot_db.delete_budget_entry_by_id(group_id, record_id)
+                bot.send_message(message.chat.id, "Successfully!")
+            else:
+                bot.send_message(message.chat.id, "There is no record with this ID", reply_markup=markup_1)
+            close_db_main(connection)
+        else:
+            bot.send_message(message.chat.id, "Invalid value", reply_markup=markup_1)
+
     @bot.message_handler(commands=['registration'])
     @timeit
     def registration(message) -> None:
@@ -262,40 +270,41 @@ def main():
         res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
         close_db_main(connection)
         if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
-            bot.send_message(message.chat.id, "Let's start registration!")
             bot.send_message(message.chat.id, "Enter your name (3-20 characters):")
             bot.register_next_step_handler(message, process_username)
         else:
             bot.send_message(message.chat.id, "You are already registered!")
-            start(message)
+            reply_buttons(message)
 
     def process_username(message):
         username: str = message.text
         if asyncio.run(username_validation(username)):
-            bot.send_message(message.chat.id, "Accepted the data! Let's continue!")
             bot.send_message(message.chat.id, "Enter your password (8-32 characters / at least 1 number and 1 letter):")
             bot.register_next_step_handler(message, process_psw, username)
         else:
             bot.send_message(message.chat.id, "Invalid username format or this username already exists!")
-            reply_menu_buttons_not_register(message)
 
     def process_psw(message, username: str):
-        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         btn1 = types.KeyboardButton("None")
         markup_1.add(btn1)
+
         psw: str = message.text
         if asyncio.run(password_validation(psw)):
             psw_salt: str = get_salt()
             psw: str = getting_hash(psw, psw_salt)
-            bot.send_message(message.chat.id, "Well done! There's still a little time left!")
-            bot.send_message(message.chat.id, "Token (if you have it (32 characters), otherwise send 'None')",
+            bot.send_message(message.chat.id, "Enter group token\nIf you don't have one, enter 'None'",
                              reply_markup=markup_1)
             bot.register_next_step_handler(message, process_token, username, psw, psw_salt)
         else:
             bot.send_message(message.chat.id, "Invalid password format!")
-            reply_menu_buttons_not_register(message)
+            reply_buttons(message)
 
     def process_token(message, username: str, psw_hash: str, psw_salt: str):
+        markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        btn1 = types.KeyboardButton("None")
+        markup_1.add(btn1)
+
         token: str = message.text
         telegram_id: int = message.from_user.id
         connection = connect_db()
@@ -345,10 +354,9 @@ def main():
                                                   "or create your own group!")
                 logger_bot.info(f"Trying to add to a full group: ID: {telegram_id}, group id: {group_id}")
         else:
-            bot.send_message(message.chat.id, "This is not a valid token format, "
-                                              "please check if it is correct or send 'None'!")
+            bot.send_message(message.chat.id, "This is invalid token format")
             logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, ID: {telegram_id}")
-            reply_menu_buttons_not_register(message)
+            reply_buttons(message)
         close_db_main(connection)
 
     @bot.message_handler(commands=['view_table'])
@@ -360,7 +368,8 @@ def main():
             connection = connect_db()
             bot_db = DatabaseQueries(connection)
             group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-            data: list = bot_db.select_data_for_household_table(int(group_id), 10)
+            # the last entry will be at the bottom of the message <- [::-1] reverses the list
+            data: list = bot_db.select_data_for_household_table(int(group_id), 10)[::-1]
             close_db_main(connection)
             if data:
                 bot.send_message(message.chat.id,
@@ -608,24 +617,6 @@ def main():
             logger_bot.info(f"Unrecognized message when deleting group. "
                             f"ID: {message.from_user.id}, message: {user_choice}, group #{group_id}")
 
-    def process_delete_record(message):
-        record_id: str = message.text
-        record_id: int = correction_number(record_id)
-
-        if record_id:
-            connection = connect_db()
-            bot_db = DatabaseQueries(connection)
-            telegram_id: int = message.from_user.id
-            group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-            if group_id and bot_db.check_id_is_exist(group_id, record_id):
-                bot_db.delete_budget_entry_by_id(group_id, record_id)
-                bot.send_message(message.chat.id, "Successfully.")
-            else:
-                bot.send_message(message.chat.id, "There is no record with this ID.")
-            close_db_main(connection)
-        else:
-            bot.send_message(message.chat.id, "Invalid value.")
-
     # checking whether the user is registered in the project
     # (since he may accidentally end up in a menu that is intended only for registered users)
     def check_user_registration(message, telegram_id: int = 0) -> bool:
@@ -686,8 +677,8 @@ def main():
             change_owner(message)
         elif message.text == "🤖 Delete user":
             delete_user(message)
-        elif message.text == "↩️ Back":
-            reply_menu_buttons_register(message)
+        elif "↩️" in message.text:
+            reply_buttons(message)
 
     bot.polling(none_stop=True)
 
