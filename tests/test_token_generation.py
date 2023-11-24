@@ -1,6 +1,6 @@
 import unittest
 
-from token_generation import get_token
+from source.token_generation import get_token
 
 
 class TestTokenGeneration(unittest.TestCase):

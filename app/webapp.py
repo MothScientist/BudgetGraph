@@ -12,7 +12,7 @@ from validators.date import date_validation
 from validators.correction_number import correction_number
 from validators.token import token_validation
 
-from password_hashing import getting_hash, get_salt
+from source.password_hashing import getting_hash, get_salt
 from log_settings import setup_logger
 
 load_dotenv()  # Load environment variables from .env file

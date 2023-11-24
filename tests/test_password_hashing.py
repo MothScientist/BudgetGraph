@@ -1,6 +1,6 @@
 import unittest
 
-from password_hashing import getting_hash, get_salt
+from source.password_hashing import getting_hash, get_salt
 
 
 class TestPasswordHashing(unittest.TestCase):

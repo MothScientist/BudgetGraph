@@ -6,7 +6,7 @@ from validators.table_name import table_name_validation
 
 import os
 
-from token_generation import get_token
+from source.token_generation import get_token
 from log_settings import setup_logger
 from time_checking import timeit
 

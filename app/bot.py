@@ -1,6 +1,6 @@
 from os import getenv
 from dotenv import load_dotenv
-from password_hashing import getting_hash, get_salt
+from source.password_hashing import getting_hash, get_salt
 import asyncio
 from datetime import date
 
