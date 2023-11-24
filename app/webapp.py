@@ -9,7 +9,7 @@ from database_control import get_db, close_db_g, create_table_group, DatabaseQue
 from validators.registration import registration_validation
 from validators.description import description_validation
 from validators.date import date_validation
-from validators.correction_number import correction_number
+from validators.number import number_validation
 from validators.token import token_validation
 
 from source.password_hashing import getting_hash, get_salt
@@ -156,7 +156,7 @@ def household(username):
     if request.method == "POST":
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
-            value: int = correction_number(value)
+            value: int = number_validation(value)
             value: int = value
             record_date: str = request.form.get("record-date")
             record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}" # YYYY-MM-DD -> DD/MM/YYYY
@@ -190,7 +190,7 @@ def household(username):
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int = correction_number(record_id)
+            record_id: int = number_validation(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")

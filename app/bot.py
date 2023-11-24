@@ -13,7 +13,7 @@ from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
 from validators.registration import username_validation, password_validation
 from validators.description import description_validation
-from validators.correction_number import correction_number
+from validators.number import number_validation
 from validators.category import category_validation
 from validators.date import date_validation
 from validators.token import token_validation
@@ -169,7 +169,7 @@ def main():
         :return: None
         """
         value: str = message.text
-        value: int = correction_number(value)
+        value: int = number_validation(value)
         markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
         today_date: str = str(date.today())
         btn1 = types.KeyboardButton(f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}")
@@ -246,7 +246,7 @@ def main():
         btn2 = types.KeyboardButton("↩️ Back to menu")
         markup_1.add(btn1, btn2)
         record_id: str = message.text
-        record_id: int = correction_number(record_id)
+        record_id: int = number_validation(record_id)
 
         if record_id:
             connection = connect_db()
