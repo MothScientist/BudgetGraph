@@ -6,7 +6,7 @@ from validators.table_name import table_name_validation
 
 import os
 
-from source.token_generation import get_token
+from token_generation import get_token
 from log_settings import setup_logger
 from time_checking import timeit
 
@@ -346,15 +346,14 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: group id: {group_id}")
             return []
 
-    def check_limit_users_in_group(self, token: str) -> bool:
+    def check_limit_users_in_group(self, group_id: int) -> bool:
         """
         by token checks the group's filling limit.
 
         if there is no group with such a token, it will return False.
         """
         try:
-            self.__cur.execute(f"SELECT COUNT(id) FROM Users WHERE group_id ="
-                               f" (SELECT id FROM Groups WHERE token=?)", (token,))
+            self.__cur.execute(f"SELECT COUNT(id) FROM Users WHERE group_id = ?", (group_id,))
             res = self.__cur.fetchone()
             if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
                 return True
@@ -362,7 +361,7 @@ class DatabaseQueries:
                 return False
 
         except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Param: token: {token}")
+            logger_database.error(f"{str(err)}, Param: group #{group_id}")
             return False
 
 # Methods for inserting data into a database (INSERT)
@@ -407,12 +406,10 @@ class DatabaseQueries:
                 f" ?, ?, ?, ?, ?)",
                 (value, username, value, category, record_date, description))
             self.__db.commit()
-
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: group id: {group_id}, table name: {table_name}, "
                                   f"username: {username}, value: {value}, description: {description}")
             return False
-
         else:
             return True
 
@@ -432,11 +429,9 @@ class DatabaseQueries:
         try:
             self.__cur.execute("INSERT INTO Groups VALUES(NULL, ?, ?)", (owner, token,))
             self.__db.commit()
-
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: owner (telegram id): {owner}")
             return ""
-
         else:
             return token
 
@@ -451,7 +446,6 @@ class DatabaseQueries:
             self.__cur.execute("""UPDATE Users SET last_login = strftime('%d-%m-%Y %H:%M', 'now', 'localtime')
             WHERE username = ?""", (username,))
             self.__db.commit()
-
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: username: {username}")
 
@@ -471,7 +465,6 @@ class DatabaseQueries:
                 logger_database.error(f"! Update group owner, but the new owner is not in this group: "
                                       f"username: {username}, group id: {group_id}, telegram ID: {telegram_id}")
                 return False
-
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
             return False
@@ -485,16 +478,13 @@ class DatabaseQueries:
         :param record_id: Row id in the table
         """
         table_name = f"budget_{group_id}"
-
         try:
             self.__cur.execute(f"""DELETE FROM {table_name} WHERE id = ?""", (record_id,))
             self.__db.commit()
-
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: group id: {group_id}, record id: {record_id}, "
                                   f"table name: {table_name}")
             return False
-
         else:
             return True
 
@@ -513,11 +503,9 @@ class DatabaseQueries:
                     logger_database.error(f"Attempting to remove group owner separately from group, "
                                           f"username: {username}")
                     return False
-
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: username: {username}")
             return False
-
         else:
             logger_database.info(f"User {username} has been removed from the database and from group #{group_id}")
             return True
