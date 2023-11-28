@@ -7,7 +7,8 @@ app/.env
 presentation/money_image_bot.png
 !create_db.sql
 /develop
-/develop/*
+/develop/new_sql.sql
+names
 ### Databases ###
 *.sqlite3
 *.sqlite
