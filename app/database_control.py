@@ -207,6 +207,65 @@ class DatabaseQueries:
         else:
             return username_list
 
+    def get_username_group_owner_by_token(self, token: str) -> str:
+        """
+        :return: username | False
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
+                               f" (SELECT owner FROM Groups WHERE token = ?)", (token,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+            else:
+                return ""
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: token: {token}")
+            return ""
+
+    def get_group_users_data(self, group_id: int) -> list:
+        """
+        :return: list (empty or with usernames of group members and last_login row)
+        """
+        try:
+            self.__cur.execute(f"SELECT username, last_login FROM Users WHERE group_id=?", (group_id,))
+            result = self.__cur.fetchall()
+            result_list = [list(row) for row in result]
+            return result_list
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return []
+
+    def get_group_owner_username(self, group_id: int) -> str:
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id = "
+                               f"(SELECT owner FROM Groups WHERE id = ?)", (group_id,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+            else:
+                return ""
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return ""
+
+    def get_group_users(self, group_id: int) -> list:
+        """
+        :return: list (empty or with usernames of group members)
+        """
+        try:
+            self.__cur.execute(f"SELECT username FROM Users WHERE group_id=?", (group_id,))
+            result = self.__cur.fetchall()
+            result_list = [str(row[0]) for row in result]
+            return result_list
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
+            return []
+
     def check_id_is_exist(self, group_id: int, record_id: int) -> bool:
         table_name = f"budget_{group_id}"
         try:
@@ -274,23 +333,6 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Param: username: {username}")
             return False
 
-    def get_username_group_owner_by_token(self, token: str) -> str:
-        """
-        :return: username | False
-        """
-        try:
-            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
-                               f" (SELECT owner FROM Groups WHERE token = ?)", (token,))
-            res = self.__cur.fetchone()
-            if res:
-                return str(res[0])
-            else:
-                return ""
-
-        except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Param: token: {token}")
-            return ""
-
     def check_username_is_group_owner(self, username: str, group_id: int) -> bool:
         try:
             self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id ="
@@ -304,48 +346,6 @@ class DatabaseQueries:
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
             return False
-
-    def get_group_users_data(self, group_id: int) -> list:
-        """
-        :return: list (empty or with usernames of group members and last_login row)
-        """
-        try:
-            self.__cur.execute(f"SELECT username, last_login FROM Users WHERE group_id=?", (group_id,))
-            result = self.__cur.fetchall()
-            result_list = [list(row) for row in result]
-            return result_list
-
-        except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
-            return []
-
-    def get_group_owner_username(self, group_id: int) -> str:
-        try:
-            self.__cur.execute(f"SELECT username FROM Users WHERE telegram_id = "
-                               f"(SELECT owner FROM Groups WHERE id = ?)", (group_id,))
-            res = self.__cur.fetchone()
-            if res:
-                return str(res[0])
-            else:
-                return ""
-
-        except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
-            return ""
-
-    def get_group_users(self, group_id: int) -> list:
-        """
-        :return: list (empty or with usernames of group members)
-        """
-        try:
-            self.__cur.execute(f"SELECT username FROM Users WHERE group_id=?", (group_id,))
-            result = self.__cur.fetchall()
-            result_list = [str(row[0]) for row in result]
-            return result_list
-
-        except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Param: group id: {group_id}")
-            return []
 
     def check_limit_users_in_group(self, group_id: int) -> bool:
         """
