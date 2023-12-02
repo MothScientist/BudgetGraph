@@ -167,29 +167,30 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, Params: username: {username}, psw_hash: {psw_hash}")
             return False
 
-    def select_data_for_household_table(self, group_id: int, n: int) -> list:
+    def select_data_for_household_table(self, group_id: int, number_of_last_records: int) -> list:
         """
         returns the specified number of rows (starting with the most recent) from the budget table.
         :param group_id:
-        :param n: number of rows returned.
+        :param number_of_last_records: number of rows returned.
         :return: list of n elements | empty list
         """
         table_name = f"budget_{group_id}"
 
         try:
-            if n == 0:
+            if number_of_last_records == 0:
                 self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC")
                 result = self.__cur.fetchall()
                 result_list = [list(row) for row in result]
                 return result_list
             else:
-                self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (n,))
+                self.__cur.execute(f"SELECT * FROM {table_name} ORDER BY id DESC LIMIT ?", (number_of_last_records,))
                 result = self.__cur.fetchall()
                 result_list = [list(row) for row in result]
                 return result_list
 
         except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Params: group id: {group_id}, n: {n}, table name: {table_name}")
+            logger_database.error(f"{str(err)}, Params: "
+                                  f"group id: {group_id}, n: {number_of_last_records}, table name: {table_name}")
             return []
 
     def select_group_users_by_group_id(self, group_id: int) -> list:
