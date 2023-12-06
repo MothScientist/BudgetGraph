@@ -374,7 +374,7 @@ class DatabaseQueries:
         """
         try:
             self.__cur.execute("INSERT INTO Users "
-                               "VALUES(NULL, ?, ?, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'), 0)",
+                               "VALUES(NULL, ?, ?, ?, ?, ?, strftime('%d-%m-%Y %H:%M:%S', 'now', 'localtime'))",
                                (username, psw_salt, psw_hash, group_id, telegram_id,))
             self.__db.commit()
 
@@ -386,6 +386,9 @@ class DatabaseQueries:
         else:
             return True
 
+    # FIXME
+    # weak point: they calculate the sum of all columns with each request ->
+    # the access time increases linearly as the table grows - optimization is needed
     @timeit
     def add_monetary_transaction_to_db(self, username: str, value: int, record_date: str, category,
                                        description: str) -> bool:
