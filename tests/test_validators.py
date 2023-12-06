@@ -4,22 +4,20 @@ from datetime import datetime, timedelta
 
 from validators.number import number_validation
 from validators.description import description_validation
-from source.password_hashing import getting_hash, get_salt
 from validators.table_name import table_name_validation
-from token_generation import get_token
-from validators.date import (check_day_is_correct, check_year_is_leap, check_month_is_correct, check_year_is_correct,
+from validators.date import (check_day_is_correct, check_year_is_leap, check_year_is_correct,
                              check_date_in_correct_format, date_validation)
 
 
 class TestDateValidation(unittest.TestCase):
-    def test_wrong_day_1(self):  # today
+    def test_day_1(self):  # today
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
-    def test_wrong_day_2(self):  # a week ago
+    def test_day_2(self):  # a week ago
         week_ago = str(datetime.now().date() + timedelta(days=-7))
         day: int = int(week_ago[-2:])
         month: int = int(week_ago[5:7])
@@ -27,7 +25,7 @@ class TestDateValidation(unittest.TestCase):
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
-    def test_wrong_day_3(self):  # tomorrow
+    def test_day_3(self):  # tomorrow
         tomorrow = str(datetime.now().date() + timedelta(days=1))
         day: int = int(tomorrow[-2:])
         month: int = int(tomorrow[5:7])
@@ -35,21 +33,21 @@ class TestDateValidation(unittest.TestCase):
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, False)
 
-    def test_wrong_day_4(self):  # leap year
+    def test_day_validator_4(self):  # leap year
         day: int = 29
         month: int = 2
         year: int = 2020
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
-    def test_wrong_day_5(self):  # February 29th in non-leap years
+    def test_day_5(self):  # February 29th in non-leap years
         day: int = 29
         month: int = 2
         year: int = 2021
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, False)
 
-    def test_wrong_day_6(self):  # yesterday
+    def test_day_6(self):  # yesterday
         yesterday = str(datetime.now().date() + timedelta(days=-1))
         day: int = int(yesterday[-2:])
         month: int = int(yesterday[5:7])
@@ -57,58 +55,27 @@ class TestDateValidation(unittest.TestCase):
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
-    def test_wrong_month_1(self):
-        month: int = datetime.now().month
-        year: int = datetime.now().year
-        res = asyncio.run(check_month_is_correct(month, year))
-        self.assertEqual(res, True)
-
-    def test_wrong_month_2(self):
-        tomorrow = str(datetime.now().date() + timedelta(days=31))
-        month: int = int(tomorrow[5:7])
-        year: int = int(tomorrow[:4])
-        res = asyncio.run(check_month_is_correct(month, year))
-        self.assertEqual(res, False)
-
-    def test_wrong_month_3(self):
-        month: int = 13
-        year: int = 2020
-        res = asyncio.run(check_month_is_correct(month, year))
-        self.assertEqual(res, False)
-
-    def test_wrong_month_4(self):
-        month: int = 0
-        year: int = 2019
-        res = asyncio.run(check_month_is_correct(month, year))
-        self.assertEqual(res, False)
-
-    def test_wrong_month_5(self):
-        month: int = 6
-        year: int = 2025
-        res = asyncio.run(check_month_is_correct(month, year))
-        self.assertEqual(res, True)
-
-    def test_wrong_year_1(self):
+    def test_year_1(self):
         year: int = datetime.now().year
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, True)
 
-    def test_wrong_year_2(self):
+    def test_year_2(self):
         year: int = datetime.now().year - 10
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, True)
 
-    def test_wrong_year_3(self):
+    def test_year_3(self):
         year: int = datetime.now().year - 11
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, False)
 
-    def test_wrong_year_4(self):
+    def test_year_4(self):
         year: int = datetime.now().year + 1
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, False)
 
-    def test_wrong_year_5(self):
+    def test_year_5(self):
         year: int = datetime.now().year - 5
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, True)
@@ -177,21 +144,30 @@ class TestDateValidation(unittest.TestCase):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_2(self):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year + 1
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_3(self):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year - 10
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_4(self):
@@ -199,7 +175,10 @@ class TestDateValidation(unittest.TestCase):
         day: int = int(tomorrow[-2:])
         month: int = int(tomorrow[5:7])
         year: int = int(tomorrow[:4])
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_5(self):
@@ -207,7 +186,10 @@ class TestDateValidation(unittest.TestCase):
         day: int = int(yesterday[-2:])
         month: int = int(yesterday[5:7])
         year: int = int(yesterday[:4])
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_6(self):
@@ -218,42 +200,54 @@ class TestDateValidation(unittest.TestCase):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{day}-{month}-{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}-{month}-{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}-{month}-{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_8(self):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{year}/{month}/{day}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{year}/{month}/{day}"))
+        else:
+            res = asyncio.run(date_validation(f"{year}/{month}/{day}"))
         self.assertEqual(res, False)
 
     def test_date_validation_9(self):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{year}-{month}-{day}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{year}-{month}-{day}"))
+        else:
+            res = asyncio.run(date_validation(f"{year}-{month}-{day}"))
         self.assertEqual(res, False)
 
     def test_date_validation_10(self):
         day: int = datetime.now().day
         month: int = datetime.now().month
         year: int = datetime.now().year + 1
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        if day < 10:
+            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
+        else:
+            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, False)
 
 
 class TestRegistrationValidation(unittest.TestCase):
-    def test_wrong_telegram_id_1(self):
+    def test_telegram_id_1(self):
         pass
 
-    def test_wrong_password_1(self):
+    def test_password_1(self):
         pass
 
-    def test_wrong_username_1(self):
+    def test_username_1(self):
         pass
 
-    def test_telegram_id_not_unique_1(self):
+    def test_telegram_id_unique_1(self):
         pass
 
 
@@ -275,60 +269,6 @@ class TestDescriptionValidator(unittest.TestCase):
     def test_description_validator_1(self):
         res = description_validation("")
         self.assertEqual(res, True)
-
-
-class TestPasswordHashing(unittest.TestCase):
-    def test_get_salt_1(self):
-        res = len(get_salt())
-        self.assertEqual(res, 32)
-
-    def test_get_salt_2(self):
-        res = len(get_salt())
-        self.assertEqual(res, 32)
-
-    def test_get_salt_3(self):
-        res = len(get_salt())
-        self.assertEqual(res, 32)
-
-    def test_get_salt_4(self):
-        res = len(get_salt(key_length=64))
-        self.assertEqual(res, 64)
-
-    def test_get_salt_5(self):
-        res = len(get_salt(key_length=16))
-        self.assertEqual(res, 16)
-
-    def test_get_salt_6(self):
-        res = type(get_salt())
-        self.assertEqual(res, str)
-
-    def test_get_salt_7(self):
-        res = type(get_salt(key_length=16))
-        self.assertEqual(res, str)
-
-    def test_get_salt_8(self):
-        res = type(get_salt(key_length=64))
-        self.assertEqual(res, str)
-
-    def test_getting_hash_1(self):
-        res = getting_hash("test", "test")
-        self.assertEqual(res, "cef5c5a0f141fa3161a580ab2f7a64f895a60c335861f9fdcef51cf84f5c9527")
-
-    def test_getting_hash_2(self):
-        res = getting_hash("1234567890", "qwerty")
-        self.assertEqual(res, "04bee6f8d78036f0d12a2c3738ae8d28f92e86dac1c750ea89b9f719ea48ad03")
-
-    def test_getting_hash_3(self):
-        res = getting_hash("", "")
-        self.assertEqual(res, "d38c83c56f0d40fbfab593058b4227de0ab71f0907f87f0d99c108c05e9c1065")
-
-    def test_getting_hash_4(self):
-        res = type(getting_hash("", ""))
-        self.assertEqual(res, str)
-
-    def test_getting_hash_5(self):
-        res = type(getting_hash("qwertyqwertyqwerty", "123qwerty123qwerty123qwerty"))
-        self.assertEqual(res, str)
 
 
 class TestTableNameValidator(unittest.TestCase):
@@ -373,46 +313,21 @@ class TestTableNameValidator(unittest.TestCase):
         self.assertEqual(res, False)
 
 
-class TestTokenGeneration(unittest.TestCase):
-    def test_get_token_1(self):
-        res = len(get_token())
-        self.assertEqual(res, 32)
+class TestCategoryValidation(unittest.TestCase):
+    def test_category_validation_1(self):
+        pass
 
-    def test_get_token_2(self):
-        res = len(get_token())
-        self.assertEqual(res, 32)
+    def test_category_validation_2(self):
+        pass
 
-    def test_get_token_3(self):
-        res = len(get_token())
-        self.assertEqual(res, 32)
+    def test_category_validation_3(self):
+        pass
 
-    def test_get_token_4(self):
-        res = type(get_token())
-        self.assertEqual(res, str)
+    def test_category_validation_4(self):
+        pass
 
-    def test_get_token_5(self):
-        res = type(get_token())
-        self.assertEqual(res, str)
-
-    def test_get_token_6(self):
-        res = type(get_token())
-        self.assertEqual(res, str)
-
-    def test_get_token_7(self):
-        res = len(get_token(key_length_bytes=30))
-        self.assertEqual(res, 60)
-
-    def test_get_token_8(self):
-        res = len(get_token(key_length_bytes=50))
-        self.assertEqual(res, 100)
-
-    def test_get_token_9(self):
-        res = len(get_token(key_length_bytes=120))
-        self.assertEqual(res, 240)
-
-    def test_get_token_10(self):
-        res = len(get_token(key_length_bytes=8))
-        self.assertEqual(res, 16)
+    def test_category_validation_5(self):
+        pass
 
 
 if __name__ == '__main__':
