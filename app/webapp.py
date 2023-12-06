@@ -265,5 +265,4 @@ def page_not_found(error):  # do not remove the parameter
     return render_template("error404.html", title="PAGE NOT FOUND"), 404
 
 
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')  # change on False before upload on server
+app.run(debug=True, host='0.0.0.0')  # change on False before upload on server

@@ -701,7 +701,7 @@ def text(message) -> None:
     elif "↩️" in message.text:
         reply_buttons(message)
     else:
-        bot.send_message(message.chat.id, "I'm sorry I do not understand you!")
+        bot.send_message(message.chat.id, "I don't understand you :(")
 
 
 bot.polling(none_stop=True)
