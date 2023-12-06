@@ -211,34 +211,7 @@ class TestSelectQueries(unittest.TestCase):
     def test_select_data_for_household_table_1(self):
         pass
 
-    def test_select_data_for_household_table_2(self):
-        pass
-
-    def test_select_data_for_household_table_3(self):
-        pass
-
-    def test_select_data_for_household_table_4(self):
-        pass
-
-    def test_select_data_for_household_table_5(self):
-        pass
-
-    def test_select_data_for_household_table_6(self):
-        pass
-
     def test_select_group_users_by_group_id_1(self):
-        pass
-
-    def test_select_group_users_by_group_id_2(self):
-        pass
-
-    def test_select_group_users_by_group_id_3(self):
-        pass
-
-    def test_select_group_users_by_group_id_4(self):
-        pass
-
-    def test_select_group_users_by_group_id_5(self):
         pass
 
 

@@ -700,6 +700,8 @@ def text(message) -> None:
         delete_user(message)
     elif "↩️" in message.text:
         reply_buttons(message)
+    else:
+        bot.send_message(message.chat.id, "I'm sorry I do not understand you!")
 
 
 bot.polling(none_stop=True)
