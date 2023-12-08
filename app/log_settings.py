@@ -1,7 +1,5 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from logging import Formatter
-
 import os
 
 
@@ -20,7 +18,7 @@ def setup_logger(log_file: str, logger_name: str, level=logging.INFO):
     handler = RotatingFileHandler(log_file, maxBytes=1000000, backupCount=5)  # if full, a new file will be created
     handler.setLevel(level)
 
-    formatter = Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
     handler.setFormatter(formatter)
 
     if not logger.hasHandlers():  # Checks if the logger has any handlers already installed

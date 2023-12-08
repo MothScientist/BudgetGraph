@@ -1,7 +1,7 @@
 import re
 
 
-def correction_number(number: str) -> int:
+def number_validation(number: str) -> int:
     """
     :return: Returns int(number) if validation passed, returns 0 (False) if validation failed.
     """

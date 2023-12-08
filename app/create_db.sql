@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS Users (
     password_hash text NOT NULL CHECK(LENGTH(password_hash) = 64),
     group_id integer NOT NULL,
     telegram_id integer NOT NULL UNIQUE,
-    last_login text NOT NULL,
-    is_premium integer NOT NULL CHECK (is_premium IN (0, 1))
+    last_login text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS PremiumUsers (
+    telegram_id integer NOT NULL UNIQUE,
+    paid_until text NOT NULL
 );

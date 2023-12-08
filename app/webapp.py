@@ -2,20 +2,16 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-from password_hashing import getting_hash, get_salt
 import asyncio
 
-# Database
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
-# Validators
 from validators.registration import registration_validation
 from validators.description import description_validation
 from validators.date import date_validation
-from validators.correction_number import correction_number
-from validators.token import token_validation
+from validators.number import number_validation
 
-# Logging
+from source.password_hashing import getting_hash, get_salt
 from log_settings import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
@@ -62,7 +58,7 @@ def registration():
                 user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
 
                 if user_token:
-                    group_id: int = token_validation(user_token)
+                    group_id: int = dbase.get_group_id_by_token(user_token)
                     create_table_group(f"budget_{group_id}")
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
@@ -75,10 +71,10 @@ def registration():
         if len(token) == 32:
             if asyncio.run(registration_validation(username, psw, telegram_id)):
                 dbase = DatabaseQueries(get_db())
-                group_id: int = token_validation(token)  # getting group id by token
-                group_not_full = dbase.check_limit_users_in_group(token)  # checking places in the group
+                group_id: int = dbase.get_group_id_by_token(token)
+                group_not_full = dbase.check_limit_users_in_group(group_id)  # checking places in the group
 
-                if group_id and group_not_full:
+                if group_not_full:  # if the group doesn't exist, group_not_full will be set to False in the try/except
                     telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                     psw_salt: str = get_salt()  # generating salt for a new user
 
@@ -159,10 +155,10 @@ def household(username):
     if request.method == "POST":
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
-            value: int = correction_number(value)
+            value: int = number_validation(value)
             value: int = value
             record_date: str = request.form.get("record-date")
-            record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}" # YYYY-MM-DD -> DD/MM/YYYY
+            record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # YYYY-MM-DD -> DD/MM/YYYY
             record_date_is_valid: bool = asyncio.run(date_validation(record_date))
             category: str = request.form.get("category")
             description = request.form.get("description")
@@ -193,7 +189,7 @@ def household(username):
 
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int = correction_number(record_id)
+            record_id: int = number_validation(record_id)
 
             if not record_id or not dbase.check_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
@@ -260,14 +256,13 @@ def logout():
 
 
 @app.errorhandler(401)
-def page_not_found(error):
+def page_not_found(error):  # do not remove the parameter
     return render_template("error401.html", title="UNAUTHORIZED"), 401
 
 
 @app.errorhandler(404)
-def page_not_found(error):
+def page_not_found(error):  # do not remove the parameter
     return render_template("error404.html", title="PAGE NOT FOUND"), 404
 
 
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')  # change on False before upload on server
+app.run(debug=True, host='0.0.0.0')  # change on False before upload on server

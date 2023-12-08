@@ -1,6 +1,6 @@
-![GIF](images/budget_donuts.gif)
+![GIF](presentation/budget_donuts.gif)
 
-<image src="images/homepage.png" alt="homepage">
+<image src="presentation/homepage.png" alt="homepage">
 
 ## <font color="cyan">Project objectives:</font>
 - ### <font color="lime">Full details of your income and expenses (website and bot)</font>
@@ -33,7 +33,8 @@
 3. Create .env file: </br>
 ```SECRET_KEY="secret_key_for_encrypt_Flask_session"```</br>
 ```BOT_TOKEN="bot_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..``` </br></br>
@@ -51,7 +52,8 @@
 3. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..```</br></br>
@@ -70,7 +72,8 @@
 3. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..``` </br></br>
@@ -93,10 +96,11 @@
 5. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 6. Database and directories creation: </br> 
-```python creating_db_and_directoriespy``` </br></br>
+```python build_project.py``` </br></br>
 
 7. Running project files: </br>
 ```python app.py``` </br>

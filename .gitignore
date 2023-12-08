@@ -3,9 +3,12 @@
 .png
 .pdf
 .jpg
-.env
-images/money_image_bot.png
+app/.env
+presentation/money_image_bot.png
 !create_db.sql
+!create_test_db.sql
+/develop
+/docs
 ### Databases ###
 *.sqlite3
 *.sqlite

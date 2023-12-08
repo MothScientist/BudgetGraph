@@ -1,15 +1,11 @@
 from hashlib import pbkdf2_hmac
 from secrets import choice
 
-# Timeit decorator
-from time_checking import timeit
-
-# Warning.
+# Warning
 # The pseudo-random generators os.random() should not be used for security purposes.
 # For security or cryptographic uses, see the secrets module.
 
 
-@timeit
 def get_salt(key_length: int = 32) -> str:
     """
     :return: random (entropy-based) character string of length 32
@@ -18,7 +14,6 @@ def get_salt(key_length: int = 32) -> str:
                    for _ in range(key_length))
 
 
-@timeit
 def getting_hash(secure_key: str, salt: str,
                  iterations: int = 1024,
                  key_length: int = 32,
