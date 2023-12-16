@@ -28,7 +28,7 @@
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
 2. Go to the project directory:</br>
-```cd main``` </br></br>
+```cd app``` </br></br>
 
 3. Create .env file: </br>
 ```SECRET_KEY="secret_key_for_encrypt_Flask_session"```</br>
@@ -47,7 +47,7 @@
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
 2. Go to the project directory:</br>
-```cd main``` </br></br>
+```cd app``` </br></br>
 
 3. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
@@ -61,7 +61,7 @@
 5. Run Docker Desktop</br></br>
 
 6. Running a PowerShell script: </br> 
-```./run_on_windows_with_docker_desktop.ps1``` </br>
+```./deploy_windows.ps1``` </br>
 
 ### For Windows (without <font color="DeepSkyBlue">Docker Desktop</font>):
 1. Clone the repository: </br>
@@ -91,7 +91,7 @@
 ```pip install -r requirements.txt``` </br></br>
 
 4. Go to the project directory:</br>
-```cd main``` </br></br>
+```cd app``` </br></br>
 
 5. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
@@ -103,5 +103,5 @@
 ```python build_project.py``` </br></br>
 
 7. Running project files: </br>
-```python app.py``` </br>
+```python webapp.py``` </br>
 ```python bot.py``` </br></br>
