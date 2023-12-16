@@ -8,7 +8,7 @@ from database_control import DatabaseQueries, connect_db, close_db_main
 from log_settings import setup_logger
 
 # Timeit decorator
-from time_checking import timeit
+from source.time_checking import timeit
 
 logger_csv = setup_logger("logs/CSVLog.log", "csv_logger")
 

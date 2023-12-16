@@ -4,7 +4,7 @@ from flask import flash
 from database_control import DatabaseQueries, connect_db, close_db_main
 
 # Timeit decorator
-from time_checking import timeit
+from source.time_checking import timeit
 
 
 @timeit

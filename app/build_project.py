@@ -1,4 +1,3 @@
-import os
 from database_control import create_db
 
 if __name__ == '__main__':

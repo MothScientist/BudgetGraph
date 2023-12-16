@@ -6,7 +6,7 @@ from validators.number import number_validation
 from validators.description import description_validation
 from validators.table_name import table_name_validation
 from validators.date import (check_day_is_correct, check_year_is_leap, check_year_is_correct,
-                             check_date_in_correct_format, date_validation)
+                                   check_date_in_correct_format, date_validation)
 
 
 class TestDateValidation(unittest.TestCase):

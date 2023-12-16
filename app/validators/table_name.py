@@ -1,7 +1,7 @@
 import re
 
 # Timeit decorator
-from time_checking import timeit
+from source.time_checking import timeit
 
 
 @timeit
