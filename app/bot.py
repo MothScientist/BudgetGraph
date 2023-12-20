@@ -14,7 +14,6 @@ from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 from validators.registration import username_validation, password_validation
 from validators.description import description_validation
 from validators.number import number_validation
-from validators.category import category_validation
 from validators.date import date_validation
 from secrets import compare_digest
 
@@ -155,17 +154,17 @@ def add_income(message) -> None:
     res: bool = check_user_registration(message)
     if res:  # user authorization check
         bot.send_message(message.chat.id, "Enter the value of income:")
-        bot.register_next_step_handler(message, process_transfer, False)
+        bot.register_next_step_handler(message, process_add_date_for_transfer, False)
 
 
 def add_expense(message):
     res: bool = check_user_registration(message)
     if res:  # user authorization check
         bot.send_message(message.chat.id, "Enter the value of expense:")
-        bot.register_next_step_handler(message, process_transfer, True)
+        bot.register_next_step_handler(message, process_add_date_for_transfer, True)
 
 
-def process_transfer(message, is_negative: bool) -> None:
+def process_add_date_for_transfer(message, is_negative: bool) -> None:
     """
     Adds income and expense to the database.
     Accepts an unvalidated value,
@@ -186,46 +185,40 @@ def process_transfer(message, is_negative: bool) -> None:
     if value:
         value: int = value * (-1 if is_negative else 1)
         bot.send_message(message.chat.id, "Set the date (DD/MM/YYYY)", reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_add_date_for_transfer, value)
+        bot.register_next_step_handler(message, process_add_category_for_transfer, value)
     else:
         bot.send_message(message.chat.id, "Invalid value format")
 
 
-def process_add_date_for_transfer(message, value: int) -> None:
+def process_add_category_for_transfer(message, value: int) -> None:
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-    button_labels = ["Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
+    button_labels = ("Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
                      "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Sale",
-                     "Salary", "Other"]
-    buttons = [types.KeyboardButton(label) for label in button_labels]
+                     "Salary", "Other")
+    buttons = [types.KeyboardButton(label) for label in button_labels]  # Assembling buttons from the tuple above
     markup_1.add(*buttons)
 
     record_date: str = message.text
     record_date_is_valid: bool = asyncio.run(date_validation(record_date))  # DD/MM/YYYY
 
     if record_date_is_valid:
-        bot.send_message(message.chat.id, "Select category:", reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_add_category_for_transfer, value, record_date)
+        bot.send_message(message.chat.id, "Select category or enter your own:", reply_markup=markup_1)
+        bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date)
     else:
         bot.send_message(message.chat.id, "Invalid date format")
         reply_buttons(message)
 
 
-def process_add_category_for_transfer(message, value: int, record_date: str) -> None:
+def process_add_description_for_transfer(message, value: int, record_date: str) -> None:
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
     btn1 = types.KeyboardButton("No description")
     markup_1.add(btn1)
     category: str = message.text
-    category_is_valid: bool = category_validation(category)
-
-    if category_is_valid:
-        bot.send_message(message.chat.id, "Add description (no more than 50 characters)", reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, category)
-    else:
-        bot.send_message(message.chat.id, "Invalid category format")
-        reply_buttons(message)
+    bot.send_message(message.chat.id, "Add description (no more than 50 characters)", reply_markup=markup_1)
+    bot.register_next_step_handler(message, process_transfer_final, value, record_date, category)
 
 
-def process_add_description_for_transfer(message, value: int, record_date: str, category: str) -> None:
+def process_transfer_final(message, value: int, record_date: str, category: str) -> None:
     description: str = message.text
     description_is_valid: bool = description_validation(description)
 
@@ -241,7 +234,7 @@ def process_add_description_for_transfer(message, value: int, record_date: str, 
         bot.send_message(message.chat.id, "Entry added successfully!")
     else:
         bot.send_message(message.chat.id, "Invalid value")
-    reply_menu_buttons_register(message)
+    table_manage_get_buttons(message)
 
 
 @timeit
