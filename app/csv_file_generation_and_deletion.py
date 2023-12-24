@@ -1,16 +1,11 @@
 import os
 import csv
-
-# Database
 from database_control import DatabaseQueries, connect_db, close_db_main
-
-# Logging
 from log_settings import setup_logger
-
-# Timeit decorator
 from source.time_checking import timeit
 
 logger_csv = setup_logger("logs/CSVLog.log", "csv_logger")
+# change logger_csv = setup_logger("logs/SourceLog.log", "csv_logger")
 
 
 def csv_dir_check():

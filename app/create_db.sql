@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS PremiumUsers (
     telegram_id integer NOT NULL UNIQUE,
     paid_until text NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS UserLanguages (
+    telegram_id integer NOT NULL UNIQUE,
+    language text NOT NULL CHECK(language IN ('en', 'ru', 'de', 'fr', 'es', 'is'))
+);
