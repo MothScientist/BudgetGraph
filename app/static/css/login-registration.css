@@ -45,18 +45,18 @@
 
   max-width: 40vw;
   min-width: 40vw;
-padding: 30px 20px;
-font-family: "Schibsted Grotesk", sans-serif;
+  padding: 30px 20px;
+  font-family: "Schibsted Grotesk", sans-serif;
   font-size: 16px;
   border-radius: 35px;
 }
 
 .form-title {
   padding-top: 30px;
-    margin: 0;
-    margin-bottom: 20px;
-    font-family: "Unica One", cursive;
-    font-size: 54px;
+  margin: 0;
+  margin-bottom: 20px;
+  font-family: "Unica One", cursive;
+  font-size: 54px;
 }
 .form-area{
   display: flex;

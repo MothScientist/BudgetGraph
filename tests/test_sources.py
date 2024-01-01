@@ -1,3 +1,4 @@
+#pylint: disable=missing-docstring
 import unittest
 
 from source.password_hashing import getting_hash, get_salt
@@ -54,3 +55,20 @@ class TestTokenGeneration(unittest.TestCase):
 
 class TestCSVGeneration(unittest.TestCase):
     pass
+
+
+class TestDictionary(unittest.TestCase):
+    def test_dictionary_1(self):
+        pass
+    
+    def test_dictionary_2(self):
+        pass
+    
+    def test_dictionary_3(self):
+        pass
+    
+    def test_dictionary_4(self):
+        pass
+    
+    def test_dictionary_5(self):
+        pass

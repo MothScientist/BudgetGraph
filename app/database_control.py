@@ -1,20 +1,38 @@
-from flask import g
 import sqlite3
-from dotenv import load_dotenv
+import os
 import logging
+from dotenv import load_dotenv
+from flask import g
+
+from log_settings import setup_logger
 from validators.table_name import table_name_validation
 
-import os
-
-from token_generation import get_token
-from log_settings import setup_logger
-from time_checking import timeit
+from source.token_generation import get_token
+from source.time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")
 
 logger_database = setup_logger("logs/DatabaseLog.log", "db_logger", level=logging.DEBUG)
 
+
+def create_db() -> None:
+    """
+    Creates two app tables: Users and Groups, using create_db.sql file describing their structures.
+    """
+    try:
+        conn = connect_db()
+        cursor = conn.cursor() # type: ignore
+
+        with open("create_db.sql", 'r') as file:
+            cursor.executescript(file.read())
+
+        conn.commit() # type: ignore
+        close_db_main(conn)
+
+    except sqlite3.Error as err:
+        logger_database.error(f"{str(err)}")
+        
 
 class DatabaseQueries:
     def __init__(self, db):
@@ -23,7 +41,6 @@ class DatabaseQueries:
 
 # Database sampling methods (SELECT)
 
-    @timeit
     def get_username_by_telegram_id(self, telegram_id: int) -> str:
         try:
             self.__cur.execute("""SELECT username FROM Users WHERE telegram_id = ?""", (telegram_id,))
@@ -70,7 +87,7 @@ class DatabaseQueries:
 
     def get_group_id_by_telegram_id(self, telegram_id: int) -> int:
         """
-        :return: group id or 0.
+        :return: group id | 0.
         """
         try:
             self.__cur.execute("""SELECT group_id FROM Users WHERE telegram_id = ?""", (telegram_id,))
@@ -313,8 +330,7 @@ class DatabaseQueries:
             res = self.__cur.fetchone()
             if res:
                 return False
-            else:
-                return True
+            return True
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: telegram ID: {telegram_id}")
@@ -322,15 +338,14 @@ class DatabaseQueries:
 
     def check_username_is_unique(self, username: str) -> bool:
         try:
-            self.__cur.execute(f"SELECT * FROM Users WHERE username = ?", (username,))
+            self.__cur.execute("SELECT * FROM Users WHERE username = ?", (username,))
             res = self.__cur.fetchone()
             if res:
                 return False
-            else:
-                return True
+            return True
 
         except sqlite3.Error as err:
-            logger_database.error(f"{str(err)}, Param: username: {username}")
+            logger_database.error("%s, Param: username: %s", str(err), username)
             return False
 
     def check_username_is_group_owner(self, username: str, group_id: int) -> bool:
@@ -340,8 +355,7 @@ class DatabaseQueries:
             res = self.__cur.fetchone()
             if str(res[0]) == username:
                 return True
-            else:
-                return False
+            return False
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Params: username: {username}, group_id: {group_id}")
@@ -358,14 +372,38 @@ class DatabaseQueries:
             res = self.__cur.fetchone()
             if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
                 return True
-            else:
-                return False
+            return False
 
         except sqlite3.Error as err:
             logger_database.error(f"{str(err)}, Param: group #{group_id}")
             return False
 
-# Methods for inserting data into a database (INSERT)
+    def get_user_language(self, telegram_id) -> str:
+        try:
+            self.__cur.execute(f"SELECT language FROM UserLanguages WHERE telegram_id = ?", (telegram_id,))
+            res = self.__cur.fetchone()
+            if res:
+                return str(res[0])
+            return "en"
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: telegram_id: {telegram_id}")
+            return "en"
+
+# Methods for inserting data into a database (INSERT / REPLACE)
+
+    def add_user_language(self, telegram_id, language: str) -> bool:
+        try:
+            self.__cur.execute("REPLACE INTO UserLanguages (telegram_id, language) VALUES (?, ?)",
+                               (telegram_id, language))
+            self.__db.commit()
+
+        except sqlite3.Error as err:
+            logger_database.error(f"{str(err)}, Param: telegram_id: {telegram_id}, language: {language}")
+            return False
+
+        else:
+            return True
 
     @timeit
     def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
@@ -480,6 +518,7 @@ class DatabaseQueries:
         Removes an entry from the group budget table.
         :param group_id:
         :param record_id: Row id in the table
+        :return: True - if the entry is found and successfully deleted, else - False
         """
         table_name = f"budget_{group_id}"
         try:
@@ -497,9 +536,8 @@ class DatabaseQueries:
         Removes a user from a group (not the owner)
         """
         try:
-            group_id: int | bool = self.get_group_id_by_username(username)
+            group_id: int = self.get_group_id_by_username(username)
             if group_id:
-                group_id: int = group_id
                 if not self.check_username_is_group_owner(username, group_id):
                     self.__cur.execute("""DELETE FROM Users WHERE username = ?""", (username,))
                     self.__db.commit()
@@ -540,7 +578,7 @@ def connect_db():
     """
     logger = logging.getLogger('db_logger')
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(db_path) # type: ignore
         conn.row_factory = sqlite3.Row
         logger.debug("Database connection (app): OPEN")
         return conn
@@ -582,24 +620,6 @@ def close_db_main(conn):
         logger.debug("Database connection (app): CLOSED")
 
 
-def create_db() -> None:
-    """
-    Creates two app tables: Users and Groups, using create_db.sql file describing their structures.
-    """
-    try:
-        conn = connect_db()
-        cursor = conn.cursor()
-
-        with open("create_db.sql", 'r') as file:
-            cursor.executescript(file.read())
-
-        conn.commit()
-        close_db_main(conn)
-
-    except sqlite3.Error as err:
-        logger_database.error(f"{str(err)}")
-
-
 def create_table_group(table_name: str) -> None:
     """
     creates a table in the database called budget_?
@@ -612,7 +632,7 @@ def create_table_group(table_name: str) -> None:
         if not table_name_validation(table_name):
             raise ValueError("Possible SQL injection attempt")
 
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(db_path) # type: ignore
         cursor = conn.cursor()
 
         query = (f"CREATE TABLE IF NOT EXISTS {table_name} "
@@ -621,7 +641,7 @@ def create_table_group(table_name: str) -> None:
                  f"username text NOT NULL, "
                  f"transfer integer NOT NULL, "
                  f"category text NOT NULL, "
-                 f"record_date text NOT NULL, "
+                 f"date text NOT NULL, "
                  f"description text NOT NULL CHECK(LENGTH(description) <= 50));")  # ?
         cursor.execute(query)
 

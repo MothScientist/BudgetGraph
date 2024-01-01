@@ -44,9 +44,7 @@ async def username_validation(username: str) -> bool:
 
     if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and username_is_unique:
         return True
-
-    else:
-        return False
+    return False
 
 
 async def password_validation(psw: str) -> bool:
@@ -56,7 +54,7 @@ async def password_validation(psw: str) -> bool:
         return False
 
 
-async def telegram_id_validation(telegram_id: str) -> bool:
+async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
     if re.match(r'^[1-9]\d{2,11}$', telegram_id):
         telegram_id: int = int(telegram_id)
     else:
@@ -69,5 +67,4 @@ async def telegram_id_validation(telegram_id: str) -> bool:
 
     if telegram_id_is_unique:
         return True
-    else:
-        return False
+    return False

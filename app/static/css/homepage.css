@@ -117,9 +117,6 @@ background-color: var(--button-hover);
   clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 0% 100%, 25% 50%, 0% 0%);
 }
 
-
-
-
 .media {
   padding-top: 100px;
   padding-bottom: 50px;
@@ -224,5 +221,3 @@ background-color: var(--button-hover);
   font-size: 16px;
   color: var(--black);
 }
-
-
