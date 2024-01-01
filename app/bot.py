@@ -1,8 +1,9 @@
 from os import getenv
-from dotenv import load_dotenv
-from source.password_hashing import getting_hash, get_salt
+from secrets import compare_digest
 import asyncio
 from datetime import date
+from dotenv import load_dotenv
+
 
 import telebot
 from telebot import types
@@ -15,93 +16,72 @@ from validators.registration import username_validation, password_validation
 from validators.description import description_validation
 from validators.number import number_validation
 from validators.date import date_validation
-from secrets import compare_digest
+
+from source.dictionary import receive_translation
+from source.time_checking import timeit
+from source.password_hashing import getting_hash, get_salt
 
 from log_settings import setup_logger
-from time_checking import timeit
+
 
 load_dotenv()  # Load environment variables from .env file
 
 bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
-bot = telebot.TeleBot(bot_token)
+bot = telebot.TeleBot(bot_token)  # type: ignore
 
 logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
 
 
-@bot.message_handler(commands=['start'])
-def start(message) -> None:
-    # check user in our project
-    connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-    telegram_id: int = message.from_user.id
-    res: str = bot_db.get_username_by_telegram_id(telegram_id)
-
-    if res:
-        bot_db.update_user_last_login(res)
-        # to send a sticker in .webp format no larger than 512x512 pixel
-        # sticker = open("H:\telebot\stickers\stick_name.webp", "rb")
-        # bot.send_sticker(message.chat.id, sticker)
-        bot.send_message(message.chat.id, f"Hello, {res}!\nWe recognized you. Welcome!")
-        bot.send_sticker(message.chat.id,
-                         "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
-        reply_menu_buttons_register(message)
-        logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
-    else:
-        bot.send_message(message.chat.id, f"Hello, {message.from_user.first_name}!\n"
-                                        f"We didn't recognize you. Would you like to register in the project?")
-        bot.send_sticker(message.chat.id,
-                         "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
-        reply_menu_buttons_not_register(message)
-        logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
-
-    close_db_main(connection)
-
-
 def reply_menu_buttons_register(message):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-    btn1 = types.KeyboardButton("❓ Help")
-    btn2 = types.KeyboardButton("📎 Link to GitHub")
-    btn3 = types.KeyboardButton("🔐 Get my token")
-    btn4 = types.KeyboardButton("💵 Table manage")
-    btn5 = types.KeyboardButton("💻 Group settings")
-    btn6 = types.KeyboardButton("⭐ Premium")
-    markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
+    btn1 = types.KeyboardButton(f"❓ {get_phrase(message, "help")}")
+    btn2 = types.KeyboardButton(f"📎 {get_phrase(message, "link_github")}")
+    btn3 = types.KeyboardButton(f"🔐 {get_phrase(message, "get_my_token")}")
+    btn4 = types.KeyboardButton(f"💵 {get_phrase(message, "table_manage")}")
+    btn5 = types.KeyboardButton(f"💻 {get_phrase(message, "group_settings")}")
+    btn6 = types.KeyboardButton(f"⭐ {get_phrase(message,"premium")}")
+    btn7 = types.KeyboardButton(f"{get_phrase(message,"change_language")}")
+    markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
     bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
 
 
 def reply_menu_buttons_not_register(message):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = types.KeyboardButton("❓ Help")
-    btn2 = types.KeyboardButton("📎 Link to GitHub")
-    btn3 = types.KeyboardButton("💻 My Telegram ID")
+    btn1 = types.KeyboardButton(f"❓ {get_phrase(message, "help")}")
+    btn2 = types.KeyboardButton(f"📎 {get_phrase(message, "link_github")}")
+    btn3 = types.KeyboardButton(f"💻 {get_phrase(message, "my")} Telegram ID")
     btn4 = types.KeyboardButton("🤡 I want to register")
-    markup_1.add(btn1, btn2, btn3, btn4)
+    btn5 = types.KeyboardButton(f"⭐ {get_phrase(message,"premium")}")
+    btn6 = types.KeyboardButton(f"{get_phrase(message,"change_language")}")
+    markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
 
-    bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
+    bot.send_message(message.chat.id, f"{get_phrase(message, "click_need_button")} :)", reply_markup=markup_1)
 
 
 def table_manage_get_buttons(message):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = types.KeyboardButton("📖 View table")
-    btn2 = types.KeyboardButton("📈 Add income")
-    btn3 = types.KeyboardButton("📉 Add expense")
-    btn4 = types.KeyboardButton("❌ Delete record")
-    btn5 = types.KeyboardButton("🗃️ Get CSV")
-    btn6 = types.KeyboardButton("↩️ Back")
+    btn1 = types.KeyboardButton(f"📖 {get_phrase(message, "view_table")}")
+    btn2 = types.KeyboardButton(f"📈 {get_phrase(message, "add_income")}")
+    btn3 = types.KeyboardButton(f"📉 {get_phrase(message, "add_expense")}")
+    btn4 = types.KeyboardButton(f"❌ {get_phrase(message, "del_record")}")
+    btn5 = types.KeyboardButton(f"🗃️ {get_phrase(message, "get_csv")}")
+    btn6 = types.KeyboardButton(f"↩️ {get_phrase(message, "back")}")
     markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
-    bot.send_message(message.chat.id, "Click the button you need (Table manage)", reply_markup=markup_1)
+    bot.send_message(message.chat.id, f"{get_phrase(message, "click_need_button")} "
+                                      f"({get_phrase(message, "table_manage")})", reply_markup=markup_1)
 
 
 def group_settings_get_buttons(message):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = types.KeyboardButton("🌍 Group users")
-    btn2 = types.KeyboardButton("🗑️ Delete my account")
-    btn3 = types.KeyboardButton("🚫 Delete group")
-    btn4 = types.KeyboardButton("🔑 Change owner")
-    btn5 = types.KeyboardButton("🤖 Delete user")
-    btn6 = types.KeyboardButton("↩️ Back")
+    btn1 = types.KeyboardButton(f"🌍 {get_phrase(message, "group_users")}")
+    btn2 = types.KeyboardButton(f"🗑️ {get_phrase(message, "delete_account")}")
+    btn3 = types.KeyboardButton(f"🚫 {get_phrase(message, "delete_group")}")
+    btn4 = types.KeyboardButton(f"🔑 {get_phrase(message, "change_owner")}")
+    btn5 = types.KeyboardButton(f"🤖 {get_phrase(message, "delete_user")}")
+    btn6 = types.KeyboardButton(f"↩️ {get_phrase(message, "back")}")
     markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
-    bot.send_message(message.chat.id, "Click the button you need (Group settings)", reply_markup=markup_1)
+    bot.send_message(message.chat.id, f"{get_phrase(message, "click_need_button")} "
+                                      f"({get_phrase(message, "group_settings")})", reply_markup=markup_1)
 
 
 def reply_buttons(message):
@@ -115,16 +95,38 @@ def reply_buttons(message):
         reply_menu_buttons_not_register(message)
 
 
+@bot.message_handler(commands=['start'])
+def start(message) -> None:
+    telegram_id: int = message.from_user.id
+    lang: str = check_user_language(message)
+    res: bool = user_is_registered(message)
+    if res:
+        # to send a sticker in .webp format no larger than 512x512 pixel
+        # sticker = open("H:\telebot\stickers\stick_name.webp", "rb")
+        # bot.send_sticker(message.chat.id, sticker)
+        bot.send_message(message.chat.id, f"{receive_translation(lang, "greetings")} {res}!\n{receive_translation(lang, "our_user")}")
+        bot.send_sticker(message.chat.id,
+                         "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE")
+        reply_menu_buttons_register(message)
+        logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
+    else:
+        bot.send_message(message.chat.id, f"{receive_translation(lang, "greetings")} {message.from_user.first_name}!\n"
+                                        f"{receive_translation(lang, "unknown_user")}")
+        bot.send_sticker(message.chat.id,
+                         "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE")
+        reply_menu_buttons_not_register(message)
+        logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
+
+
 @bot.message_handler(commands=['help'])
 def help(message) -> None:
     bot.send_message(message.chat.id, "Support information")
 
 
-@bot.message_handler(commands=['get_my_id'])
 def get_my_id(message) -> None:
     bot.send_sticker(message.chat.id,
                      "CAACAgIAAxkBAAEKWillDGfSs-fnAAGchbLPICSILmW_7yoAAiMUAAKtXgABSjhqQKnHD7SIMAQ")
-    bot.send_message(message.chat.id, f"Your telegram ID: {message.from_user.id}")
+    bot.send_message(message.chat.id, f"{get_phrase(message, "your")} telegram ID: {message.from_user.id}")
 
 
 @bot.message_handler(commands=['project_github'])
@@ -134,9 +136,44 @@ def project_github(message) -> None:
     bot.send_message(message.chat.id, "Our open-source project on Github:", reply_markup=markup)
 
 
-@bot.message_handler(commands=['premium'])
 def premium(message):
     bot.send_message(message.chat.id, "This functionality is currently under development!")
+
+
+def change_language(message):
+    markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    button_labels = ["English", "Español", "Русский", "Français", "Deutsch", "Islenskur"]
+    buttons = [types.KeyboardButton(label) for label in button_labels]
+    markup_1.add(*buttons)
+    bot.send_message(message.chat.id, "Choose a language:", reply_markup=markup_1)
+    bot.register_next_step_handler(message, process_change_language)
+
+
+def process_change_language(message):
+    languages = {
+        "English": "en",
+        "Español": "es",
+        "Русский": "ru",
+        "Français": "fr",
+        "Deutsch": "de",
+        "Islenskur": "is"
+    }
+    user_lang = message.text
+    res = False
+    if user_lang in languages:  # Checks for language presence in dictionary keys (look Pylint C0201)
+        telegram_id: int = message.from_user.id
+        connection = connect_db()
+        bot_db = DatabaseQueries(connection)
+        res: bool = bot_db.add_user_language(telegram_id, languages[user_lang])
+        close_db_main(connection)
+
+    if res:
+        bot.send_message(message.chat.id, f"{get_phrase(message, "language_changed")}")
+        #FIXME logging
+    else:
+        bot.send_message(message.chat.id, "An error occurred while changing the language.\nPlease contact support!")
+        #FIXME logging
+    reply_buttons(message)
 
 
 def get_my_token(message) -> None:
@@ -151,14 +188,14 @@ def get_my_token(message) -> None:
 
 
 def add_income(message) -> None:
-    res: bool = check_user_registration(message)
+    res: bool = check_user_access(message)
     if res:  # user authorization check
         bot.send_message(message.chat.id, "Enter the value of income:")
         bot.register_next_step_handler(message, process_add_date_for_transfer, False)
 
 
 def add_expense(message):
-    res: bool = check_user_registration(message)
+    res: bool = check_user_access(message)
     if res:  # user authorization check
         bot.send_message(message.chat.id, "Enter the value of expense:")
         bot.register_next_step_handler(message, process_add_date_for_transfer, True)
@@ -171,12 +208,15 @@ def process_add_date_for_transfer(message, is_negative: bool) -> None:
     performs validation and enters it into the database.
 
     If value == 0 then it will be rejected
-    :param message:
-    :param is_negative: False if X > 0 (add_income), True if X < 0 (add_expense)
-    :return: None
+    
+    Args:
+        message:
+        is_negative (bool): False if X > 0 (add_income), True if X < 0 (add_expense)
+    
+    Returns: None
     """
-    value: str = message.text
-    value: int = number_validation(value)
+    value: str = message.text  # type: ignore
+    value: int = number_validation(value)  # type: ignore
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     today_date: str = str(date.today())
     btn1 = types.KeyboardButton(f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}")
@@ -192,9 +232,9 @@ def process_add_date_for_transfer(message, is_negative: bool) -> None:
 
 def process_add_category_for_transfer(message, value: int) -> None:
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-    button_labels = ("Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices", "Education",
-                     "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby", "Jewelry", "Sale",
-                     "Salary", "Other")
+    button_labels = ("Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices",
+                     "Education", "Services", "Travel", "Housing", "Transfers", "Investments",
+                     "Hobby", "Jewelry", "Sale", "Salary", "Other")
     buttons = [types.KeyboardButton(label) for label in button_labels]  # Assembling buttons from the tuple above
     markup_1.add(*buttons)
 
@@ -239,7 +279,7 @@ def process_transfer_final(message, value: int, record_date: str, category: str)
 
 @timeit
 def delete_record(message):
-    res: bool = check_user_registration(message)
+    res: bool = check_user_access(message)
     if res:  # user authorization check
         bot.send_message(message.chat.id, "Enter the record ID:")
         bot.register_next_step_handler(message, process_delete_record)
@@ -247,11 +287,11 @@ def delete_record(message):
 
 def process_delete_record(message):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    btn1 = types.KeyboardButton("❌ Delete record")
+    btn1 = types.KeyboardButton(f"❌ {get_phrase(message, "del_record")}")
     btn2 = types.KeyboardButton("↩️ Back to menu")
     markup_1.add(btn1, btn2)
-    record_id: str = message.text
-    record_id: int = number_validation(record_id)
+    record_id: str = message.text # type: ignore
+    record_id: int = number_validation(record_id) # type: ignore
 
     if record_id:
         connection = connect_db()
@@ -275,7 +315,7 @@ def registration(message) -> None:
     res: str = bot_db.get_username_by_telegram_id(message.from_user.id)
     close_db_main(connection)
     if not res:  # Checking whether the user is already registered and accidentally ended up in this menu.
-        bot.send_message(message.chat.id, "Enter your name (3-20 characters):")
+        bot.send_message(message.chat.id, "Enter username (3-20 characters):")
         bot.register_next_step_handler(message, process_username)
     else:
         bot.send_message(message.chat.id, "You are already registered!")
@@ -300,7 +340,7 @@ def process_psw(message, username: str):
     if asyncio.run(password_validation(psw)):
         psw_salt: str = get_salt()
         psw: str = getting_hash(psw, psw_salt)
-        bot.send_message(message.chat.id, "Enter group token\nIf you don't have one, enter 'None'",
+        bot.send_message(message.chat.id, "Enter group token:\n(if you don't have one, enter 'None')",
                          reply_markup=markup_1)
         bot.register_next_step_handler(message, process_token, username, psw, psw_salt)
     else:
@@ -318,17 +358,17 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
     if compare_digest(token, "None"):
-        user_token: str = bot_db.create_new_group(telegram_id)
+        new_group_token: str = bot_db.create_new_group(telegram_id)
         # There is a chance to return False if an error occurred while working with the database
-        if user_token:
-            group_id: int = bot_db.get_group_id_by_token(user_token)
+        if new_group_token:
+            group_id: int = bot_db.get_group_id_by_token(new_group_token)
             if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                 create_table_group(f"budget_{group_id}")
                 bot.send_message(message.chat.id, "Congratulations on registering!")
                 bot.send_sticker(message.chat.id,
                                  "CAACAgIAAxkBAAEKWitlDGgsUhrqGudQPNuk-nI8yiz53wACsRcAAlV9AUqXI5lmIbo_TzAE")
                 bot.send_message(message.chat.id, "Your token:")
-                bot.send_message(message.chat.id, user_token)
+                bot.send_message(message.chat.id, new_group_token)
                 logger_bot.info(f"New user (new group): ID: {telegram_id}, group: {group_id}")
                 reply_menu_buttons_register(message)
             else:
@@ -342,7 +382,6 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
                              f"psw salt: {psw_salt}, psw hash: {psw_hash}")
             reply_menu_buttons_not_register(message)
     elif len(token) == 32:
-        telegram_id: int = message.from_user.id
         group_id: int = bot_db.get_group_id_by_token(token)
         group_not_full: bool = bot_db.check_limit_users_in_group(group_id)
         if group_not_full:  # if the group doesn't exist, group_not_full will be set to False in the try/except
@@ -371,7 +410,7 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
 @timeit
 def view_table(message) -> None:
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:  # user authorization check
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -397,7 +436,7 @@ def view_table(message) -> None:
 @timeit
 def get_csv(message):
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:  # user authorization check
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -417,7 +456,7 @@ def get_csv(message):
 @timeit
 def get_group_users(message):
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -433,7 +472,7 @@ def get_group_users(message):
 @timeit
 def change_owner(message):
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -481,7 +520,7 @@ def delete_account(message):
     btn2 = types.KeyboardButton("👎 NO")
     markup_1.add(btn1, btn2)
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -506,7 +545,6 @@ def process_delete_account(message, username: str):
         markup_1.add(btn1)
 
         bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
-        bot.send_message(message.chat.id, "[===> In progress ===>]")
 
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -529,7 +567,7 @@ def process_delete_account(message, username: str):
 @timeit
 def delete_user(message):
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -582,7 +620,7 @@ def delete_group(message):
     markup_1.add(btn1, btn2)
 
     telegram_id: int = message.from_user.id
-    res: bool = check_user_registration(message, telegram_id=telegram_id)
+    res: bool = check_user_access(message)
     if res:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -606,7 +644,6 @@ def process_delete_group(message, group_id: int):
 
     if user_choice == "🌧️ YES":
         bot.send_message(message.chat.id, "We respect your choice, thanks to be with us!")
-        bot.send_message(message.chat.id, "[===> In progress ===>]")
 
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -632,69 +669,97 @@ def process_delete_group(message, group_id: int):
 
 # checking whether the user is registered in the project
 # (since he may accidentally end up in a menu that is intended only for registered users)
-def check_user_registration(message, telegram_id: int = 0) -> bool:
-    # if the telegram_id has already been specified, then there is no point in calling
-    # the function again to determine it, and it is easier to pass it as a parameter
+def user_is_registered(message) -> bool:
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
-    if not telegram_id:  # if the telegram_id is not transmitted, then we receive it
-        telegram_id: int = message.from_user.id
+    telegram_id: int = message.from_user.id
     res: str = bot_db.get_username_by_telegram_id(telegram_id)
     if res:
-        bot_db.update_user_last_login(res)
+        bot_db.update_user_last_login(res)  # update the date of the last user activity in the database
         close_db_main(connection)
         return True
     close_db_main(connection)
+    return False
+
+
+def check_user_access(message) -> bool:
+    telegram_id: int = message.from_user.id
+    res: bool = user_is_registered(message)
+    if res:
+        return True
     bot.send_message(message.chat.id, "You are not register.")
     bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAEKeMJlIU2d3ci3xJWpzQyWm1lamvtqpQACkAADzjkIDQRZLZcg00SoMAQ")
     logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
     return False
 
 
+def check_user_language(message) -> str:
+    connection = connect_db()
+    bot_db = DatabaseQueries(connection)
+    telegram_id: int = message.from_user.id
+    language: str = bot_db.get_user_language(telegram_id)
+    return language
+
+
+def get_phrase(message, phrase_key: str):
+    lang: str = check_user_language(message)
+    return receive_translation(lang, phrase_key)
+
+
 @bot.message_handler(content_types=['text'])
 def text(message) -> None:
     if message.text == "Start":
         start(message)
-    elif message.text == "❓ Help":
+    elif message.text == f"❓ {get_phrase(message, "help")}":
         help(message)
-    elif message.text == "📎 Link to GitHub":
+    elif message.text == f"📎 {get_phrase(message, "link_github")}":
         project_github(message)
-    elif message.text == "💻 My Telegram ID":
+    elif message.text == f"💻 {get_phrase(message, "my")} Telegram ID":
         get_my_id(message)
     elif message.text == "🤡 I want to register":
         registration(message)
-    elif message.text == "🔐 Get my token":
+    elif message.text == f"🔐 {get_phrase(message, "get_my_token")}":
         get_my_token(message)
-    elif message.text == "💵 Table manage":
-        table_manage_get_buttons(message)
-    elif message.text == "📖 View table":
+    elif message.text == f"💵 {get_phrase(message, "table_manage")}":
+        res: bool = check_user_access(message)
+        if res:
+            table_manage_get_buttons(message)
+        else:
+            reply_menu_buttons_not_register(message)
+    elif message.text == f"📖 {get_phrase(message, "view_table")}":
         view_table(message)
-    elif message.text == "📈 Add income":
+    elif message.text == f"📈 {get_phrase(message, "add_income")}":
         add_income(message)
-    elif message.text == "📉 Add expense":
+    elif message.text == f"📉 {get_phrase(message, "add_expense")}":
         add_expense(message)
-    elif message.text == "❌ Delete record":
+    elif message.text == f"❌ {get_phrase(message, "del_record")}":
         delete_record(message)
-    elif message.text == "🗃️ Get CSV":
+    elif message.text == f"🗃️ {get_phrase(message, "get_csv")}":
         get_csv(message)
-    elif message.text == "💻 Group settings":
-        group_settings_get_buttons(message)
-    elif message.text == "⭐ Premium":
+    elif message.text == f"💻 {get_phrase(message, "group_settings")}":
+        res: bool = check_user_access(message)
+        if res:
+            group_settings_get_buttons(message)
+        else:
+            reply_menu_buttons_not_register(message)
+    elif message.text == f"⭐ {get_phrase(message,"premium")}":
         premium(message)
-    elif message.text == "🌍 Group users":
+    elif message.text == f"🌍 {get_phrase(message, "group_users")}":
         get_group_users(message)
-    elif message.text == "🗑️ Delete my account":
+    elif message.text == f"🗑️ {get_phrase(message, "delete_account")}":
         delete_account(message)
-    elif message.text == "🚫 Delete group":
+    elif message.text == f"🚫 {get_phrase(message, "delete_group")}":
         delete_group(message)
-    elif message.text == "🔑 Change owner":
+    elif message.text == f"🔑 {get_phrase(message, "change_owner")}":
         change_owner(message)
-    elif message.text == "🤖 Delete user":
+    elif message.text == f"🤖 {get_phrase(message, "delete_user")}":
         delete_user(message)
-    elif "↩️" in message.text:
+    elif message.text == f"↩️ {get_phrase(message, "back")}" or message.text == "↩️ Back to menu":
         reply_buttons(message)
+    elif message.text == f"{get_phrase(message,"change_language")}":
+        change_language(message)
     else:
-        bot.send_message(message.chat.id, "I don't understand you :(")
+        bot.send_message(message.chat.id, f"{get_phrase(message,"misunderstanding")}")
 
 
 bot.polling(none_stop=True)
