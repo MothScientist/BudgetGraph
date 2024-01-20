@@ -694,6 +694,10 @@ def check_user_access(message) -> bool:
 
 
 def check_user_language(message) -> str:
+    """
+    Makes a request to the database via the get_user_language function.
+    The telegram id of the user taken from the message is used.
+    """
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
     telegram_id: int = message.from_user.id
@@ -702,6 +706,10 @@ def check_user_language(message) -> str:
 
 
 def get_phrase(message, phrase_key: str):
+    """
+    Refers to a dictionary with translations.
+    The phrase is the key - the function returns the translation into the required language (value).
+    """
     lang: str = check_user_language(message)
     return receive_translation(lang, phrase_key)
 

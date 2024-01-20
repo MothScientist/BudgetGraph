@@ -379,6 +379,11 @@ class DatabaseQueries:
             return False
 
     def get_user_language(self, telegram_id) -> str:
+        """
+        Gets the user's (telegram_id) language from the database.
+        If there is no entry for the user in the database, the default language is used.
+        By default, the user will be offered text in English.
+        """
         try:
             self.__cur.execute(f"SELECT language FROM UserLanguages WHERE telegram_id = ?", (telegram_id,))
             res = self.__cur.fetchone()
