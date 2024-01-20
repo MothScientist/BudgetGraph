@@ -5,7 +5,7 @@ COPY app /main/app
 
 WORKDIR /main
 
-RUN pip install -r requirements.txt
+RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 
 WORKDIR /main/app
 

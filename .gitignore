@@ -1,3 +1,4 @@
+.timetracker
 .jpeg
 .sql
 .png
@@ -1544,3 +1545,4 @@ dist/**/*
 
 # ignore yarn.lock
 yarn.lock
+/.timetracker
