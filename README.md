@@ -1,6 +1,6 @@
-![GIF](images/budget_donuts.gif)
+![GIF](presentation/budget_donuts.gif)
 
-<image src="images/homepage.png" alt="homepage">
+<image src="presentation/homepage.png" alt="homepage">
 
 ## <font color="cyan">Project objectives:</font>
 - ### <font color="lime">Full details of your income and expenses (website and bot)</font>
@@ -28,12 +28,13 @@
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
 2. Go to the project directory:</br>
-```cd main``` </br></br>
+```cd app``` </br></br>
 
 3. Create .env file: </br>
 ```SECRET_KEY="secret_key_for_encrypt_Flask_session"```</br>
 ```BOT_TOKEN="bot_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..``` </br></br>
@@ -46,12 +47,13 @@
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
 
 2. Go to the project directory:</br>
-```cd main``` </br></br>
+```cd app``` </br></br>
 
 3. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..```</br></br>
@@ -59,7 +61,7 @@
 5. Run Docker Desktop</br></br>
 
 6. Running a PowerShell script: </br> 
-```./run_on_windows_with_docker_desktop.ps1``` </br>
+```./deploy_windows.ps1``` </br>
 
 ### For Windows (without <font color="DeepSkyBlue">Docker Desktop</font>):
 1. Clone the repository: </br>
@@ -70,7 +72,8 @@
 3. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..``` </br></br>
@@ -88,16 +91,20 @@
 ```pip install -r requirements.txt``` </br></br>
 
 4. Go to the project directory:</br>
-```cd main``` </br></br>
+```cd app``` </br></br>
 
 5. Create .env file: </br>
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
-```DATABASE="db_name.sqlite3"```</br></br>
+```DATABASE="db_name.sqlite3"```</br>
+```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 6. Database and directories creation: </br> 
-```python creating_db_and_directoriespy``` </br></br>
+```python build_project.py``` </br></br>
 
 7. Running project files: </br>
-```python app.py``` </br>
+```python webapp.py``` </br>
 ```python bot.py``` </br></br>
+
+### License
+This source code is distributed under [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.en.html).

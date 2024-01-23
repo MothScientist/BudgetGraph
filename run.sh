@@ -1,8 +1,8 @@
 #!/bin/env sh
 
-# Go to the "main" directory
-cd main || exit 1
+# Go to the "app" directory
+cd app || exit 1
 
-# Running app.py and bot.py
-python app.py &
+# Running webapp.py and bot.py
+python webapp.py &
 python bot.py
