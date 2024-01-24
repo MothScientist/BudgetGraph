@@ -17,7 +17,7 @@ from validators.description import description_validation
 from validators.number import number_validation
 from validators.date import date_validation
 
-from source.dictionary import Languages, Stickers, Emoji
+from source.dictionary import Languages, Stickers
 from source.time_checking import timeit
 from source.password_hashing import getting_hash, get_salt
 
@@ -164,7 +164,8 @@ def process_change_language(message):
         res: bool = bot_db.add_user_language(telegram_id, languages[user_lang])
         close_db_main(connection)
         if res:
-            bot.send_message(message.chat.id, f"{get_phrase(message, "great")}\n{get_phrase(message, "language_changed")}")
+            bot.send_message(message.chat.id, f"{get_phrase(message, "great")}\n"
+                                              f"{get_phrase(message, "language_changed")}")
             logger_bot.info(f"Successful language change. Telegram ID: {telegram_id}, language: {user_lang}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase(message, "error_change_language")}.\n"
@@ -771,7 +772,8 @@ def text(message) -> None:
         change_owner(message)
     elif message.text == f"🤖 {get_phrase(message, "delete_user")}":
         delete_user(message)
-    elif message.text == f"↩️ {get_phrase(message, "back")}" or message.text == f"↩️ {get_phrase(message, "back_to_menu")}":
+    elif (message.text == f"↩️ {get_phrase(message, "back")}" or
+          message.text == f"↩️ {get_phrase(message, "back_to_menu")}"):
         reply_buttons(message)
     elif message.text == f"{get_phrase(message,"change_language")}":
         change_language(message)
