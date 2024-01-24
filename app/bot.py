@@ -17,7 +17,7 @@ from validators.description import description_validation
 from validators.number import number_validation
 from validators.date import date_validation
 
-from source.dictionary import receive_translation, stickers
+from source.dictionary import Languages, Stickers
 from source.time_checking import timeit
 from source.password_hashing import getting_hash, get_salt
 
@@ -105,13 +105,13 @@ def start(message) -> None:
         # bot.send_sticker(message.chat.id, sticker)
         bot.send_message(message.chat.id, f"{get_phrase(message, "greetings")} {message.from_user.first_name}!\n"
                                           f"{get_phrase(message, "our_user")}")
-        bot.send_sticker(message.chat.id,f"{get_sticker("id_1")}")
+        bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_1")}")
         reply_menu_buttons_register(message)
         logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
     else:
         bot.send_message(message.chat.id, f"{get_phrase(message, "greetings")} {message.from_user.first_name}!\n"
                                         f"{get_phrase(message, "unknown_user")}")
-        bot.send_sticker(message.chat.id,f"{get_sticker("id_2")}")
+        bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_2")}")
         reply_menu_buttons_not_register(message)
         logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
 
@@ -122,7 +122,7 @@ def help(message) -> None:
 
 
 def get_my_id(message) -> None:
-    bot.send_sticker(message.chat.id,f"{get_sticker("id_3")}")
+    bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_3")}")
     bot.send_message(message.chat.id, f"{get_phrase(message, "your")} telegram ID: {message.from_user.id}")
 
 
@@ -164,7 +164,8 @@ def process_change_language(message):
         res: bool = bot_db.add_user_language(telegram_id, languages[user_lang])
         close_db_main(connection)
         if res:
-            bot.send_message(message.chat.id, f"{get_phrase(message, "great")}\n{get_phrase(message, "language_changed")}")
+            bot.send_message(message.chat.id, f"{get_phrase(message, "great")}\n"
+                                              f"{get_phrase(message, "language_changed")}")
             logger_bot.info(f"Successful language change. Telegram ID: {telegram_id}, language: {user_lang}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase(message, "error_change_language")}.\n"
@@ -240,7 +241,7 @@ def process_add_category_for_transfer(message, value: int) -> None:
         f"{get_phrase(message, "services")}",
         f"{get_phrase(message, "travel")}",
         f"{get_phrase(message, "housing")}",
-        f"{get_phrase(message, "transfers")}",
+        f"{get_phrase(message, "transfer")}",
         f"{get_phrase(message, "investments")}",
         f"{get_phrase(message, "hobby")}",
         f"{get_phrase(message, "jewelry")}",
@@ -346,7 +347,7 @@ def process_username(message):
 
 def process_psw(message, username: str):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = types.KeyboardButton(f"{get_phrase(message, "none")}")
+    btn1 = types.KeyboardButton("None")
     markup_1.add(btn1)
 
     psw: str = message.text
@@ -380,7 +381,7 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
             if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                 create_table_group(f"budget_{group_id}")
                 bot.send_message(message.chat.id, f"{get_phrase(message, "congratulations")}")
-                bot.send_sticker(message.chat.id,f"{get_sticker("id_4")}")
+                bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_4")}")
                 bot.send_message(message.chat.id, f"{get_phrase(message, "your")} token:")
                 bot.send_message(message.chat.id, new_group_token)
                 logger_bot.info(f"New user (new group): ID: {telegram_id}, group: {group_id}")
@@ -404,7 +405,7 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
         if group_not_full:  # if the group doesn't exist, group_not_full will be set to False in the try/except
             if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                 bot.send_message(message.chat.id, f"{get_phrase(message, "congratulations")}")
-                bot.send_sticker(message.chat.id,f"{get_sticker("id_4")}")
+                bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_4")}")
                 logger_bot.info(f"New user: ID: {telegram_id}, group: {group_id}")
                 reply_menu_buttons_register(message)
             else:
@@ -696,7 +697,7 @@ def check_user_access(message) -> bool:
     if res:
         return True
     bot.send_message(message.chat.id, f"{get_phrase(message, "not_register")}")
-    bot.send_sticker(message.chat.id, f"{get_sticker("id_5")}")
+    bot.send_sticker(message.chat.id, f"{Stickers.get_sticker_by_id("id_5")}")
     logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
     return False
 
@@ -717,16 +718,10 @@ def get_phrase(message, phrase_key: str):
     """
     Refers to a dictionary with translations.
     The phrase is the key - the function returns the translation into the required language (value).
+    This intermediate function is needed to get the user's language from the database
     """
     lang: str = check_user_language(message)
-    return receive_translation(lang, phrase_key)
-
-
-def get_sticker(sticker_id: str):
-    """
-    Returns the sticker code from the dictionary
-    """
-    return stickers[sticker_id]
+    return Languages.receive_translation(lang, phrase_key)
 
 
 @bot.message_handler(content_types=['text'])
@@ -777,7 +772,8 @@ def text(message) -> None:
         change_owner(message)
     elif message.text == f"🤖 {get_phrase(message, "delete_user")}":
         delete_user(message)
-    elif message.text == f"↩️ {get_phrase(message, "back")}" or message.text == f"↩️ {get_phrase(message, "back_to_menu")}":
+    elif (message.text == f"↩️ {get_phrase(message, "back")}" or
+          message.text == f"↩️ {get_phrase(message, "back_to_menu")}"):
         reply_buttons(message)
     elif message.text == f"{get_phrase(message,"change_language")}":
         change_language(message)

@@ -141,55 +141,40 @@ class TestDateValidation(unittest.TestCase):
         self.assertEqual(res, False)
 
     def test_date_validation_1(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_2(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year + 1
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_3(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year - 10
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_4(self):
         tomorrow = str(datetime.now().date() + timedelta(days=1))
-        day: int = int(tomorrow[-2:])
-        month: int = int(tomorrow[5:7])
+        day: str = f"0{datetime.now().day}" if int(tomorrow[-2:]) < 10 else str(int(tomorrow[-2:]))
+        month: str = f"0{datetime.now().month}" if int(tomorrow[5:7]) < 10 else str(int(tomorrow[5:7]))
         year: int = int(tomorrow[:4])
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_5(self):
         yesterday = str(datetime.now().date() + timedelta(days=-1))
-        day: int = int(yesterday[-2:])
-        month: int = int(yesterday[5:7])
+        day: str = f"0{datetime.now().day}" if int(yesterday[-2:]) < 10 else str(int(yesterday[-2:]))
+        month: str = f"0{datetime.now().month}" if int(yesterday[5:7]) < 10 else str(int(yesterday[5:7]))
         year: int = int(yesterday[:4])
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_6(self):
@@ -197,43 +182,31 @@ class TestDateValidation(unittest.TestCase):
         self.assertEqual(res, False)
 
     def test_date_validation_7(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}-{month}-{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}-{month}-{year}"))
+        res = asyncio.run(date_validation(f"{day}-{month}-{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_8(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{year}/{month}/{day}"))
-        else:
-            res = asyncio.run(date_validation(f"{year}/{month}/{day}"))
+        res = asyncio.run(date_validation(f"{year}/{month}/{day}"))
         self.assertEqual(res, False)
 
     def test_date_validation_9(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{year}-{month}-{day}"))
-        else:
-            res = asyncio.run(date_validation(f"{year}-{month}-{day}"))
+        res = asyncio.run(date_validation(f"{year}-{month}-{day}"))
         self.assertEqual(res, False)
 
     def test_date_validation_10(self):
-        day: int = datetime.now().day
-        month: int = datetime.now().month
+        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
+        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
         year: int = datetime.now().year + 1
-        if day < 10:
-            res = asyncio.run(date_validation(f"0{day}/{month}/{year}"))
-        else:
-            res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
         self.assertEqual(res, False)
 
 
