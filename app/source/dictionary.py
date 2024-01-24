@@ -821,7 +821,10 @@ class Languages:
         Returns:
             str: value in the dictionary in the selected language
         """
-        if language not in ["en", "ru", "es", "fr", "de", "is"]:
+        if language not in Languages._languages.keys():
             logger_dict.warning("Language not recognized. language: %s", language)
-            return Languages._languages["en"].get(phrase)
+            language = "en"
+        if phrase not in Languages._languages[language]:
+            logger_dict.warning("Error getting phrase and dictionary - key does not exist: Key: %s", phrase)
+            # The user will receive None, the get() method will return it if the key is missing
         return Languages._languages[language].get(phrase)
