@@ -1,8 +1,9 @@
-#pylint: disable=missing-docstring
+# pylint: disable=missing-docstring
 import unittest
 
 from source.password_hashing import getting_hash, get_salt
 from source.token_generation import get_token
+from source.dictionary import Languages
 
 
 class TestPasswordHashing(unittest.TestCase):
