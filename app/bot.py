@@ -240,7 +240,7 @@ def process_add_category_for_transfer(message, value: int) -> None:
         f"{get_phrase(message, "services")}",
         f"{get_phrase(message, "travel")}",
         f"{get_phrase(message, "housing")}",
-        f"{get_phrase(message, "transfers")}",
+        f"{get_phrase(message, "transfer")}",
         f"{get_phrase(message, "investments")}",
         f"{get_phrase(message, "hobby")}",
         f"{get_phrase(message, "jewelry")}",
