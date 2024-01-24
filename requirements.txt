@@ -1,5 +1,5 @@
 blinker==1.6.2
-certifi==2023.7.22
+certifi==2023.11.17
 charset-normalizer==3.3.0
 click==8.1.7
 colorama==0.4.6
