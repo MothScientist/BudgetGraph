@@ -76,7 +76,7 @@ def registration():
             if asyncio.run(registration_validation(username, psw, telegram_id)):
                 dbase = DatabaseQueries(get_db())
                 group_id: int = dbase.get_group_id_by_token(token)
-                group_not_full = dbase.check_limit_users_in_group(group_id)  # checking places in the group
+                group_not_full: bool = dbase.check_limit_users_in_group(group_id)  # checking places in the group
 
                 if group_not_full:  # if the group doesn't exist, group_not_full will be set to False in the try/except
                     telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
@@ -180,7 +180,7 @@ def household(username):
             record_id: str = request.form.get("record-id")
             record_id: int = number_validation(record_id)
 
-            if not record_id or not dbase.check_id_is_exist(group_id, record_id):
+            if not record_id or not dbase.check_record_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
             elif not dbase.delete_budget_entry_by_id(group_id, record_id):
                 logger_app.error(f"Error deletion record from database: table: budget_{group_id}, "
@@ -211,7 +211,7 @@ def settings(username):
     dbase = DatabaseQueries(get_db())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)
-    group_owner: str = dbase.get_username_group_owner_by_token(token)
+    group_owner: str = dbase.get_group_owner_username_by_group_id(group_id)
     group_users_data: list = dbase.get_group_users_data(group_id)
 
     return render_template("settings.html", title=f"Settings - {username}", token=token,

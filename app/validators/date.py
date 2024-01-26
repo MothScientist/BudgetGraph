@@ -1,6 +1,6 @@
 import asyncio
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 async def date_validation(entered_date: str) -> bool:  # entered date in format DD/MM/YYYY
@@ -16,8 +16,7 @@ async def date_validation(entered_date: str) -> bool:  # entered date in format 
 
     if year_is_correct and day_is_correct:
         return True
-    else:
-        return False
+    return False
 
 
 async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
@@ -29,20 +28,19 @@ async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
 
 
 async def check_year_is_correct(entered_year: int) -> bool:
-    current_year: int = datetime.now().year
+    current_year: int = datetime.now(timezone.utc).year
     if current_year - 10 <= entered_year <= current_year:
         return True
-    else:
-        return False
+    return False
 
 
 async def check_day_is_correct(entered_year: int, entered_month: int, entered_day: int) -> bool:
     if 1 > entered_day > 31:
         return False
 
-    current_day: int = datetime.now().day
-    current_month: int = datetime.now().month
-    current_year: int = datetime.now().year
+    current_day: int = datetime.now(timezone.utc).day
+    current_month: int = datetime.now(timezone.utc).month
+    current_year: int = datetime.now(timezone.utc).year
 
     if current_year == entered_year and current_month == entered_month and entered_day > current_day:
         return False
@@ -52,18 +50,15 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
             return True
         elif entered_day <= 28:
             return True
-        else:
-            return False
+        return False
     elif entered_month in [1, 3, 5, 7, 8, 10, 12] and current_day <= 31:  # 31
         return True
     elif entered_month in [4, 6, 9, 11] and current_day <= 30:  # 30
         return True
-    else:
-        return False
+    return False
 
 
 async def check_year_is_leap(year: int) -> bool:
     if (year % 4 == 0 and year % 100 != 0) or (year % 100 == 0 and year % 400 == 0):
         return True
-    else:
-        return False
+    return False

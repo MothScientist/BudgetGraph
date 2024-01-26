@@ -209,34 +209,186 @@ class TestSelectQueries(unittest.TestCase):
         self.assertEqual(res, "")
 
     def test_select_data_for_household_table_1(self):
-        pass
+        res = len(self.test_db.select_data_for_household_table(1, 1))
+        self.assertEqual(res, 1)
 
-    def test_select_group_users_by_group_id_1(self):
-        pass
+    def test_select_data_for_household_table_2(self):
+        res = len(self.test_db.select_data_for_household_table(1, 4))
+        self.assertEqual(res, 4)
 
+    def test_select_data_for_household_table_3(self):
+        res = self.test_db.select_data_for_household_table(1, 4)[0][2]
+        self.assertEqual(res, "Hugo")
 
-class TestCheckFunctions(unittest.TestCase):
-    def setUp(self):
-        self.connection = connect_test_db()
-        self.test_db = DatabaseQueries(self.connection)
+    def test_select_data_for_household_table_4(self):
+        res = self.test_db.select_data_for_household_table(1, 3)[2][3]
+        self.assertEqual(res, -500)
 
-    def tearDown(self):
-        close_test_db(self.connection)
+    def test_select_data_for_household_table_5(self):
+        res = self.test_db.select_data_for_household_table(2, 2)
+        self.assertEqual(res, [[3, 0, 'Alessandro', -240000, 'Other', '01/01/2021', None],
+                               [2, 240000, 'Alessandro', 120000, 'Other', '01/01/2021', None]])
 
-    def test_check_id_is_exist_1(self):
-        pass
+    def test_get_username_group_owner_by_group_id_1(self):
+        res = self.test_db.get_group_owner_username_by_group_id(1)
+        self.assertEqual(res, "Alex_Alex12345")
+
+    def test_get_username_group_owner_by_group_id_2(self):
+        res = self.test_db.get_group_owner_username_by_group_id(3)
+        self.assertEqual(res, "Lincoln")
+
+    def test_get_username_group_owner_by_group_id_3(self):
+        res = self.test_db.get_group_owner_username_by_group_id(10)
+        self.assertEqual(res, "Kennedy")
+
+    def test_get_group_users_data_1(self):
+        res = self.test_db.get_group_users_data(2)
+        self.assertEqual(res, [['Grayson', '01/10/2023'], ['Alessandro', '01/10/2023'], ['Nathan', '01/10/2023']])
+
+    def test_get_group_users_data_2(self):
+        res = self.test_db.get_group_users_data(3)
+        self.assertEqual(res, [['Lincoln', '01/10/2023']])
+
+    def test_get_group_users_1(self):
+        res = set(self.test_db.get_group_users(1))
+        self.assertEqual(res, {'Alex_Alex12345', 'Thomas_Thomas1', 'Juliette_Juliette2', 'Alexandre_Alexandre0',
+                                      'Hugo', 'Marco', 'Francesca', 'Giovanni', 'Isabella',
+                                      'Giorgio', 'Valentina', 'Lorenzo', 'Elena', 'Vincenzo',
+                                      'Bianca', 'Carter', 'Stella', 'Jackson', 'Aria', 'Olivier'})
+
+    def test_get_group_users_2(self):
+        res = set(self.test_db.get_group_users(2))
+        self.assertEqual(res, {'Grayson', 'Alessandro', 'Nathan'})
+
+    def test_get_group_users_3(self):
+        res = self.test_db.get_group_users(10)
+        self.assertEqual(res, ['Kennedy'])
+
+    def test_check_record_id_is_exist_1(self):
+        res = self.test_db.check_record_id_is_exist(1, 4)
+        print(res)
+        self.assertEqual(res, True)
+
+    def test_check_record_id_is_exist_2(self):
+        res = self.test_db.check_record_id_is_exist(1, 10)
+        self.assertEqual(res, False)
+
+    def test_check_record_id_is_exist_3(self):
+        res = self.test_db.check_record_id_is_exist(10, 90)
+        self.assertEqual(res, False)
+
+    def test_check_record_id_is_exist_4(self):  # non-existent group
+        res = self.test_db.check_record_id_is_exist(90, 90)
+        self.assertEqual(res, False)
+
+    def test_check_record_id_is_exist_5(self):
+        res = self.test_db.check_record_id_is_exist(1, 1)
+        self.assertEqual(res, True)
 
     def test_check_username_is_exist_1(self):
-        pass
+        res = self.test_db.check_username_is_exist("Lorenzo")
+        self.assertEqual(res, True)
 
-    def test_check_telegram_id_is_unique_1(self):
-        pass
+    def test_check_username_is_exist_2(self):
+        res = self.test_db.check_username_is_exist("Andrey")
+        self.assertEqual(res, False)
 
-    def test_check_username_is_unique_1(self):
-        pass
+    def test_check_username_is_exist_3(self):
+        res = self.test_db.check_username_is_exist("Stella")
+        self.assertEqual(res, True)
+
+    def test_check_token_is_unique_1(self):
+        res = self.test_db.check_token_is_unique("3cf060bde115a4b3a3c29e7459150673")
+        self.assertEqual(res, False)
+
+    def test_check_token_is_unique_2(self):
+        res = self.test_db.check_token_is_unique("3c37dhq447974592649721e23ff9cc9b")
+        self.assertEqual(res, True)
+
+    def test_check_token_is_unique_3(self):  #
+        # the length will not pass validation, but the function only looks for presence in the database
+        res = self.test_db.check_token_is_unique("")
+        self.assertEqual(res, True)
+
+    def test_check_telegram_id_is_exist_1(self):  #
+        res = self.test_db.check_telegram_id_is_exist(123456791)
+        self.assertEqual(res, True)
+
+    def test_check_telegram_id_is_exist_2(self):  #
+        res = self.test_db.check_telegram_id_is_exist(22222221)
+        self.assertEqual(res, False)
+
+    def test_check_telegram_id_is_exist_3(self):  #
+        res = self.test_db.check_telegram_id_is_exist(123456780)
+        self.assertEqual(res, True)
 
     def test_check_username_is_group_owner_1(self):
-        pass
+        res = self.test_db.check_username_is_group_owner("Grayson", 2)
+        self.assertEqual(res, True)
+
+    def test_check_username_is_group_owner_2(self):
+        res = self.test_db.check_username_is_group_owner("Alex_Alex12345", 1)
+        self.assertEqual(res, True)
+
+    def test_check_username_is_group_owner_3(self):  # Non-existent group and existing user
+        res = self.test_db.check_username_is_group_owner("Alex_Alex12345", 20)
+        self.assertEqual(res, False)
+
+    def test_check_username_is_group_owner_4(self):  # Non-existent group and non-existent user
+        res = self.test_db.check_username_is_group_owner("Lucia", 50)
+        self.assertEqual(res, False)
+
+    def test_check_limit_users_in_group_1(self):
+        res = self.test_db.check_limit_users_in_group(1)
+        self.assertEqual(res, False)
+
+    def test_check_limit_users_in_group_2(self):
+        res = self.test_db.check_limit_users_in_group(2)
+        self.assertEqual(res, True)
+
+    def test_check_limit_users_in_group_3(self):  # A group with this id does not exist - the except block will work
+        res = self.test_db.check_limit_users_in_group(15)
+        self.assertEqual(res, False)
+
+    def test_get_user_language_1(self):
+        res = self.test_db.get_user_language(123456783)
+        self.assertEqual(res, "en")
+
+    def test_get_user_language_2(self):
+        res = self.test_db.get_user_language(123456780)
+        self.assertEqual(res, "ru")
+
+    def test_get_user_language_3(self):
+        res = self.test_db.get_user_language(123456793)
+        self.assertEqual(res, "es")
+
+    def test_get_user_language_4(self):
+        res = self.test_db.get_user_language(123456786)
+        self.assertEqual(res, "is")
+
+    def test_get_user_language_5(self):
+        res = self.test_db.get_user_language(1234563)
+        self.assertEqual(res, "de")
+
+    def test_get_user_language_6(self):  # This user does not exist
+        res = self.test_db.get_user_language(22222220)
+        self.assertEqual(res, "en")
+
+    def test_get_last_sum_in_group_1(self):  # non-existent group
+        res = self.test_db.get_last_sum_in_group(99)
+        self.assertEqual(res, 0)
+
+    def test_get_last_sum_in_group_2(self):
+        res = self.test_db.get_last_sum_in_group(1)
+        self.assertEqual(res, 37500)
+
+    def test_get_last_sum_in_group_3(self):
+        res = self.test_db.get_last_sum_in_group(2)
+        self.assertEqual(res, 0)
+
+    def test_get_last_sum_in_group_4(self):  # Table budget_10 is empty
+        res = self.test_db.get_last_sum_in_group(10)
+        self.assertEqual(res, 0)
 
 
 class TestUserAuthentication(unittest.TestCase):

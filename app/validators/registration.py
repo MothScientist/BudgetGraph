@@ -39,10 +39,10 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
 async def username_validation(username: str) -> bool:
     connection = connect_db()
     dbase = DatabaseQueries(connection)
-    username_is_unique = dbase.check_username_is_unique(username)
+    username_is_exist: bool = dbase.check_username_is_exist(username)
     close_db_main(connection)
 
-    if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and username_is_unique:
+    if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and not username_is_exist:
         return True
     return False
 
@@ -62,9 +62,9 @@ async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
 
     connection = connect_db()
     dbase = DatabaseQueries(connection)
-    telegram_id_is_unique = dbase.check_telegram_id_is_unique(telegram_id)
+    telegram_id_is_exist: bool = dbase.check_telegram_id_is_exist(telegram_id)
     close_db_main(connection)
 
-    if telegram_id_is_unique:
+    if not telegram_id_is_exist:
         return True
     return False
