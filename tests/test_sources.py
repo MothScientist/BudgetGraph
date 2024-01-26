@@ -106,3 +106,7 @@ class TestLanguages(unittest.TestCase):
     def test_languages_11(self):  # missing key and value
         res = Languages.receive_translation("", "")
         self.assertEqual(res, None)
+
+
+if __name__ == '__main__':
+    unittest.main()
