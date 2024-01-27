@@ -1,7 +1,10 @@
+import sys
+sys.path.append("..")
+sys.path.append("app")
 import unittest
-from database_control import DatabaseQueries
-from src.manage_test_db import connect_test_db, close_test_db
-from source.password_hashing import getting_hash
+from app.database_control import DatabaseQueries
+from tests.manage_test_db import connect_test_db, close_test_db
+from app.source.password_hashing import getting_hash
 
 
 class TestSelectQueries(unittest.TestCase):

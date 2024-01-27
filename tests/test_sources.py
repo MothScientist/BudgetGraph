@@ -1,9 +1,11 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
 # pylint: disable=missing-docstring
 import unittest
 
-from source.password_hashing import getting_hash, get_salt
-from source.token_generation import get_token
-from source.dictionary import Languages
+from app.source.password_hashing import getting_hash, get_salt
+from app.source.token_generation import get_token
+from app.source.dictionary import Languages
 
 
 class TestPasswordHashing(unittest.TestCase):
