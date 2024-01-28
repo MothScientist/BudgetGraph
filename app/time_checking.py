@@ -1,4 +1,4 @@
-from log_settings import setup_logger
+from logger import setup_logger
 from time import perf_counter
 from functools import wraps
 

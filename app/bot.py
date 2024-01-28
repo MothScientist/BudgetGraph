@@ -11,18 +11,17 @@ from telebot import types
 
 from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
+from encryption import getting_hash, get_salt
+
+from validation import (date_validation, number_validation, description_validation,
+                        username_validation, password_validation)
+
 from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
-from validators.registration import username_validation, password_validation
-from validators.description import description_validation
-from validators.number import number_validation
-from validators.date import date_validation
+from dictionary import Languages, Stickers
+from time_checking import timeit
 
-from source.dictionary import Languages, Stickers
-from source.time_checking import timeit
-from source.password_hashing import getting_hash, get_salt
-
-from log_settings import setup_logger
+from logger import setup_logger
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -30,7 +29,7 @@ load_dotenv()  # Load environment variables from .env file
 bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
 bot = telebot.TeleBot(bot_token)  # type: ignore
 
-logger_bot = setup_logger("logs/BotLog.log", "bot_logger", level=logging.INFO)
+logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
 
 
 def reply_menu_buttons_register(message):

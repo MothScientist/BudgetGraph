@@ -6,13 +6,11 @@ import asyncio
 
 from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
-from validators.registration import registration_validation
-from validators.description import description_validation
-from validators.date import date_validation
-from validators.number import number_validation
+from encryption import getting_hash, get_salt
 
-from source.password_hashing import getting_hash, get_salt
-from log_settings import setup_logger
+from validation import number_validation, description_validation, date_validation, registration_validation
+
+from logger import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
 

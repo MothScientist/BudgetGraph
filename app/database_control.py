@@ -1,19 +1,17 @@
 import sqlite3
 import os
-import logging
+import re
 from dotenv import load_dotenv
 from flask import g
 
-from log_settings import setup_logger
-from validators.table_name import table_name_validation
-
-from source.token_generation import get_token
-from source.time_checking import timeit
+from logger import setup_logger
+from encryption import get_token
+from time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")
 
-logger_database = setup_logger("logs/DatabaseLog.log", "db_logger", level=logging.INFO)
+logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
         
 
 class DatabaseQueries:
@@ -585,14 +583,13 @@ def connect_db():
     Connect to a database.
     :return: connection | None
     """
-    logger = logging.getLogger('db_logger')
     try:
         conn = sqlite3.connect(db_path)  # type: ignore
         conn.row_factory = sqlite3.Row
         return conn
 
     except sqlite3.Error as err:
-        logger.critical(f"Error connecting to database (app): {str(err)}")
+        logger_database.critical(f"Error connecting to database (app): {str(err)}")
 
 
 def create_db() -> None:
@@ -649,7 +646,7 @@ def create_table_group(table_name: str) -> None:
     :param table_name: "budget_?"
     """
     try:
-        if not table_name_validation(table_name):
+        if not re.match(r"^budget_[1-9]\d{0,4}$", table_name):
             raise ValueError("Possible SQL injection attempt")
 
         conn = sqlite3.connect(db_path)  # type: ignore

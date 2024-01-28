@@ -1,12 +1,15 @@
 import unittest
 import asyncio
+import re
 from datetime import datetime, timedelta, timezone
 
-from validators.number import number_validation
-from validators.description import description_validation
-from validators.table_name import table_name_validation
-from validators.date import (check_day_is_correct, check_year_is_leap, check_year_is_correct,
-                                   check_date_in_correct_format, date_validation)
+from app.validation import (check_day_is_correct,
+                            check_year_is_leap,
+                            check_year_is_correct,
+                            check_date_in_correct_format,
+                            description_validation,
+                            number_validation,
+                            date_validation)
 
 
 class TestDateValidation(unittest.TestCase):
@@ -230,44 +233,47 @@ class TestDescriptionValidator(unittest.TestCase):
 
 
 class TestTableNameValidator(unittest.TestCase):
+    """
+    Used in the create_table_group() function in database_control.py
+    """
     def test_table_name_validator_1(self):
-        res = table_name_validation("budget_1")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_1")
         self.assertEqual(res, True)
 
     def test_table_name_validator_2(self):
-        res = table_name_validation("budget_01")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_01")
         self.assertEqual(res, False)
 
     def test_table_name_validator_3(self):
-        res = table_name_validation("budget_100")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_100")
         self.assertEqual(res, True)
 
     def test_table_name_validator_4(self):
-        res = table_name_validation("budjet_10")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10")
         self.assertEqual(res, False)
 
     def test_table_name_validator_5(self):
-        res = table_name_validation("bubget_1")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1")
         self.assertEqual(res, False)
 
     def test_table_name_validator_6(self):
-        res = type(table_name_validation("bubget_1"))
+        res = type(re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1"))
         self.assertEqual(res, bool)
 
     def test_table_name_validator_7(self):
-        res = type(table_name_validation("budget_100"))
+        res = type(re.match(r"^budget_[1-9]\d{0,4}$", "budget_100"))
         self.assertEqual(res, bool)
 
     def test_table_name_validator_8(self):
-        res = table_name_validation("budget_0")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_0")
         self.assertEqual(res, False)
 
     def test_table_name_validator_9(self):
-        res = table_name_validation("budget_")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_")
         self.assertEqual(res, False)
 
     def test_table_name_validator_10(self):
-        res = table_name_validation("budget")
+        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget")
         self.assertEqual(res, False)
 
 

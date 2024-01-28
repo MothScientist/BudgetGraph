@@ -1,7 +1,7 @@
 """
     This package is used to switch languages in the chatbot
 """
-from log_settings import setup_logger
+from logger import setup_logger
 
 logger_dict = setup_logger("logs/SourceLog.log", "source_logger")
 
