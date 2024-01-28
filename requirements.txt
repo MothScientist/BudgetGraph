@@ -4,7 +4,7 @@ charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 distlib==0.3.8
-filelock==3.12.4
+filelock==3.13.1
 Flask==3.0.1
 idna==3.6
 iniconfig==2.0.0
