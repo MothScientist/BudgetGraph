@@ -3,13 +3,13 @@ import asyncio
 import re
 from datetime import datetime, timedelta, timezone
 
-from app.validation import (check_day_is_correct,
-                            check_year_is_leap,
-                            check_year_is_correct,
-                            check_date_in_correct_format,
-                            description_validation,
-                            number_validation,
-                            date_validation)
+from ..app.validation import (check_day_is_correct,
+                              check_year_is_leap,
+                              check_year_is_correct,
+                              check_date_in_correct_format,
+                              description_validation,
+                              number_validation,
+                              date_validation)
 
 
 class TestDateValidation(unittest.TestCase):

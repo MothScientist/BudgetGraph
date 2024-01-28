@@ -1,8 +1,8 @@
 import os
 import csv
-from database_control import DatabaseQueries, connect_db, close_db_main
-from logger import setup_logger
-from time_checking import timeit
+from .database_control import DatabaseQueries, connect_db, close_db_main
+from .logger import setup_logger
+from .time_checking import timeit
 
 logger_csv = setup_logger("logs/SourceLog.log", "csv_logger")
 

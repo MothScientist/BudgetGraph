@@ -4,9 +4,9 @@ import re
 from dotenv import load_dotenv
 from flask import g
 
-from logger import setup_logger
-from encryption import get_token
-from time_checking import timeit
+from .logger import setup_logger
+from .encryption import get_token
+from .time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
 db_path = os.getenv("DATABASE")

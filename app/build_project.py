@@ -1,5 +1,5 @@
-from database_control import create_db
-from csv_file_generation_and_deletion import csv_dir_check
+from .database_control import create_db
+from .csv_file_generation_and_deletion import csv_dir_check
 from os import makedirs
 
 if __name__ == '__main__':

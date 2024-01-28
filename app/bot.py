@@ -1,4 +1,3 @@
-import logging
 from os import getenv
 from secrets import compare_digest
 import asyncio
@@ -9,19 +8,19 @@ from dotenv import load_dotenv
 import telebot
 from telebot import types
 
-from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
+from .database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
-from encryption import getting_hash, get_salt
+from .encryption import getting_hash, get_salt
 
-from validation import (date_validation, number_validation, description_validation,
+from .validation import (date_validation, number_validation, description_validation,
                         username_validation, password_validation)
 
-from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
+from .csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
-from dictionary import Languages, Stickers
-from time_checking import timeit
+from .dictionary import Languages, Stickers
+from .time_checking import timeit
 
-from logger import setup_logger
+from .logger import setup_logger
 
 
 load_dotenv()  # Load environment variables from .env file

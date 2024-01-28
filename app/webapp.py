@@ -4,13 +4,13 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import asyncio
 
-from database_control import get_db, close_db_g, create_table_group, DatabaseQueries
+from .database_control import get_db, close_db_g, create_table_group, DatabaseQueries
 
-from encryption import getting_hash, get_salt
+from .encryption import getting_hash, get_salt
 
-from validation import number_validation, description_validation, date_validation, registration_validation
+from .validation import number_validation, description_validation, date_validation, registration_validation
 
-from logger import setup_logger
+from .logger import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
 
