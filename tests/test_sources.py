@@ -2,8 +2,8 @@
 
 import unittest
 
-from ..app.encryption import getting_hash, get_salt, get_token
-from ..app.dictionary import Languages
+from app.encryption import getting_hash, get_salt, get_token
+from app.dictionary import Languages
 
 
 class TestPasswordHashing(unittest.TestCase):
