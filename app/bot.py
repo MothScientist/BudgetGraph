@@ -13,7 +13,7 @@ from .database_control import DatabaseQueries, connect_db, close_db_main, create
 from .encryption import getting_hash, get_salt
 
 from .validation import (date_validation, number_validation, description_validation,
-                        username_validation, password_validation)
+                         username_validation, password_validation)
 
 from .csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
