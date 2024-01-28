@@ -1,7 +1,7 @@
 import unittest
 from app.database_control import DatabaseQueries
 from app.encryption import getting_hash
-from manage_test_db import connect_test_db, close_test_db
+from .manage_test_db import connect_test_db, close_test_db
 
 
 class TestSelectQueries(unittest.TestCase):
