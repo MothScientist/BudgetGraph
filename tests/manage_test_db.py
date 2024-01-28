@@ -1,10 +1,6 @@
 import sqlite3
-from dotenv import load_dotenv
-import os
 
-
-load_dotenv("app/.env")  # Load environment variables from .env file
-db_path = os.getenv("TEST_DATABASE")
+db_path = "test_db.sqlite3"
 
 
 def connect_test_db():

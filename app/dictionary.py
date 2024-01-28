@@ -1,7 +1,7 @@
 """
     This package is used to switch languages in the chatbot
 """
-from log_settings import setup_logger
+from .logger import setup_logger
 
 logger_dict = setup_logger("logs/SourceLog.log", "source_logger")
 
@@ -215,7 +215,7 @@ class Languages:
                     "delete_group": "Удалить группу",
                     "change_owner": "Сменить владельца",
                     "delete_user": "Удалить пользователя",
-                    "your": "Твой",
+                    "your": "Ваш",
                     "project_on_github": "Наш проект с открытым исходным кодом на GitHub",
                     "choose_language": "Выберите язык",
                     "invalid_value": "Неверное значение",
@@ -237,7 +237,7 @@ class Languages:
                     "devices": "Устройства",
                     "education": "Образование",
                     "services": "Услуги",
-                    "travel": "Путешествовать",
+                    "travel": "Путешествия",
                     "housing": "Жилье",
                     "investments": "Вложения",
                     "hobby": "Хобби",

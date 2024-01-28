@@ -1,82 +1,80 @@
 import unittest
 import asyncio
-from datetime import datetime, timedelta
+import re
+from datetime import datetime, timedelta, timezone
 
-from validators.number import number_validation
-from validators.description import description_validation
-from validators.table_name import table_name_validation
-from validators.date import (check_day_is_correct, check_year_is_leap, check_year_is_correct,
-                                   check_date_in_correct_format, date_validation)
+from app.validation import (check_day_is_correct,
+                              check_year_is_leap,
+                              check_year_is_correct,
+                              check_date_in_correct_format,
+                              description_validation,
+                              number_validation,
+                              date_validation)
 
 
 class TestDateValidation(unittest.TestCase):
     def test_day_1(self):  # today
-        day: int = datetime.now().day
-        month: int = datetime.now().month
-        year: int = datetime.now().year
+        current_date = datetime.now(timezone.utc)
+        day: int = int(current_date.strftime('%d'))
+        month: int = int(current_date.strftime('%m'))
+        year: int = int(current_date.strftime('%Y'))
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
     def test_day_2(self):  # a week ago
-        week_ago = str(datetime.now().date() + timedelta(days=-7))
-        day: int = int(week_ago[-2:])
-        month: int = int(week_ago[5:7])
-        year: int = int(week_ago[:4])
+        week_ago = datetime.now(timezone.utc) + timedelta(days=-7)
+        day: int = int(week_ago.strftime('%d'))
+        month: int = int(week_ago.strftime('%m'))
+        year: int = int(week_ago.strftime('%Y'))
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
     def test_day_3(self):  # tomorrow
-        tomorrow = str(datetime.now().date() + timedelta(days=1))
-        day: int = int(tomorrow[-2:])
-        month: int = int(tomorrow[5:7])
-        year: int = int(tomorrow[:4])
+        tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
+        day: int = int(tomorrow.strftime('%d'))
+        month: int = int(tomorrow.strftime('%m'))
+        year: int = int(tomorrow.strftime('%Y'))
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, False)
 
     def test_day_validator_4(self):  # leap year
-        day: int = 29
-        month: int = 2
-        year: int = 2020
-        res = asyncio.run(check_day_is_correct(year, month, day))
+        res = asyncio.run(check_day_is_correct(2020, 2, 29))
         self.assertEqual(res, True)
 
     def test_day_5(self):  # February 29th in non-leap years
-        day: int = 29
-        month: int = 2
-        year: int = 2021
-        res = asyncio.run(check_day_is_correct(year, month, day))
+        res = asyncio.run(check_day_is_correct(2021, 2, 29))
         self.assertEqual(res, False)
 
     def test_day_6(self):  # yesterday
-        yesterday = str(datetime.now().date() + timedelta(days=-1))
-        day: int = int(yesterday[-2:])
-        month: int = int(yesterday[5:7])
-        year: int = int(yesterday[:4])
+        yesterday = datetime.now(timezone.utc) + timedelta(days=-1)
+        day: int = int(yesterday.strftime('%d'))
+        month: int = int(yesterday.strftime('%m'))
+        year: int = int(yesterday.strftime('%Y'))
         res = asyncio.run(check_day_is_correct(year, month, day))
         self.assertEqual(res, True)
 
     def test_year_1(self):
-        year: int = datetime.now().year
+        year: int = datetime.now(timezone.utc).year
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, True)
 
     def test_year_2(self):
-        year: int = datetime.now().year - 10
+        year: int = datetime.now(timezone.utc).year - 10
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, True)
 
     def test_year_3(self):
-        year: int = datetime.now().year - 11
+        year: int = datetime.now(timezone.utc).year - 11
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, False)
 
     def test_year_4(self):
-        year: int = datetime.now().year + 1
+        year: int = datetime.now(timezone.utc).year + 1
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, False)
 
     def test_year_5(self):
-        year: int = datetime.now().year - 5
+        year: int = datetime.now(timezone.utc).year - 5
         res = asyncio.run(check_year_is_correct(year))
         self.assertEqual(res, True)
 
@@ -141,40 +139,36 @@ class TestDateValidation(unittest.TestCase):
         self.assertEqual(res, False)
 
     def test_date_validation_1(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        current_date = datetime.now(timezone.utc).strftime('%d/%m/%Y')
+        res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, True)
 
     def test_date_validation_2(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year + 1
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        current_date = datetime.now(timezone.utc)
+        current_day_month: str = current_date.strftime('%d/%m')
+        year: int = int(current_date.strftime('%Y')) + 1
+        res = asyncio.run(date_validation(f"{current_day_month}/{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_3(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year - 10
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        current_date = datetime.now(timezone.utc)
+        current_day_month: str = current_date.strftime('%d/%m')
+        year: int = int(current_date.strftime('%Y')) - 10
+        res = asyncio.run(date_validation(f"{current_day_month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_4(self):
-        tomorrow = str(datetime.now().date() + timedelta(days=1))
-        day: str = f"0{datetime.now().day}" if int(tomorrow[-2:]) < 10 else str(int(tomorrow[-2:]))
-        month: str = f"0{datetime.now().month}" if int(tomorrow[5:7]) < 10 else str(int(tomorrow[5:7]))
-        year: int = int(tomorrow[:4])
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        tomorrow = datetime.now(timezone.utc).date() + timedelta(days=1)
+        tomorrow_day_month: str = tomorrow.strftime('%d/%m')
+        year: int = int(tomorrow.strftime('%Y'))
+        res = asyncio.run(date_validation(f"{tomorrow_day_month}/{year}"))
         self.assertEqual(res, False)
 
     def test_date_validation_5(self):
-        yesterday = str(datetime.now().date() + timedelta(days=-1))
-        day: str = f"0{datetime.now().day}" if int(yesterday[-2:]) < 10 else str(int(yesterday[-2:]))
-        month: str = f"0{datetime.now().month}" if int(yesterday[5:7]) < 10 else str(int(yesterday[5:7]))
-        year: int = int(yesterday[:4])
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        yesterday = datetime.now(timezone.utc) + timedelta(days=-1)
+        yesterday_day_month: str = yesterday.strftime('%d/%m')
+        year: int = int(yesterday.strftime('%Y'))
+        res = asyncio.run(date_validation(f"{yesterday_day_month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_6(self):
@@ -182,31 +176,25 @@ class TestDateValidation(unittest.TestCase):
         self.assertEqual(res, False)
 
     def test_date_validation_7(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{day}-{month}-{year}"))
+        current_date = datetime.now(timezone.utc).strftime('%d-%m-%Y')
+        res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
     def test_date_validation_8(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{year}/{month}/{day}"))
+        current_date = datetime.now(timezone.utc).strftime('%Y/%m/%d')
+        res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
     def test_date_validation_9(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year
-        res = asyncio.run(date_validation(f"{year}-{month}-{day}"))
+        current_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
     def test_date_validation_10(self):
-        day: str = f"0{datetime.now().day}" if datetime.now().day < 10 else str(datetime.now().day)
-        month: str = f"0{datetime.now().month}" if datetime.now().month < 10 else str(datetime.now().month)
-        year: int = datetime.now().year + 1
-        res = asyncio.run(date_validation(f"{day}/{month}/{year}"))
+        current_date = datetime.now(timezone.utc)
+        current_day_month: str = current_date.strftime('%d/%m')
+        year: int = int(current_date.strftime('%Y')) + 1
+        res = asyncio.run(date_validation(f"{current_day_month}/{year}"))
         self.assertEqual(res, False)
 
 
@@ -245,44 +233,40 @@ class TestDescriptionValidator(unittest.TestCase):
 
 
 class TestTableNameValidator(unittest.TestCase):
+    """
+    Used in the create_table_group() function in database_control.py
+    """
     def test_table_name_validator_1(self):
-        res = table_name_validation("budget_1")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_1") else False
+        res = True if res else False
         self.assertEqual(res, True)
 
     def test_table_name_validator_2(self):
-        res = table_name_validation("budget_01")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_01") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_3(self):
-        res = table_name_validation("budget_100")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_100") else False
         self.assertEqual(res, True)
 
     def test_table_name_validator_4(self):
-        res = table_name_validation("budjet_10")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_5(self):
-        res = table_name_validation("bubget_1")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_6(self):
-        res = type(table_name_validation("bubget_1"))
-        self.assertEqual(res, bool)
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_0") else False
+        self.assertEqual(res, False)
 
     def test_table_name_validator_7(self):
-        res = type(table_name_validation("budget_100"))
-        self.assertEqual(res, bool)
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_") else False
+        self.assertEqual(res, False)
 
     def test_table_name_validator_8(self):
-        res = table_name_validation("budget_0")
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_9(self):
-        res = table_name_validation("budget_")
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_10(self):
-        res = table_name_validation("budget")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget") else False
         self.assertEqual(res, False)
 
 

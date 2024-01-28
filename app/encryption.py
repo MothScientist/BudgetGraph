@@ -1,10 +1,18 @@
+from os import urandom
 from hashlib import pbkdf2_hmac
 from secrets import choice
+
+
+def get_token(key_length_bytes: int = 16) -> str:
+    """
+    :return: random (entropy-based) character string of length 32 (16 bytes)
+    """
+    return urandom(key_length_bytes).hex()
+
 
 # Warning
 # The pseudo-random generators os.random() should not be used for security purposes.
 # For security or cryptographic uses, see the secrets module.
-
 
 def get_salt(key_length: int = 32) -> str:
     """

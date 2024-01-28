@@ -1,27 +1,26 @@
 from os import getenv
 from secrets import compare_digest
 import asyncio
-from datetime import date
+from datetime import datetime, UTC
 from dotenv import load_dotenv
 
 
 import telebot
 from telebot import types
 
-from database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
+from .database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
-from csv_file_generation_and_deletion import create_csv_file, delete_csv_file
+from .encryption import getting_hash, get_salt
 
-from validators.registration import username_validation, password_validation
-from validators.description import description_validation
-from validators.number import number_validation
-from validators.date import date_validation
+from .validation import (date_validation, number_validation, description_validation,
+                         username_validation, password_validation)
 
-from source.dictionary import Languages, Stickers
-from source.time_checking import timeit
-from source.password_hashing import getting_hash, get_salt
+from .csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
-from log_settings import setup_logger
+from .dictionary import Languages, Stickers
+from .time_checking import timeit
+
+from .logger import setup_logger
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -216,8 +215,8 @@ def process_add_date_for_transfer(message, is_negative: bool) -> None:
     value: str = message.text  # type: ignore
     value: int = number_validation(value)  # type: ignore
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    today_date: str = str(date.today())
-    btn1 = types.KeyboardButton(f"{today_date[-2:]}/{today_date[5:7]}/{today_date[:4]}")
+    today_date: str = datetime.now(UTC).strftime('%d/%m/%Y')
+    btn1 = types.KeyboardButton(today_date)
     markup_1.add(btn1)
 
     if value:
@@ -278,7 +277,7 @@ def process_transfer_final(message, value: int, record_date: str, category: str)
 
     if description_is_valid:
         if description == f"{get_phrase(message, "no_description")}":
-            description: str = ""
+            description: str = ""  #FIXME (null DB)
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
@@ -291,7 +290,6 @@ def process_transfer_final(message, value: int, record_date: str, category: str)
     table_manage_get_buttons(message)
 
 
-@timeit
 def delete_record(message):
     res: bool = check_user_access(message)
     if res:  # user authorization check
@@ -312,7 +310,7 @@ def process_delete_record(message):
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-        if group_id and bot_db.check_id_is_exist(group_id, record_id):
+        if group_id and bot_db.check_record_id_is_exist(group_id, record_id):
             bot_db.delete_budget_entry_by_id(group_id, record_id)
             bot.send_message(message.chat.id, f"{get_phrase(message, "success")}!")
         else:
@@ -322,7 +320,6 @@ def process_delete_record(message):
         bot.send_message(message.chat.id, f"{get_phrase(message, "invalid_value")}", reply_markup=markup_1)
 
 
-@timeit
 def registration(message) -> None:
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
@@ -479,14 +476,13 @@ def get_group_users(message):
         bot_db = DatabaseQueries(connection)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
         group_users_list: list = bot_db.get_group_users(group_id)
-        group_owner: str = bot_db.get_group_owner_username(group_id)
+        group_owner: str = bot_db.get_group_owner_username_by_group_id(group_id)
         close_db_main(connection)
         group_users_str: str = '\n'.join(f"{user} ({get_phrase(message, "owner")})" if user == group_owner
                                          else f"{user}" for user in group_users_list)
         bot.send_message(message.chat.id, group_users_str)
 
 
-@timeit
 def change_owner(message):
     telegram_id: int = message.from_user.id
     res: bool = check_user_access(message)
@@ -494,7 +490,7 @@ def change_owner(message):
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-        group_owner: str = bot_db.get_group_owner_username(group_id)
+        group_owner: str = bot_db.get_group_owner_username_by_group_id(group_id)
         username: str = bot_db.get_username_by_telegram_id(telegram_id)
         if group_owner == username:
             group_users_list: list = bot_db.get_group_users(group_id)
@@ -529,7 +525,6 @@ def process_change_owner(message, group_id: int, group_users_list: list):
     close_db_main(connection)
 
 
-@timeit
 def delete_account(message):
     markup_1 = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     btn1 = types.KeyboardButton(f"👍 {get_phrase(message, "YES")}")
@@ -578,7 +573,6 @@ def process_delete_account(message, username: str):
                         f"ID: {message.from_user.id}, message: {user_choice}")
 
 
-@timeit
 def delete_user(message):
     telegram_id: int = message.from_user.id
     res: bool = check_user_access(message)
@@ -586,7 +580,7 @@ def delete_user(message):
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-        group_owner: str = bot_db.get_group_owner_username(group_id)
+        group_owner: str = bot_db.get_group_owner_username_by_group_id(group_id)
         username: str = bot_db.get_username_by_telegram_id(telegram_id)
         user_is_owner: bool = bot_db.check_username_is_group_owner(username, group_id)
         if user_is_owner:
@@ -603,7 +597,6 @@ def delete_user(message):
         close_db_main(connection)
 
 
-@timeit
 def process_delete_user(message, group_id: int, group_users_list: list):
     username_to_delete: str = message.text
     connection = connect_db()

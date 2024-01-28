@@ -12,8 +12,8 @@
 | Technology             | Version                           |
 |------------------------|-----------------------------------|
 | ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)         | <font color="white">3.12.0</font> |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)          | <font color="white">3.0.0</font>  |
-| **pyTelegramBotAPI**   | <font color="white">4.14.0</font> |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)          | <font color="white">3.0.1</font>  |
+| **pyTelegramBotAPI**   | <font color="white">4.15.2</font> |
 | ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)         | <font color="white">-</font>      |
 
 

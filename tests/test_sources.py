@@ -1,9 +1,9 @@
 # pylint: disable=missing-docstring
+
 import unittest
 
-from source.password_hashing import getting_hash, get_salt
-from source.token_generation import get_token
-from source.dictionary import Languages
+from app.encryption import getting_hash, get_salt, get_token
+from app.dictionary import Languages
 
 
 class TestPasswordHashing(unittest.TestCase):
@@ -106,3 +106,7 @@ class TestLanguages(unittest.TestCase):
     def test_languages_11(self):  # missing key and value
         res = Languages.receive_translation("", "")
         self.assertEqual(res, None)
+
+
+if __name__ == '__main__':
+    unittest.main()
