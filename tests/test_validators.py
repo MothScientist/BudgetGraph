@@ -237,43 +237,36 @@ class TestTableNameValidator(unittest.TestCase):
     Used in the create_table_group() function in database_control.py
     """
     def test_table_name_validator_1(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_1")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_1") else False
+        res = True if res else False
         self.assertEqual(res, True)
 
     def test_table_name_validator_2(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_01")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_01") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_3(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_100")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_100") else False
         self.assertEqual(res, True)
 
     def test_table_name_validator_4(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_5(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_6(self):
-        res = type(re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1"))
-        self.assertEqual(res, bool)
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_0") else False
+        self.assertEqual(res, False)
 
     def test_table_name_validator_7(self):
-        res = type(re.match(r"^budget_[1-9]\d{0,4}$", "budget_100"))
-        self.assertEqual(res, bool)
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_") else False
+        self.assertEqual(res, False)
 
     def test_table_name_validator_8(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_0")
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_9(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget_")
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_10(self):
-        res = re.match(r"^budget_[1-9]\d{0,4}$", "budget")
+        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget") else False
         self.assertEqual(res, False)
 
 
