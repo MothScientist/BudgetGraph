@@ -8,19 +8,19 @@ from dotenv import load_dotenv
 import telebot
 from telebot import types
 
-from .database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
+from app.database_control import DatabaseQueries, connect_db, close_db_main, create_table_group
 
-from .encryption import getting_hash, get_salt
+from app.encryption import getting_hash, get_salt
 
-from .validation import (date_validation, number_validation, description_validation,
-                         username_validation, password_validation)
+from app.validation import (date_validation, number_validation, description_validation,
+                            username_validation, password_validation)
 
-from .csv_file_generation_and_deletion import create_csv_file, delete_csv_file
+from app.csv_file_generation_and_deletion import create_csv_file, delete_csv_file
 
-from .dictionary import Languages, Stickers
-from .time_checking import timeit
+from app.dictionary import Languages, Stickers
+from app.time_checking import timeit
 
-from .logger import setup_logger
+from app.logger import setup_logger
 
 
 load_dotenv()  # Load environment variables from .env file

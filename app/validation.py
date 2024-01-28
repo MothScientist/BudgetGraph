@@ -2,10 +2,10 @@ import asyncio
 import re
 from flask import flash
 from datetime import datetime, timezone
-from .database_control import DatabaseQueries, connect_db, close_db_main
+from app.database_control import DatabaseQueries, connect_db, close_db_main
 
 # Timeit decorator
-from .time_checking import timeit
+from app.time_checking import timeit
 
 
 @timeit
