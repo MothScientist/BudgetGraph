@@ -8,8 +8,10 @@ app/.env
 presentation/money_image_bot.png
 !create_db.sql
 !create_test_db.sql
-/develop
-/docs
+develop
+docs
+.pytest_cache
+csv_tables
 ### Databases ###
 *.sqlite3
 *.sqlite
