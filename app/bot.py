@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('../')
+
 from os import getenv
 from secrets import compare_digest
 import asyncio

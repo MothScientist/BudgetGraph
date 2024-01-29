@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('../')
+
 import os
 import csv
 from app.database_control import DatabaseQueries, connect_db, close_db_main

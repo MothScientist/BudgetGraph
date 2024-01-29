@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('../')
+
 from app.logger import setup_logger
 from time import perf_counter
 from functools import wraps

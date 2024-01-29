@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('../')
+
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 from datetime import timedelta

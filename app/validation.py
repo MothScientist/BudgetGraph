@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('../')
+
 import asyncio
 import re
 from flask import flash
