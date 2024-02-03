@@ -19,7 +19,7 @@ from app.encryption import getting_hash, get_salt
 from app.validation import (date_validation, number_validation, description_validation,
                             username_validation, password_validation)
 
-from app.csv_file_generation_and_deletion import create_csv_file, delete_csv_file
+from app.csv_file_generation_and_deletion import create_csv_file, get_file_size_kb, get_file_hash
 
 from app.dictionary import Languages, Stickers
 from app.time_checking import timeit
@@ -448,7 +448,6 @@ def view_table(message) -> None:
                                         for item in data]))
         else:
             bot.send_message(message.chat.id, f"{get_phrase(message, "table_is_empty")}")
-        logger_bot.info(f"ID: {telegram_id} - view_table")
 
 
 @timeit
@@ -459,16 +458,29 @@ def get_csv(message):
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
+        file_path: str = f"csv_tables/table_{group_id}.csv"
+        table_headers: list = ["ID", "TOTAL", "USERNAME", "TRANSFER", "CATEGORY", "DATE_TIME", "DESCRIPTION"]
+        table_data: list = bot_db.select_data_for_household_table(group_id, 0)
         close_db_main(connection)
-        try:
-            create_csv_file(group_id)
-            bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'))
-        except FileNotFoundError:
-            bot.send_message(message.chat.id, f"{get_phrase(message, "csv_not_found_error")}.")
-            logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
+        if table_data:
+            try:
+                create_csv_file(file_path, table_headers, table_data)
+                file_size: int | float = get_file_size_kb(file_path)
+                file_hash: str = get_file_hash(file_path)
+                bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'),
+                                  caption=f"File size: {"{:.3f}".format(file_size)} kB\n\n"
+                                          f"Checksum (sha-256): {file_hash}")
+            except FileNotFoundError:
+                bot.send_message(message.chat.id, f"{get_phrase(message, "csv_not_found_error")}.")
+                logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
+            except PermissionError:
+                bot.send_message(message.chat.id, f"{get_phrase(message, "csv_not_found_error")}.")
+                logger_bot.error(f"CSV PermissionError. ID: {telegram_id}, group: {group_id}")
+            else:
+                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}. "
+                                f"File size: {"{:.3f}".format(file_size)} kB, hashsum: {file_hash}")
         else:
-            delete_csv_file(group_id)
-            logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}")
+            bot.send_message(message.chat.id, f"{get_phrase(message, "table_is_empty")}")
 
 
 @timeit
