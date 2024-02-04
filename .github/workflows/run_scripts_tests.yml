@@ -35,6 +35,7 @@ jobs:
           echo "SECRET_KEY=${SECRET_KEY}" >> .env
           echo "BOT_TOKEN=${BOT_TOKEN}" >> .env
           echo "DATABASE=${DATABASE}" >> .env
+          ls .env
           cd ..
 
       - name: Run scripts test
