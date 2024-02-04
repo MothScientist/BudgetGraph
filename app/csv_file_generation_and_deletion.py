@@ -9,7 +9,7 @@ def csv_dir_check():
 
 def create_csv_file(file_path: str, table_headers: tuple | list, table_data: tuple | list) -> None:
     csv_dir_check()  # to prevent possible "FileNotFoundError"
-    with open(file_path, 'w', newline='') as csvfile:
+    with open(file_path, 'w', newline='',  encoding="utf-8") as csvfile:
         filewriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         filewriter.writerow(table_headers)
         for _data in table_data:
