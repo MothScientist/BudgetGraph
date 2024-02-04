@@ -180,7 +180,9 @@ class Dictionary:
                     "not_deleted_by_owner": "The group can only be removed by its owner - "
                                             "contact the owner of the group, or delete the account.",
                     "remove_completed": "The group and users are completely deleted!",
-                    "not_register.": "You are not register."
+                    "not_register.": "You are not register.",
+                    "file_size": "File size",
+                    "hashsum": "Checksum"
                 },
 
             "ru":
@@ -294,7 +296,8 @@ class Dictionary:
                     "exception_one_user_in_group": "В группе кроме вас нет пользователей.",
                     "select_to_delete": "Если вы хотите удалить свою учетную запись, "
                                         "выберите соответствующий пункт в меню.",
-                    "select_new_owner": "Ниже напишите имя пользователя (из списка), которого хотите удалить из группы:",
+                    "select_new_owner": "Ниже напишите имя пользователя (из списка), "
+                                        "которого хотите удалить из группы:",
                     "owner_privileges": "Удалять пользователей может только владелец группы.",
                     "user_removed": "Пользователь успешно удален из группы.",
                     "error_user_delete": "Произошла ошибка при удалении пользователя.",
@@ -304,7 +307,9 @@ class Dictionary:
                     "not_deleted_by_owner": "Удалить группу может только ее владелец — "
                                             "обратитесь к владельцу группы или удалите аккаунт.",
                     "remove_completed": "Группа и пользователи полностью удалены!",
-                    "not_register.": "Вы не зарегистрированы."
+                    "not_register.": "Вы не зарегистрированы.",
+                    "file_size": "Размер файла",
+                    "hashsum": "Хэш-сумма"
                 },
 
             "es":
@@ -428,7 +433,9 @@ class Dictionary:
                     "not_deleted_by_owner": "El grupo solo puede ser eliminado por su propietario: comuníquese con "
                                             "el propietario del grupo o elimine la cuenta.",
                     "remove_completed": "¡El grupo y los usuarios están completamente eliminados!",
-                    "not_register.": "No estás registrado."
+                    "not_register.": "No estás registrado.",
+                    "file_size": "Tamaño del archivo",
+                    "hashsum": "Suma de comprobación"
                 },
 
             "de":
@@ -507,8 +514,8 @@ class Dictionary:
                     "invalid_password_format": "Ungültiges Kennwort Format!",
                     "congratulations": "Herzlichen Glückwunsch zur Registrierung!",
                     "create_new_user_error": "Fehler beim Erstellen eines neuen Benutzers",
-                    "group_is_full": "Es gibt keine Gruppe mit diesem Token oder es ist voll. Kontaktieren Sie "
-                                     "die Gruppenmitglieder für weitere Informationen oder gründen Sie Ihre eigene Gruppe!",
+                    "group_is_full": "Es gibt keine Gruppe mit diesem Token oder es ist voll. Kontaktieren Sie die "
+                                     "Gruppenmitglieder für weitere Informationen oder gründen Sie Ihre eigene Gruppe!",
                     "invalid_token_format": "Dies ist ein ungültiges Tokenformat",
                     "unrecognized_language": "Wir konnten diese Sprache nicht erkennen",
                     "try_again": "Versuchen Sie es erneut",
@@ -532,8 +539,9 @@ class Dictionary:
                     "error_change_owner": "Beim Ändern des Gruppeneigentümers ist ein Fehler aufgetreten.",
                     "check_correct_username": "Überprüfen Sie die korrekte Schreibweise des Benutzernamens.",
                     "confirmation_delete": "Möchten Sie das Konto wirklich entfernen?",
-                    "owner_try_delete_account": "Sie sind der Eigentümer der Gruppe: Übertragen Sie entweder die Rechte "
-                                                "zur Verwaltung eines anderen Teilnehmers oder löschen Sie die Gruppe.",
+                    "owner_try_delete_account": "Sie sind der Eigentümer der Gruppe: Übertragen Sie entweder die "
+                                                "Rechte zur Verwaltung eines anderen Teilnehmers oder löschen "
+                                                "Sie die Gruppe.",
                     "parting": "Wir respektieren Ihre Entscheidung, danke, dass Sie bei uns sind!",
                     "account_is_deleted": "Ihr Konto ist vollständig gelöscht!",
                     "stay_with_us": "Wir freuen uns, dass Sie bei uns bleiben!",
@@ -553,7 +561,9 @@ class Dictionary:
                     "not_deleted_by_owner": "Die Gruppe kann nur von ihrem Besitzer entfernt werden – wenden Sie sich "
                                             "an den Besitzer der Gruppe oder löschen Sie das Konto.",
                     "remove_completed": "Die Gruppe und Benutzer werden vollständig gelöscht!",
-                    "not_register.": "Sie sind nicht registriert."
+                    "not_register.": "Sie sind nicht registriert.",
+                    "file_size": "Dateigröße",
+                    "hashsum": "Prüfsumme"
                 },
 
             "fr":
@@ -648,8 +658,8 @@ class Dictionary:
                     "csv_not_found_error": "Erreur. Réessayez plus tard ou signalez le problème au support technique.",
                     "owner": "propriétaire",
                     "small_group_exception": "Il n'y a qu'un seul membre dans ce groupe.",
-                    "username_new_owner": "Écrivez ci-dessous le nom de l'utilisateur (dans la liste) que vous souhaitez "
-                                          "désigner comme propriétaire du groupe",
+                    "username_new_owner": "Écrivez ci-dessous le nom de l'utilisateur (dans la liste) "
+                                          "que vous souhaitez désigner comme propriétaire du groupe",
                     "not_owner_exception": "Seul le propriétaire du groupe peut modifier le propriétaire du groupe.",
                     "current_owner_exception": "C'est l'actuel propriétaire du groupe.",
                     "owner_has_been_changed": "Le propriétaire du groupe a été modifié.",
@@ -661,8 +671,8 @@ class Dictionary:
                     "parting": "Nous respectons votre choix, merci d'être parmi nous !",
                     "account_is_deleted": "Votre compte est complètement supprimé !",
                     "stay_with_us": "Nous sommes heureux que vous restiez avec nous!",
-                    "unknown_message": "Votre message ne nous apparaît pas clair, merci, lors de votre choix, d'utiliser "
-                                       "les boutons en bas de l'écran.",
+                    "unknown_message": "Votre message ne nous apparaît pas clair, merci, "
+                                       "lors de votre choix, d'utiliser les boutons en bas de l'écran.",
                     "exception_one_user_in_group": "Il n'y a aucun utilisateur dans le groupe à part vous.",
                     "select_to_delete": "Si vous souhaitez supprimer votre compte, sélectionnez l'élément approprié "
                                         "dans le menu.",
@@ -677,7 +687,9 @@ class Dictionary:
                     "not_deleted_by_owner": "Le groupe ne peut être supprimé que par son propriétaire - contactez le "
                                             "propriétaire du groupe ou supprimez le compte.",
                     "remove_completed": "Le groupe et les utilisateurs sont complètement supprimés!",
-                    "not_register.": "Vous n'êtes pas inscrit."
+                    "not_register.": "Vous n'êtes pas inscrit.",
+                    "file_size": "Taille du fichier",
+                    "hashsum": "Somme de contrôle"
                 },
 
             "is":
@@ -788,7 +800,8 @@ class Dictionary:
                     "unknown_message": "Skilaboðin þín eru ekki skýr fyrir okkur, vinsamlegast, þegar þú velur, "
                                        "notaðu hnappana neðst á skjánum.",
                     "exception_one_user_in_group": "Það eru engir notendur í hópnum nema þú.",
-                    "select_to_delete": "Ef þú vilt eyða reikningnum þínum skaltu velja viðeigandi atriði í valmyndinni.",
+                    "select_to_delete": "Ef þú vilt eyða reikningnum þínum skaltu "
+                                        "velja viðeigandi atriði í valmyndinni.",
                     "select_new_owner": "Hér fyrir neðan skrifaðu nafn notandans (af listanum) sem þú vilt "
                                         "fjarlægja úr hópnum:",
                     "owner_privileges": "Aðeins eigandi hópsins getur eytt notendum.",
@@ -800,7 +813,9 @@ class Dictionary:
                     "not_deleted_by_owner": "Einungis eigandi hans getur fjarlægt hópinn - hafðu samband við eiganda "
                                             "hópsins eða eyddu reikningnum.",
                     "remove_completed": "Hópnum og notendum er alveg eytt!",
-                    "not_register.": "Þú ert ekki skráður."
+                    "not_register.": "Þú ert ekki skráður.",
+                    "file_size": "Skjala stærð",
+                    "hashsum": "Athugunarsumma"
                 }
         }
 

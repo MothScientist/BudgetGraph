@@ -468,8 +468,8 @@ def get_csv(message):
                 file_size: int | float = get_file_size_kb(file_path)
                 file_hash: str = get_file_hash(file_path)
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'),
-                                  caption=f"File size: {"{:.3f}".format(file_size)} kB\n\n"
-                                          f"Checksum (sha-256): {file_hash}")
+                                  caption=f"{get_phrase(message, "file_size")}: {"{:.3f}".format(file_size)} kB\n\n"
+                                          f"{get_phrase(message, "hashsum")} (sha-256): {file_hash}")
             except FileNotFoundError:
                 bot.send_message(message.chat.id, f"{get_phrase(message, "csv_not_found_error")}.")
                 logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
