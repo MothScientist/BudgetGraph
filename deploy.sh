@@ -1,6 +1,5 @@
 #!/bin/env sh
 
-# Image and container name
 IMAGE_NAME="budget-control-image"
 CONTAINER_NAME="budget-control-container"
 

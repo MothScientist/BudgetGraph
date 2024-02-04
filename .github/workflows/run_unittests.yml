@@ -1,4 +1,4 @@
-name: AutoTests
+name: UnitTests
 
 on:
   workflow_dispatch:
@@ -37,4 +37,4 @@ jobs:
           pip install pytest
 
       - name: Run UnitTests
-        run: bash run_tests.sh
+        run: bash run_unittests.sh
