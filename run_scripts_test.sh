@@ -11,7 +11,7 @@ echo "Running the deploy.sh script..."
 
 ./deploy.sh
 
-sleep 5s
+sleep 15s
 
 if [ "$(docker ps --all --filter "name=$CONTAINER_NAME" --quiet)" ]; then
   echo "Container created: OK"
@@ -27,7 +27,7 @@ else
   exit 1
 fi
 
-sleep 5s
+sleep 15s
 
 if [ "$(docker inspect --filter '{{.State.Running}}' $CONTAINER_NAME)" = "false" ]; then
   echo "Container stopped: OK"
