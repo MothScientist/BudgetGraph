@@ -17,7 +17,7 @@ sleep 5 # time to start the container
 echo "Container status after deploy.sh:"
 docker ps --all | grep $CONTAINER_NAME
 
-if [ "$(docker inspect --filter '{{.State.Running}}' $CONTAINER_NAME)" = "true" ]; then
+if [ "$(docker inspect '{{.State.Running}}' $CONTAINER_NAME)" = "true" ]; then
   echo "Container started: OK"
   docker stop $CONTAINER_NAME
 else
@@ -31,7 +31,7 @@ fi
 
 sleep 5 # time to stop the container
 
-if [ "$(docker inspect --filter '{{.State.Running}}' $CONTAINER_NAME)" = "false" ]; then
+if [ "$(docker inspect '{{.State.Running}}' $CONTAINER_NAME)" = "false" ]; then
   echo "Container stopped: OK"
   echo "Removing a container and image from the system..."
   docker rm $CONTAINER_NAME
