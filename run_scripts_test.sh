@@ -9,17 +9,12 @@ CONTAINER_NAME="budget-control-container"
 
 echo "Running the deploy.sh script..."
 
+# Building and running the container
 ./deploy.sh
 
-sleep 15s
+sleep 30s # time to start the container
 
-if [ "$(docker ps --all --filter "name=$CONTAINER_NAME" --quiet)" ]; then
-  echo "Container created: OK"
-else
-  echo "Container created: FAILED"
-fi
-
-if [ "$(docker inspect --filter '{{.State.Running}}' $CONTAINER_NAME)" = "true" ]; then
+if [ "$(docker ps --filter "name=$CONTAINER_NAME" --quiet)" ]; then
   echo "Container started: OK"
   docker stop $CONTAINER_NAME
 else
@@ -27,7 +22,7 @@ else
   exit 1
 fi
 
-sleep 15s
+sleep 30s # time to stop the container
 
 if [ "$(docker inspect --filter '{{.State.Running}}' $CONTAINER_NAME)" = "false" ]; then
   echo "Container stopped: OK"

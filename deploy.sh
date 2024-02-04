@@ -19,5 +19,3 @@ echo "Starting a container..."
 
 # Launching a new container
 docker run --detach --publish 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME
-
-echo "Container started"
