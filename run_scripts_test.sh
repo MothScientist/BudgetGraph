@@ -15,13 +15,16 @@ sh -x ./deploy.sh
 sleep 60 # time to start the container
 
 echo "Container status after deploy.sh:"
-docker ps -a | grep $CONTAINER_NAME
+docker ps --all | grep $CONTAINER_NAME
 
 if [ "$(docker inspect --filter '{{.State.Running}}' $CONTAINER_NAME)" = "true" ]; then
   echo "Container started: OK"
   docker stop $CONTAINER_NAME
 else
   echo "Container started: FAILED"
+  CONTAINER_ID=$(docker ps -aqf "name=$CONTAINER_NAME")
+  reason=$(docker inspect --format '{{.State.ExitCode}} {{.State.Error}}' "$CONTAINER_ID")
+  echo "Reason for stopping the container: $reason"
   exit 1
 fi
 
