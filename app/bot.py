@@ -19,7 +19,7 @@ from app.encryption import getting_hash, get_salt
 from app.validation import (date_validation, number_validation, description_validation,
                             username_validation, password_validation)
 
-from app.csv_file_generation_and_deletion import create_csv_file, get_file_size_kb, get_file_hash
+from app.csv_file_generation_and_deletion import create_csv_file, get_file_size_kb, get_file_checksum
 
 from app.dictionary import Dictionary, Stickers
 from app.time_checking import timeit
@@ -281,7 +281,7 @@ def process_transfer_final(message, value: int, record_date: str, category: str)
 
     if description_is_valid:
         if description == f"{get_phrase(message, "no_description")}":
-            description: str = ""  #FIXME (null DB)
+            description: str = ""  # FIXME (null DB)
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         telegram_id: int = message.from_user.id
@@ -466,10 +466,10 @@ def get_csv(message):
             try:
                 create_csv_file(file_path, table_headers, table_data)
                 file_size: int | float = get_file_size_kb(file_path)
-                file_hash: str = get_file_hash(file_path)
+                file_checksum: str = get_file_checksum(file_path)
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'),
                                   caption=f"{get_phrase(message, "file_size")}: {"{:.3f}".format(file_size)} kB\n\n"
-                                          f"{get_phrase(message, "hashsum")} (sha-256): {file_hash}")
+                                          f"{get_phrase(message, "hashsum")} (sha-256): {file_checksum}")
             except FileNotFoundError:
                 bot.send_message(message.chat.id, f"{get_phrase(message, "csv_not_found_error")}.")
                 logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
@@ -478,7 +478,7 @@ def get_csv(message):
                 logger_bot.error(f"CSV PermissionError. ID: {telegram_id}, group: {group_id}")
             else:
                 logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}. "
-                                f"File size: {"{:.3f}".format(file_size)} kB, hashsum: {file_hash}")
+                                f"File size: {"{:.3f}".format(file_size)} kB, hashsum: {file_checksum}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase(message, "table_is_empty")}")
 
