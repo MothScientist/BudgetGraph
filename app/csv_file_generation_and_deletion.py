@@ -1,10 +1,5 @@
-import sys
-
-sys.path.append('../')
-
 import os
 import csv
-from app.time_checking import timeit
 
 
 def csv_dir_check():
@@ -12,7 +7,6 @@ def csv_dir_check():
         os.makedirs("csv_tables")
 
 
-@timeit
 def create_csv_file(file_path: str, table_headers: tuple | list, table_data: tuple | list) -> None:
     csv_dir_check()  # to prevent possible "FileNotFoundError"
     with open(file_path, 'w', newline='') as csvfile:
@@ -22,7 +16,6 @@ def create_csv_file(file_path: str, table_headers: tuple | list, table_data: tup
             filewriter.writerow(_data)
 
 
-@timeit
 def get_file_size_kb(file_path: str) -> int | float:
     """
     Returns the file size in kilobytes (float), if an error occurs, return value 0 (int)

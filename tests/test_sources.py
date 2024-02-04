@@ -3,7 +3,7 @@
 import unittest
 
 from app.encryption import getting_hash, get_salt, get_token
-from app.dictionary import Languages
+from app.dictionary import Dictionary
 
 
 class TestPasswordHashing(unittest.TestCase):
@@ -62,49 +62,49 @@ class TestLanguages(unittest.TestCase):
     def test_languages_1(self):  # Checking multiple keys for presence in each language dictionary
         _keys = ["link_github", "get_my_token", "delete_group", "services", "enter_username", "create_new_user_error",
                  "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table"]
-        res = all(_key in Languages._languages[lang] for _key in _keys for lang in Languages._languages.keys())
+        res = all(_key in Dictionary._languages[lang] for _key in _keys for lang in Dictionary._languages.keys())
         self.assertEqual(res, True)
     
     def test_languages_2(self):  # Checking for equality of number of keys in each language
-        dict_len = len(Languages._languages["en"])
-        res = all(dict_len == len(Languages._languages[lang]) for lang in Languages._languages.keys())
+        dict_len = len(Dictionary._languages["en"])
+        res = all(dict_len == len(Dictionary._languages[lang]) for lang in Dictionary._languages.keys())
         self.assertEqual(res, True)
     
     def test_languages_3(self):  # Checking to see if expected values are returned
-        res = Languages.receive_translation("es", "invalid_value")
+        res = Dictionary.receive_translation("es", "invalid_value")
         self.assertEqual(res, "Valor no válido")
     
     def test_languages_4(self):
-        res = Languages.receive_translation("en", "none_token")
+        res = Dictionary.receive_translation("en", "none_token")
         self.assertEqual(res, "(if you don't have one, enter \"None\")")
     
     def test_languages_5(self):
-        res = Languages.receive_translation("fr", "current_owner_exception")
+        res = Dictionary.receive_translation("fr", "current_owner_exception")
         self.assertEqual(res, "C'est l'actuel propriétaire du groupe.")
 
     def test_languages_6(self):
-        res = Languages.receive_translation("ru", "no_description")
+        res = Dictionary.receive_translation("ru", "no_description")
         self.assertEqual(res, "без описания")
 
     def test_languages_7(self):
-        res = Languages.receive_translation("de", "change_owner")
+        res = Dictionary.receive_translation("de", "change_owner")
         self.assertEqual(res, "Besitzer wechseln")
 
     def test_languages_8(self):
-        res = Languages.receive_translation("is", "check_correct_username")
+        res = Dictionary.receive_translation("is", "check_correct_username")
         self.assertEqual(res, "Athugaðu rétta stafsetningu notandanafns.")
 
     def test_languages_9(self):  # Error exception test (language is not listed)
         # If the language is not in the list, it will return the value in English
-        res = Languages.receive_translation("it", "view_table")
+        res = Dictionary.receive_translation("it", "view_table")
         self.assertEqual(res, "View table")
 
     def test_languages_10(self):  # non-existent key
-        res = Languages.receive_translation("de", "table_view")
+        res = Dictionary.receive_translation("de", "table_view")
         self.assertEqual(res, None)
 
     def test_languages_11(self):  # missing key and value
-        res = Languages.receive_translation("", "")
+        res = Dictionary.receive_translation("", "")
         self.assertEqual(res, None)
 
 

@@ -1,13 +1,6 @@
 """
     This package is used to switch languages in the chatbot
 """
-import sys
-
-sys.path.append('../')
-
-from app.logger import setup_logger
-
-logger_dict = setup_logger("logs/SourceLog.log", "source_logger")
 
 
 class Emoji:
@@ -50,7 +43,7 @@ class Stickers:
         return Stickers._stickers.get(sticker_id)
 
 
-class Languages:
+class Dictionary:
     """
     1 key = 1 value
     Each language has its own dictionary, the keys are the same for all dictionaries.
@@ -184,8 +177,8 @@ class Languages:
                     "unknown_user_in_group": "There is no such username in the group.",
                     "are_you_sure": "Are you sure you want to delete the group?",
                     "delete_table": "(A table and all participants will be deleted)",
-                    "not_deleted_by_owner": "The group can only be removed by its owner - contact the owner of the group, "
-                                            "or delete the account.",
+                    "not_deleted_by_owner": "The group can only be removed by its owner - "
+                                            "contact the owner of the group, or delete the account.",
                     "remove_completed": "The group and users are completely deleted!",
                     "not_register.": "You are not register."
                 },
@@ -825,10 +818,16 @@ class Languages:
         Returns:
             str: value in the dictionary in the selected language
         """
-        if language not in Languages._languages.keys():
-            logger_dict.warning("Language not recognized. language: %s", language)
-            language = "en"
-        if phrase not in Languages._languages[language]:
-            logger_dict.warning("Error getting phrase and dictionary - key does not exist: Key: %s", phrase)
-            # The user will receive None, the get() method will return it if the key is missing
-        return Languages._languages[language].get(phrase)
+        return Dictionary._languages[language].get(phrase)
+
+    @staticmethod
+    def check_lang_in_dict(language: str) -> bool:
+        if language in Dictionary._languages.keys():
+            return True
+        return False
+
+    @staticmethod
+    def check_phrase_in_dict(language: str, phrase: str) -> bool:
+        if phrase in Dictionary._languages[language]:
+            return True
+        return False

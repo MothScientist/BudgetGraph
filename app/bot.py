@@ -21,7 +21,7 @@ from app.validation import (date_validation, number_validation, description_vali
 
 from app.csv_file_generation_and_deletion import create_csv_file, get_file_size_kb, get_file_hash
 
-from app.dictionary import Languages, Stickers
+from app.dictionary import Dictionary, Stickers
 from app.time_checking import timeit
 
 from app.logger import setup_logger
@@ -45,7 +45,7 @@ def reply_menu_buttons_register(message):
     btn6 = types.KeyboardButton(f"⭐ {get_phrase(message,"premium")}")
     btn7 = types.KeyboardButton(f"{get_phrase(message,"change_language")}")
     markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
-    bot.send_message(message.chat.id, "Click the button you need :)", reply_markup=markup_1)
+    bot.send_message(message.chat.id, f"{get_phrase(message, "click_need_button")} :)", reply_markup=markup_1)
 
 
 def reply_menu_buttons_not_register(message):
@@ -723,14 +723,20 @@ def check_user_language(message) -> str:
     return language
 
 
-def get_phrase(message, phrase_key: str):
+def get_phrase(message, phrase: str):
     """
     Refers to a dictionary with translations.
     The phrase is the key - the function returns the translation into the required language (value).
     This intermediate function is needed to get the user's language from the database
     """
     lang: str = check_user_language(message)
-    return Languages.receive_translation(lang, phrase_key)
+    if not Dictionary.check_lang_in_dict(lang):
+        lang = "en"
+        logger_bot.error("Language not recognized. language: %s", lang)
+    if not Dictionary.check_phrase_in_dict(lang, phrase):
+        # The user will receive None, the get() method will return it if the key is missing
+        logger_bot.error("Error getting phrase and dictionary - key does not exist: Key: %s", phrase)
+    return Dictionary.receive_translation(lang, phrase)
 
 
 @bot.message_handler(content_types=['text'])
