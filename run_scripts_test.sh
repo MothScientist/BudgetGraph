@@ -10,7 +10,8 @@ CONTAINER_NAME="budget-control-container"
 echo "Running the deploy.sh script..."
 
 # Building and running the container
-sh -x ./deploy.sh
+./deploy.sh
+# sh -x ./deploy.sh
 
 sleep 5 # time to start the container
 
@@ -22,10 +23,8 @@ if [ "$(docker inspect --format='{{.State.Running}}' "$CONTAINER_NAME")" = "true
   docker stop $CONTAINER_NAME
 else
   echo "Container started: FAILED"
-  CONTAINER_ID=$(docker ps -aqf "name=$CONTAINER_NAME")
-  reason=$(docker inspect --format '{{.State.ExitCode}} {{.State.Error}}' "$CONTAINER_ID")
-  echo "Reason for stopping the container: $reason"
-  docker logs "$CONTAINER_ID"
+# CONTAINER_ID=$(docker ps -aqf "name=$CONTAINER_NAME")
+# docker logs "$CONTAINER_ID"
   exit 1
 fi
 
