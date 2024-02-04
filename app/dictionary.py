@@ -45,15 +45,14 @@ class Stickers:
 
 class Dictionary:
     """
-    1 key = 1 value
     Each language has its own dictionary, the keys are the same for all dictionaries.
 
-    en - english
-    ru - russian
-    es - espanol
-    fr - french
-    de - german
-    is - icelandic
+    en - English
+    ru - Russian
+    es - Espanol
+    fr - French
+    de - German
+    is - Icelandic
 
     To generate new dictionaries, refer to the dictionary_generate.py file
     and don't forget to add your language to the list of allowed languages in the validator.
