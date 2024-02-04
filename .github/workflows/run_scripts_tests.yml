@@ -10,24 +10,16 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        #  The job will be executed for every possible combination of variables.
-        # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
-        os: [ ubuntu-latest ]
-        python-version: [ '3.12' ]
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Run scripts test
         run: bash run_scripts_test.sh
