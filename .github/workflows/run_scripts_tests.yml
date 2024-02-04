@@ -12,9 +12,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      MY_SECRET_ENV_VAR: ${{ secrets.MY_SECRET_ENV_VAR }}
-      ANOTHER_SECRET_VAR: ${{ secrets.ANOTHER_SECRET_VAR }}
 
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
