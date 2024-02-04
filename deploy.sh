@@ -9,7 +9,7 @@ echo "Building Docker image..."
 docker build -t $IMAGE_NAME .
 
 # Checking if there is already a running container named $CONTAINER_NAME
-if [[ $(docker ps -a --filter "name=$CONTAINER_NAME" --quiet) ]]; then
+if [ "$(docker ps -a --filter "name=$CONTAINER_NAME" --quiet)" ]; then
     # If the container is already running, then stop and delete it
     docker stop $CONTAINER_NAME
     docker rm $CONTAINER_NAME
