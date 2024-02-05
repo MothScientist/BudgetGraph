@@ -13,6 +13,7 @@ echo "Running the deploy.sh script..."
 ./deploy.sh
 # sh -x ./deploy.sh
 
+echo "Pause 5s..."
 sleep 5 # time to start the container
 
 echo "Container status after deploy.sh:"
@@ -28,6 +29,7 @@ else
   exit 1
 fi
 
+echo "Pause 5s..."
 sleep 5 # time to stop the container
 
 if [ "$(docker inspect --format='{{.State.Running}}' "$CONTAINER_NAME")" = "false" ]; then
