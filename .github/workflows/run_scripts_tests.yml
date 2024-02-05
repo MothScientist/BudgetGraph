@@ -1,0 +1,37 @@
+name: Scripts Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+  push:
+    branches: [ master, postgresql ]
+  pull_request:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Action for checking out a repo - https://github.com/actions/checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # GitHub Action to set up Docker Buildx - https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          DATABASE: ${{ secrets.DATABASE }}
+        run: |
+          cd app
+          echo "SECRET_KEY=${SECRET_KEY}" >> .env
+          echo "BOT_TOKEN=${BOT_TOKEN}" >> .env
+          echo "DATABASE=${DATABASE}" >> .env
+          cd ..
+
+      - name: Run scripts test
+        run: bash run_scripts_test.sh

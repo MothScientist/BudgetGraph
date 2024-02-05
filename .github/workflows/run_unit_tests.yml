@@ -1,15 +1,15 @@
-name: AutoTests
+name: UnitTests
 
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1'
   push:
-    branches: [ master ]
+    branches: [ master, postgresql ]
   pull_request:
 
 jobs:
-  test:
+  unit-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -37,4 +37,4 @@ jobs:
           pip install pytest
 
       - name: Run UnitTests
-        run: bash run_tests.sh
+        run: bash run_unit_tests.sh

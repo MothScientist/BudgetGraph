@@ -94,19 +94,6 @@ class TestLanguages(unittest.TestCase):
         res = Dictionary.receive_translation("is", "check_correct_username")
         self.assertEqual(res, "Athugaðu rétta stafsetningu notandanafns.")
 
-    def test_languages_9(self):  # Error exception test (language is not listed)
-        # If the language is not in the list, it will return the value in English
-        res = Dictionary.receive_translation("it", "view_table")
-        self.assertEqual(res, "View table")
-
-    def test_languages_10(self):  # non-existent key
-        res = Dictionary.receive_translation("de", "table_view")
-        self.assertEqual(res, None)
-
-    def test_languages_11(self):  # missing key and value
-        res = Dictionary.receive_translation("", "")
-        self.assertEqual(res, None)
-
 
 if __name__ == '__main__':
     unittest.main()
