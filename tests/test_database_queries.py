@@ -226,8 +226,8 @@ class TestSelectQueries(unittest.TestCase):
 
     def test_select_data_for_household_table_5(self):
         res = self.test_db.select_data_for_household_table(2, 2)
-        self.assertEqual(res, [[3, 0, 'Alessandro', -240000, 'Other', '01/01/2021', None],
-                               [2, 240000, 'Alessandro', 120000, 'Other', '01/01/2021', None]])
+        self.assertEqual(res, ((3, 0, 'Alessandro', -240000, 'Other', '01/01/2021', None),
+                               (2, 240000, 'Alessandro', 120000, 'Other', '01/01/2021', None)))
 
     def test_get_username_group_owner_by_group_id_1(self):
         res = self.test_db.get_group_owner_username_by_group_id(1)

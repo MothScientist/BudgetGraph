@@ -459,13 +459,13 @@ def get_csv(message):
         bot_db = DatabaseQueries(connection)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
         file_path: str = f"csv_tables/table_{group_id}.csv"
-        table_headers: list = ["ID", "TOTAL", "USERNAME", "TRANSFER", "CATEGORY", "DATE_TIME", "DESCRIPTION"]
-        table_data: list = bot_db.select_data_for_household_table(group_id, 0)
-        close_db_main(connection)
+        table_headers: tuple = ("ID", "TOTAL", "USERNAME", "TRANSFER", "CATEGORY", "DATE_TIME", "DESCRIPTION")
+        table_data: tuple = bot_db.select_data_for_household_table(group_id, 0)
+        close_db(connection)
         if table_data:
             try:
                 create_csv_file(file_path, table_headers, table_data)
-                file_size: int | float = get_file_size_kb(file_path)
+                file_size: float = get_file_size_kb(file_path)
                 file_checksum: str = get_file_checksum(file_path)
                 bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'),
                                   caption=f"{get_phrase(message, "file_size")}: {"{:.3f}".format(file_size)} kB\n\n"
