@@ -1,8 +1,6 @@
 #!/bin/env sh
 
-cd ..
-
-cd tests || exit 1
+cd ../tests || exit 1
 
 python build_test_infrastructure.py
 
