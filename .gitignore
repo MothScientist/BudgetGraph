@@ -1,18 +1,17 @@
-.timetracker
-.jpeg
-.sql
-.png
-.pdf
-.jpg
-app/.env
-presentation/money_image_bot.png
-!create_db.sql
-!create_test_db.sql
-develop
-docs
-.pytest_cache
-csv_tables
-### Databases ###
+*.timetracker
+*.pytest_cache
+
+# Images
+*.jpeg
+*.png
+*.pdf
+*.jpg
+
+**/develop
+**/docs
+**/csv_tables
+
+# Databases
 *.sqlite3
 *.sqlite
 db.sqlite3
@@ -24,6 +23,18 @@ db.sqlite3-journal
 *.pdb
 *.db-shm
 *.db-wal
+*.sql
+!create_db.sql
+!create_test_db.sql
+
+# Environments
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Labels
 *.ink
@@ -157,15 +168,6 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # dotenv environment variable files
 .env.development.local
