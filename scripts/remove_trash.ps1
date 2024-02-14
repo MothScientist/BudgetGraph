@@ -1,3 +1,4 @@
+cd ..
 Remove-Item -Path ".\logs" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path ".\.pytest_cache" -Recurse -Force -ErrorAction SilentlyContinue
 

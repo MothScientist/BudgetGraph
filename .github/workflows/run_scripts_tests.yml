@@ -10,7 +10,13 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        #  The job will be executed for every possible combination of variables.
+        # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
+        os: [ ubuntu-latest ]
+        python-version: [ '3.11', '3.12' ]
 
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
@@ -34,4 +40,4 @@ jobs:
           cd ..
 
       - name: Run scripts test
-        run: bash run_scripts_test.sh
+        run: bash scripts/run_scripts_test.sh
