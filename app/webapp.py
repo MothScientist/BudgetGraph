@@ -157,7 +157,8 @@ def household(username):
     if request.method == "POST":
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
-            value: int = number_validation(value)
+            value: int = value_validation(value)
+            last_total_sum: int = dbase.get_last_sum_in_group(group_id)
             record_date: str = request.form.get("record-date")
             record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # YYYY-MM-DD -> DD/MM/YYYY
             record_date_is_valid: bool = asyncio.run(date_validation(record_date))
@@ -180,7 +181,7 @@ def household(username):
                 flash("Data added successfully.", category="success")
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int = number_validation(record_id)
+            record_id: int = value_validation(record_id)
 
             if not record_id or not dbase.check_record_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
@@ -196,10 +197,15 @@ def household(username):
                                       "Education", "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby",
                                       "Jewelry", "Sale", "Salary", "Other")
     headers: tuple[str, ...] = ("№", "Total", "Username", "Transfer", "Category", "Date", "Description")
-    data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
+    data: tuple = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
-    return render_template("household.html", title=f"Budget control - {username}",
-                           token=token, username=username, data=data, headers=headers, category_list=category_list)
+    return render_template("household.html",
+                           title=f"Budget control - {username}",
+                           token=token,
+                           username=username,
+                           data=data,
+                           headers=headers,
+                           category_list=category_list)
 
 
 @app.route('/settings/<username>')

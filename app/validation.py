@@ -8,7 +8,7 @@ from flask import flash
 from datetime import datetime, timezone
 from app.database_control import DatabaseQueries, connect_db, close_db_main
 
-# Timeit decorator
+from dictionary import Dictionary
 from app.time_checking import timeit
 
 
@@ -38,6 +38,7 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
                   category="error")
     else:
         flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
+
     return False
 
 
@@ -55,8 +56,7 @@ async def username_validation(username: str) -> bool:
 async def password_validation(psw: str) -> bool:
     if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,32}$', psw):
         return True
-    else:
-        return False
+    return False
 
 
 async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
@@ -127,6 +127,7 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
         return True
     elif entered_month in [4, 6, 9, 11] and current_day <= 30:  # 30
         return True
+
     return False
 
 
@@ -139,16 +140,47 @@ async def check_year_is_leap(year: int) -> bool:
 def description_validation(description: str) -> bool:  # TODO
     if len(description) <= 50:
         return True
-    else:
-        return False
+    return False
 
 
-def number_validation(number: str) -> int:
+def value_validation(value: str) -> int:
     """
+    Args:
+        value: must be greater than 0
     Returns:
         int: int(number) if validation passed, returns 0 (False) if validation failed.
     """
-    if not number or not re.match(r"^(?!0$)(?=.*\d)(?!0\d)\d{0,14}$", number):
+    if re.match(r"^(?!0$)(?=.*\d)(?!0\d)\d{0,10}$", value):
+        value: int = int(value)
+
+        if value < 1000000000:
+            return value
         return 0
-    else:
-        return int(number)
+
+    return 0
+
+
+def category_validation(lang: str, category: str) -> bool:
+    categories: tuple = (
+        f"{Dictionary.receive_translation(lang, "supermarkets")}",
+        f"{Dictionary.receive_translation(lang, "restaurants")}",
+        f"{Dictionary.receive_translation(lang, "clothes")}",
+        f"{Dictionary.receive_translation(lang, "medicine")}",
+        f"{Dictionary.receive_translation(lang, "transport")}",
+        f"{Dictionary.receive_translation(lang, "devices")}",
+        f"{Dictionary.receive_translation(lang, "education")}",
+        f"{Dictionary.receive_translation(lang, "services")}",
+        f"{Dictionary.receive_translation(lang, "travel")}",
+        f"{Dictionary.receive_translation(lang, "housing")}",
+        f"{Dictionary.receive_translation(lang, "transfer")}",
+        f"{Dictionary.receive_translation(lang, "investments")}",
+        f"{Dictionary.receive_translation(lang, "hobby")}",
+        f"{Dictionary.receive_translation(lang, "jewelry")}",
+        f"{Dictionary.receive_translation(lang, "salary")}",
+        f"{Dictionary.receive_translation(lang, "charity")}",
+        f"{Dictionary.receive_translation(lang, "other")}"
+    )
+
+    if category in categories:
+        return True
+    return False

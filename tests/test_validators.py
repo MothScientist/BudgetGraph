@@ -8,7 +8,7 @@ from app.validation import (check_day_is_correct,
                             check_year_is_correct,
                             check_date_in_correct_format,
                             description_validation,
-                            number_validation,
+                            value_validation,
                             date_validation)
 
 
@@ -214,15 +214,15 @@ class TestRegistrationValidation(unittest.TestCase):
 
 class TestNumberValidation(unittest.TestCase):
     def test_number_validation_1(self):
-        res = number_validation("100aaa0")
+        res = value_validation("100aaa0")
         self.assertEqual(res, 0)
 
     def test_number_validation_2(self):
-        res = number_validation("0")
+        res = value_validation("0")
         self.assertEqual(res, 0)
 
     def test_number_validation_3(self):
-        res = number_validation("1o")
+        res = value_validation("1o")
         self.assertEqual(res, 0)
 
 

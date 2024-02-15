@@ -115,10 +115,9 @@ class Dictionary:
                     "investments": "Investments",
                     "hobby": "Hobby",
                     "jewelry": "Jewelry",
-                    "sale": "Sale",
                     "salary": "Salary",
                     "other": "Other",
-                    "select_category": "Select category or enter your own",
+                    "select_category": "Select category",
                     "add_description": "Add description (no more than 50 characters)",
                     "no_description": "No description",
                     "entry_add_success": "Entry added successfully",
@@ -179,9 +178,13 @@ class Dictionary:
                     "not_deleted_by_owner": "The group can only be removed by its owner - "
                                             "contact the owner of the group, or delete the account.",
                     "remove_completed": "The group and users are completely deleted!",
-                    "not_register.": "You are not register.",
+                    "not_register": "You are not register.",
                     "file_size": "File size",
-                    "hashsum": "Checksum"
+                    "hashsum": "Checksum",
+                    "unsupported_language": "We're sorry, but this language is not supported. "
+                                            "Select from those presented in the button menu.",
+                    "charity": "Charity",
+                    "invalid_category": "Incorrect category selected."
                 },
 
             "ru":
@@ -240,10 +243,9 @@ class Dictionary:
                     "investments": "Вложения",
                     "hobby": "Хобби",
                     "jewelry": "Ювелирные изделия",
-                    "sale": "Распродажа",
                     "salary": "Зарплата",
                     "other": "Другое",
-                    "select_category": "Выберите категорию или введите свою",
+                    "select_category": "Выберите категорию:",
                     "add_description": "Добавить описание (не более 50 символов)",
                     "no_description": "без описания",
                     "entry_add_success": "Запись успешно добавлена",
@@ -306,7 +308,7 @@ class Dictionary:
                     "not_deleted_by_owner": "Удалить группу может только ее владелец — "
                                             "обратитесь к владельцу группы или удалите аккаунт.",
                     "remove_completed": "Группа и пользователи полностью удалены!",
-                    "not_register.": "Вы не зарегистрированы.",
+                    "not_register": "Вы не зарегистрированы.",
                     "file_size": "Размер файла",
                     "hashsum": "Хэш-сумма"
                 },
@@ -367,10 +369,9 @@ class Dictionary:
                     "investments": "Inversiones",
                     "hobby": "Pasatiempo",
                     "jewelry": "Joyas",
-                    "sale": "Venta",
                     "salary": "Salario",
                     "other": "Otro",
-                    "select_category": "Selecciona una categoría o introduce la tuya",
+                    "select_category": "Selecciona una categoría",
                     "add_description": "Agregar descripción (no más de 50 caracteres)",
                     "no_description": "Sin descripción",
                     "entry_add_success": "Entrada agregada exitosamente",
@@ -432,7 +433,7 @@ class Dictionary:
                     "not_deleted_by_owner": "El grupo solo puede ser eliminado por su propietario: comuníquese con "
                                             "el propietario del grupo o elimine la cuenta.",
                     "remove_completed": "¡El grupo y los usuarios están completamente eliminados!",
-                    "not_register.": "No estás registrado.",
+                    "not_register": "No estás registrado.",
                     "file_size": "Tamaño del archivo",
                     "hashsum": "Suma de comprobación"
                 },
@@ -493,10 +494,9 @@ class Dictionary:
                     "investments": "Investitionen",
                     "hobby": "Hobby",
                     "jewelry": "Schmuck",
-                    "sale": "Verkauf",
                     "salary": "Gehalt",
                     "other": "Andere",
-                    "select_category": "Wählen Sie eine Kategorie aus oder geben Sie Ihre eigene ein",
+                    "select_category": "Wählen Sie eine Kategorie",
                     "add_description": "Beschreibung hinzufügen (nicht mehr als 50 Zeichen)",
                     "no_description": "Keine Beschreibung",
                     "entry_add_success": "Eintrag erfolgreich hinzugefügt",
@@ -560,7 +560,7 @@ class Dictionary:
                     "not_deleted_by_owner": "Die Gruppe kann nur von ihrem Besitzer entfernt werden – wenden Sie sich "
                                             "an den Besitzer der Gruppe oder löschen Sie das Konto.",
                     "remove_completed": "Die Gruppe und Benutzer werden vollständig gelöscht!",
-                    "not_register.": "Sie sind nicht registriert.",
+                    "not_register": "Sie sind nicht registriert.",
                     "file_size": "Dateigröße",
                     "hashsum": "Prüfsumme"
                 },
@@ -621,10 +621,9 @@ class Dictionary:
                     "investments": "Investissements",
                     "hobby": "Passe-temps",
                     "jewelry": "Bijoux",
-                    "sale": "Vente",
                     "salary": "Salaire",
                     "other": "Autre",
-                    "select_category": "Sélectionnez une catégorie ou entrez la vôtre",
+                    "select_category": "Sélectionnez une catégorie",
                     "add_description": "Ajouter une description (pas plus de 50 caractères)",
                     "no_description": "Pas de description",
                     "entry_add_success": "Entrée ajoutée avec succès",
@@ -686,7 +685,7 @@ class Dictionary:
                     "not_deleted_by_owner": "Le groupe ne peut être supprimé que par son propriétaire - contactez le "
                                             "propriétaire du groupe ou supprimez le compte.",
                     "remove_completed": "Le groupe et les utilisateurs sont complètement supprimés!",
-                    "not_register.": "Vous n'êtes pas inscrit.",
+                    "not_register": "Vous n'êtes pas inscrit.",
                     "file_size": "Taille du fichier",
                     "hashsum": "Somme de contrôle"
                 },
@@ -747,10 +746,9 @@ class Dictionary:
                     "investments": "Fjárfestingar",
                     "hobby": "Áhugamál",
                     "jewelry": "Skartgripir",
-                    "sale": "Útsala",
                     "salary": "Laun",
                     "other": "Annað",
-                    "select_category": "Veldu flokk eða sláðu inn þinn eigin",
+                    "select_category": "Veldu flokk",
                     "add_description": "Bæta við lýsingu (ekki meira en 50 stafir)",
                     "no_description": "engin lýsing",
                     "entry_add_success": "Færslu bætt við",
@@ -812,7 +810,7 @@ class Dictionary:
                     "not_deleted_by_owner": "Einungis eigandi hans getur fjarlægt hópinn - hafðu samband við eiganda "
                                             "hópsins eða eyddu reikningnum.",
                     "remove_completed": "Hópnum og notendum er alveg eytt!",
-                    "not_register.": "Þú ert ekki skráður.",
+                    "not_register": "Þú ert ekki skráður.",
                     "file_size": "Skjala stærð",
                     "hashsum": "Athugunarsumma"
                 }
