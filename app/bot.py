@@ -776,7 +776,6 @@ def user_is_registered(message) -> bool:
 
 def check_user_access(message) -> bool:
     user_language: str = check_user_language(message)
-    print(user_language)
     telegram_id: int = message.from_user.id
     res: bool = user_is_registered(message)
     if res:

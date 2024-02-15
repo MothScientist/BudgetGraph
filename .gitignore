@@ -1,5 +1,7 @@
 *.timetracker
+/.timetracker
 *.pytest_cache
+qodana.yaml
 
 # Images
 *.jpeg
@@ -1549,4 +1551,3 @@ dist/**/*
 
 # ignore yarn.lock
 yarn.lock
-/.timetracker
