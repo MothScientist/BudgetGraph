@@ -1,5 +1,4 @@
 name: Scripts Test
-repository: BudgetControl
 
 on:
   workflow_dispatch:
