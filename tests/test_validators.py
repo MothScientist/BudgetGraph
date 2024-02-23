@@ -9,7 +9,10 @@ from app.validation import (check_day_is_correct,
                             check_date_in_correct_format,
                             description_validation,
                             value_validation,
-                            date_validation)
+                            date_validation,
+                            category_validation)
+
+from app.dictionary import Dictionary
 
 
 class TestDateValidation(unittest.TestCase):
@@ -214,15 +217,15 @@ class TestRegistrationValidation(unittest.TestCase):
 
 class TestNumberValidation(unittest.TestCase):
     def test_number_validation_1(self):
-        res = value_validation("100aaa0")
+        res: int = value_validation("100aaa0")
         self.assertEqual(res, 0)
 
     def test_number_validation_2(self):
-        res = value_validation("0")
+        res: int = value_validation("0")
         self.assertEqual(res, 0)
 
     def test_number_validation_3(self):
-        res = value_validation("1o")
+        res: int = value_validation("1o")
         self.assertEqual(res, 0)
 
 
@@ -232,59 +235,69 @@ class TestDescriptionValidator(unittest.TestCase):
         self.assertEqual(res, True)
 
 
-class TestTableNameValidator(unittest.TestCase):
+class TestTableNameValidator(unittest.TestCase):  # TODO delete after changing data storage concept
     """
-    Used in the create_table_group() function in database_control.py
+    Used in the create_table_group() function in db_manager.py
     """
     def test_table_name_validator_1(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_1") else False
-        res = True if res else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_1") else False
         self.assertEqual(res, True)
 
     def test_table_name_validator_2(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_01") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_01") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_3(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_100") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_100") else False
         self.assertEqual(res, True)
 
     def test_table_name_validator_4(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_5(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_6(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_0") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_0") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_7(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_") else False
         self.assertEqual(res, False)
 
     def test_table_name_validator_8(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget") else False
+        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget") else False
         self.assertEqual(res, False)
 
 
 class TestCategoryValidation(unittest.TestCase):
-    def test_category_validation_1(self):
-        pass
+    def test_category_validation_1(self):  # All categories for all languages
+        categories_keys: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport",
+                                  "devices", "education", "services", "travel", "housing", "investments",
+                                  "hobby", "jewelry", "salary", "charity", "other")
 
-    def test_category_validation_2(self):
-        pass
+        _languages: tuple = tuple(Dictionary._languages.keys())
 
-    def test_category_validation_3(self):
-        pass
+        # We get all the values by keys (tuple above) from all language dictionaries
+        categories_values: tuple = tuple(Dictionary._languages[lang][_key] for lang in _languages for _key in categories_keys)  # noqa
 
-    def test_category_validation_4(self):
-        pass
+        # Now we check that they all pass validation
+        res: bool = all(category_validation(lang, Dictionary.receive_translation(lang, category)) for lang in _languages for category in categories_keys)  # noqa
+        self.assertEqual(res, True)
 
-    def test_category_validation_5(self):
-        pass
+    def test_category_validation_2(self):  # The phrase exists, but in a different language
+        res: bool = category_validation("en", "Viajar")
+        self.assertEqual(res, False)
+
+    def test_category_validation_3(self):  # The language is in the dictionary, but there is no phrase
+        res: bool = category_validation("is", "Dictionary")
+        self.assertEqual(res, False)
+
+    def test_category_validation_4(self):  # Typo in phrase
+        res: bool = category_validation("en", "Service")  # 'Service', but in the dictionary 'Services'
+        self.assertEqual(res, False)
 
 
 if __name__ == '__main__':

@@ -1,14 +1,13 @@
-import sys
-
-sys.path.append('../')
-
 import asyncio
 import re
 from flask import flash
 from datetime import datetime, timezone
-from app.database_control import DatabaseQueries, connect_db, close_db_main
 
-from dictionary import Dictionary
+import sys
+sys.path.append('../')
+
+from app.db_manager import DatabaseQueries, connect_db, close_db
+from app.dictionary import Dictionary
 from app.time_checking import timeit
 
 
@@ -27,7 +26,7 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
         telegram_id_validation(telegram_id)
     )
 
-    if username_is_valid:
+    if username_is_valid:  # TODO remove flask flash and return raise error
         if password_is_valid:
             if telegram_id_is_valid:
                 return True
@@ -46,7 +45,7 @@ async def username_validation(username: str) -> bool:
     connection = connect_db()
     dbase = DatabaseQueries(connection)
     username_is_exist: bool = dbase.check_username_is_exist(username)
-    close_db_main(connection)
+    close_db(connection)
 
     if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and not username_is_exist:
         return True
@@ -68,7 +67,7 @@ async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
     connection = connect_db()
     dbase = DatabaseQueries(connection)
     telegram_id_is_exist: bool = dbase.check_telegram_id_is_exist(telegram_id)
-    close_db_main(connection)
+    close_db(connection)
 
     if not telegram_id_is_exist:
         return True
@@ -160,6 +159,7 @@ def value_validation(value: str) -> int:
     return 0
 
 
+@timeit
 def category_validation(lang: str, category: str) -> bool:
     categories: tuple = (
         f"{Dictionary.receive_translation(lang, "supermarkets")}",
@@ -179,8 +179,9 @@ def category_validation(lang: str, category: str) -> bool:
         f"{Dictionary.receive_translation(lang, "salary")}",
         f"{Dictionary.receive_translation(lang, "charity")}",
         f"{Dictionary.receive_translation(lang, "other")}"
-    )
+    )  # TODO: make a faster algorithm, although this one works within 0.00001 sec.
 
     if category in categories:
         return True
     return False
+

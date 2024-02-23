@@ -1,6 +1,10 @@
 *.env
 *.log
 *.sqlite3
+*.ps1
+*.exe
+*.bat
+*.ini
 /logs
 /__pycache__
 /.pytest_cache

@@ -1,7 +1,12 @@
 """
-    This package is used to switch languages in the chatbot
+    This package is used to switch languages in the chatbot.
+
+    Also stores emoji and sticker codes for use inside the bot.
 """
 
+from app.logger import setup_logger
+
+logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
 
 class Emoji:
     _emoji_codes: dict = \
@@ -310,7 +315,11 @@ class Dictionary:
                     "remove_completed": "Группа и пользователи полностью удалены!",
                     "not_register": "Вы не зарегистрированы.",
                     "file_size": "Размер файла",
-                    "hashsum": "Хэш-сумма"
+                    "hashsum": "Хэш-сумма",
+                    "unsupported_language": "Извините, но данный язык не поддерживается."
+                                            " Выбирайте из кнопок, представленных в нижнем меню",
+                    "charity": "Благотворительность",
+                    "invalid_category": "Выбрана некорректная категория"
                 },
 
             "es":
@@ -435,7 +444,11 @@ class Dictionary:
                     "remove_completed": "¡El grupo y los usuarios están completamente eliminados!",
                     "not_register": "No estás registrado.",
                     "file_size": "Tamaño del archivo",
-                    "hashsum": "Suma de comprobación"
+                    "hashsum": "Suma de comprobación",
+                    "unsupported_language": "Lo sentimos, pero este idioma no es compatible."
+                                            " Seleccione entre los presentados en el menú de botones.",
+                    "charity": "Caridad",
+                    "invalid_category": "Categoría incorrecta seleccionada."
                 },
 
             "de":
@@ -562,7 +575,11 @@ class Dictionary:
                     "remove_completed": "Die Gruppe und Benutzer werden vollständig gelöscht!",
                     "not_register": "Sie sind nicht registriert.",
                     "file_size": "Dateigröße",
-                    "hashsum": "Prüfsumme"
+                    "hashsum": "Prüfsumme",
+                    "unsupported_language": "Es tut uns leid, aber diese Sprache wird nicht unterstützt."
+                                            " Wählen Sie aus den im Schaltflächenmenü angezeigten Optionen aus.",
+                    "charity": "Wohltätigkeit",
+                    "invalid_category": "Falsche Kategorie ausgewählt."
                 },
 
             "fr":
@@ -687,7 +704,11 @@ class Dictionary:
                     "remove_completed": "Le groupe et les utilisateurs sont complètement supprimés!",
                     "not_register": "Vous n'êtes pas inscrit.",
                     "file_size": "Taille du fichier",
-                    "hashsum": "Somme de contrôle"
+                    "hashsum": "Somme de contrôle",
+                    "unsupported_language": "Nous sommes désolés, mais cette langue n'est pas prise en charge."
+                                            " Sélectionnez parmi ceux présentés dans le menu des boutons.",
+                    "charity": "Charité",
+                    "invalid_category": "Mauvaise catégorie sélectionnée."
                 },
 
             "is":
@@ -812,9 +833,25 @@ class Dictionary:
                     "remove_completed": "Hópnum og notendum er alveg eytt!",
                     "not_register": "Þú ert ekki skráður.",
                     "file_size": "Skjala stærð",
-                    "hashsum": "Athugunarsumma"
+                    "hashsum": "Athugunarsumma",
+                    "unsupported_language": "Því miður er þetta tungumál ekki stutt."
+                                            " Veldu úr þeim sem kynntar eru í hnappavalmyndinni.",
+                    "charity": "Kærleikur",
+                    "invalid_category": "Rangur flokkur valinn."
                 }
         }
+
+    @staticmethod
+    def check_lang_in_dict(language: str) -> bool:
+        if language in Dictionary._languages.keys():
+            return True
+        return False
+
+    @staticmethod
+    def check_phrase_in_dict(language: str, phrase: str) -> bool:
+        if phrase in Dictionary._languages[language]:
+            return True
+        return False
 
     @staticmethod
     def receive_translation(language: str, phrase: str) -> str:
@@ -831,15 +868,3 @@ class Dictionary:
             str: value in the dictionary in the selected language
         """
         return Dictionary._languages[language].get(phrase)
-
-    @staticmethod
-    def check_lang_in_dict(language: str) -> bool:
-        if language in Dictionary._languages.keys():
-            return True
-        return False
-
-    @staticmethod
-    def check_phrase_in_dict(language: str, phrase: str) -> bool:
-        if phrase in Dictionary._languages[language]:
-            return True
-        return False
