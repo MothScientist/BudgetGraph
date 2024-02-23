@@ -1,4 +1,5 @@
 name: UnitTests
+repository: BudgetControl
 
 on:
   workflow_dispatch:
@@ -9,6 +10,7 @@ on:
   pull_request:
 
 jobs:
+
   unit-tests:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -29,6 +31,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+          check-latest: true
 
       - name: Install dependencies
         run: |
@@ -37,4 +40,38 @@ jobs:
           pip install pytest
 
       - name: Run UnitTests
-        run: bash scripts/run_unit_tests.sh
+        run: |
+          cd tests || exit 1
+          python -m pytest test_sources.py test_validators.py
+
+  database-queries-unit-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ '3.11', '3.12' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL 16
+        uses:
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run UnitTests
+        run: |
+          cd tests || exit 1
+          python manage_test_db.py
+          python -m pytest test_database_queries.py
