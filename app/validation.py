@@ -77,15 +77,38 @@ async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
 async def date_validation(entered_date: str) -> bool:  # entered date in format DD/MM/YYYY
     if not await check_date_in_correct_format(entered_date):
         return False
+
     _day: int = int(entered_date[:2])
     _month: int = int(entered_date[3:5])
     _year: int = int(entered_date[-4:])
-    year_is_correct, day_is_correct = await asyncio.gather(
-        check_day_is_correct(_year, _month, _day),  # DD
-        check_year_is_correct(_year)  # YYYY
-    )
+    day_is_correct = await check_day_is_correct(_year, _month, _day)
 
-    if year_is_correct and day_is_correct:
+    if not day_is_correct:
+        return False
+
+    checking_date_in_unix_format: bool = await comparison_dates_unix_format(entered_date)
+    if checking_date_in_unix_format:
+        return True
+
+    return False
+
+
+async def comparison_dates_unix_format(entered_date: str) -> bool:
+    """
+    :param entered_date: date in format DD/MM/YYYY
+
+    The custom date should not be less than 10 years from the current one
+    and more than 1 day from the current one
+
+    Time 1 day ahead is necessary due to the difference in time zones
+    (since the user enters the date independently in the DD/MM/YYYY format)
+    """
+    twelve_hours_in_seconds: int = 43_200  # 12 hours in seconds
+    ten_years_in_seconds: int = 315_360_000 + twelve_hours_in_seconds  # 3650 days in seconds
+    current_time: int = int(datetime.now(timezone.utc).timestamp())  # unix format
+    entered_date_unix: int = int(datetime.strptime(entered_date, '%d/%m/%Y').timestamp())
+
+    if current_time - ten_years_in_seconds <= entered_date_unix <= current_time + twelve_hours_in_seconds:
         return True
     return False
 
@@ -98,22 +121,8 @@ async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
     return False
 
 
-async def check_year_is_correct(entered_year: int) -> bool:
-    current_year: int = datetime.now(timezone.utc).year
-    if current_year - 10 <= entered_year <= current_year:
-        return True
-    return False
-
-
 async def check_day_is_correct(entered_year: int, entered_month: int, entered_day: int) -> bool:
     if 1 > entered_day > 31:
-        return False
-
-    current_day: int = datetime.now(timezone.utc).day
-    current_month: int = datetime.now(timezone.utc).month
-    current_year: int = datetime.now(timezone.utc).year
-
-    if current_year == entered_year and current_month == entered_month and entered_day > current_day:
         return False
 
     if entered_month == 2:
@@ -122,9 +131,9 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
         elif entered_day <= 28:
             return True
         return False
-    elif entered_month in [1, 3, 5, 7, 8, 10, 12] and current_day <= 31:  # 31
+    elif entered_month in [1, 3, 5, 7, 8, 10, 12] and entered_day <= 31:
         return True
-    elif entered_month in [4, 6, 9, 11] and current_day <= 30:  # 30
+    elif entered_month in [4, 6, 9, 11] and entered_day <= 30:
         return True
 
     return False
