@@ -1,5 +1,5 @@
 [![UnitTests](https://github.com/MothScientist/BudgetControl/actions/workflows/run_unit_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetControl/actions/workflows/run_unit_tests.yml)
-[![Scripts Test](https://github.com/MothScientist/BudgetControl/actions/workflows/run_scripts_tests.yml/badge.svg)](https://github.com/MothScientist/BudgetControl/actions/workflows/run_scripts_tests.yml)
+[![Scripts Test](https://github.com/MothScientist/BudgetControl/actions/workflows/run_scripts_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetControl/actions/workflows/run_scripts_tests.yml)
 ![Status](https://img.shields.io/github/v/release/MothScientist/BudgetControl?label=Unstable&color=yellow)
 
 ![GIF](presentation/budget_donuts.gif)
@@ -15,13 +15,23 @@
 - ### <font color="lime">High priority testing</font>
 
 
-| Technology                                                                                                                                             | Version                           |
-|--------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
-| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)                                                 | <font color="white">3.12.0</font> |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)                                                 | <font color="white">3.0.2</font>  |
-| **pyTelegramBotAPI**                                                                                                                                   | <font color="white">4.15.4</font> |
-| ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)                                   | <font color="white">16.*</font>   |
+| Technology                                                                                                             | Version                                            |
+|------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
+| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)                 | <center><font color="white">3.12.2</font></center> |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)                 | <center><font color="white">3.0.2</font></center>  |
+| **pyTelegramBotAPI**                                                                                                   | <center><font color="white">4.16.1</font></center> |
+| ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)   | <center><font color="white">16.2</font></center>   |
 
+### Testing:
+- __Python UnitTest__
+- __Pytest__
+- __Selenium__ (will be added in upcoming updates)
+
+### Launch and deployment:
+- __Docker (Docker compose)__
+- __Nginx__ (will be added in upcoming updates)
+
+__You can also find configuration files for:__</br>
 ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)![Dependabot](https://img.shields.io/badge/dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white)
 
 ### <font color="aqua">For developers:</font></br>
@@ -52,6 +62,10 @@ To successfully pass the __GitHub Action tests__, you need to create secrets ins
 5. Running a bash script: </br> 
 ```./deploy.sh``` </br>
 
+### For Linux (without <font color="DeepSkyBlue">Docker</font>):
+1. Clone the repository: </br>
+```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
+
 ### For Windows (with <font color="DeepSkyBlue">Docker Desktop</font>):
 1. Clone the repository: </br>
 ```git clone https://github.com/MothScientist/budget_control.git``` </br></br>
@@ -63,7 +77,6 @@ To successfully pass the __GitHub Action tests__, you need to create secrets ins
 ```SECRET_KEY="your_secret_key_for_Flask_session"```</br>
 ```BOT_TOKEN="your_token"```</br>
 ```DATABASE="db_name.sqlite3"```</br>
-```TEST_DATABASE="test_db.sqlite3"```</br></br>
 
 4. Return to the previous directory:</br>
 ```cd ..```</br></br>
@@ -114,5 +127,7 @@ To successfully pass the __GitHub Action tests__, you need to create secrets ins
 ```python webapp.py``` </br>
 ```python bot.py``` </br></br>
 
-### License
-This source code is distributed under [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.en.html).
+# <font color="white">How to run testing:</font>
+
+## License
+This source code is distributed under [AGPL - 3.0](https://www.gnu.org/licenses/agpl-3.0.en.html).
