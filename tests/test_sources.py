@@ -4,6 +4,7 @@ import unittest
 
 from app.encryption import getting_hash, get_salt, get_token
 from app.dictionary import Dictionary
+from app.create_csv import create_csv_file, get_file_size_kb, get_file_checksum
 
 
 class TestPasswordHashing(unittest.TestCase):
@@ -54,14 +55,40 @@ class TestTokenGeneration(unittest.TestCase):
         self.assertEqual(res, 16)
 
 
-class TestCSVGeneration(unittest.TestCase):
-    pass
+class TestCreateCSV(unittest.TestCase):
+    def test_create_csv_1(self):
+        pass
+
+    def test_create_csv_2(self):
+        pass
+
+    def test_create_csv_3(self):
+        pass
+    
+    def test_file_size_1(self):
+        pass
+
+    def test_file_size_2(self):
+        pass
+
+    def test_file_size_3(self):
+        pass
+
+    def test_file_checksum_1(self):
+        pass
+
+    def test_file_checksum_2(self):
+        pass
+
+    def test_file_checksum_3(self):
+        pass
 
 
 class TestLanguages(unittest.TestCase):
     def test_languages_1(self):  # Checking multiple keys for presence in each language dictionary
-        _keys = ["link_github", "get_my_token", "delete_group", "services", "enter_username", "create_new_user_error",
-                 "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table"]
+        _keys = ("link_github", "get_my_token", "delete_group", "services", "enter_username", "create_new_user_error",
+                 "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table",
+                 "category", "set_date", "YES", "get_csv", "language_changed", "misunderstanding", "my")
         res = all(_key in Dictionary._languages[lang] for _key in _keys for lang in Dictionary._languages.keys())
         self.assertEqual(res, True)
     
@@ -93,6 +120,39 @@ class TestLanguages(unittest.TestCase):
     def test_languages_8(self):
         res = Dictionary.receive_translation("is", "check_correct_username")
         self.assertEqual(res, "Athugaðu rétta stafsetningu notandanafns.")
+
+    def test_languages_9(self):  # Checking for empty keys
+        res = all(_key.replace(" ", "") != "" for _key in Dictionary._languages.keys())
+        self.assertEqual(res, True)
+
+    def test_languages_10(self):  # Checking for empty keys
+        # algorithm collects all the keys within the language keys ("en", "es", etc.) into a single tuple
+        _keys = sum((tuple(Dictionary._languages[i].keys()) for i in Dictionary._languages), ())
+
+        # exclude all spaces from the values of this tuple and check that they are not equal to the empty string
+        res = all(_key.replace(" ", "") != "" for _key in _keys)
+
+        self.assertEqual(res, True)
+
+    def test_languages_11(self):  # Checking for empty values
+        _values = tuple(val for lang_dict in Dictionary._languages.values() for val in lang_dict.values())
+        res = all(_value.replace(" ", "") != "" for _value in _values)
+        self.assertEqual(res, True)
+
+    def test_languages_12(self):  # Checking keys in a dictionary
+        _keys_test = {"en", "ru", "es", "de", "fr", "is"}
+        _keys = set(Dictionary._languages.keys())
+        res = _keys_test == _keys
+        self.assertEqual(res, True)
+
+    def test_languages_13(self):
+        res = Dictionary.receive_translation("en", "start_after_change_language")
+        self.assertEqual(res, "To change the language correctly, "
+                              "please restart the bot by clicking on the /start button.")
+
+    def test_languages_14(self):
+        res = Dictionary.receive_translation("es", "data_is_safe")
+        self.assertEqual(res, "¡Tus datos no se verán perjudicados!")
 
 
 if __name__ == '__main__':

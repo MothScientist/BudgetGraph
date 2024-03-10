@@ -15,6 +15,6 @@ def timeit(func):
         _start = perf_counter()
         result = func(*args, **kwargs)
         _end = perf_counter()
-        logger_time.debug(f'{func.__name__}: {_end - _start:.6f} sec.')
+        logger_time.info(f'{func.__name__}: {_end - _start:.6f} sec.')
         return result
     return wrapper

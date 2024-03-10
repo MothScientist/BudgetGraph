@@ -5,78 +5,92 @@ from datetime import datetime, timedelta, timezone
 
 from app.validation import (check_day_is_correct,
                             check_year_is_leap,
-                            check_year_is_correct,
                             check_date_in_correct_format,
+                            comparison_dates_unix_format,
                             description_validation,
-                            number_validation,
-                            date_validation)
+                            value_validation,
+                            date_validation,
+                            category_validation)
+
+from app.dictionary import Dictionary
 
 
 class TestDateValidation(unittest.TestCase):
-    def test_day_1(self):  # today
-        current_date = datetime.now(timezone.utc)
-        day: int = int(current_date.strftime('%d'))
-        month: int = int(current_date.strftime('%m'))
-        year: int = int(current_date.strftime('%Y'))
-        res = asyncio.run(check_day_is_correct(year, month, day))
-        self.assertEqual(res, True)
+    # def test_day_is_correct_1(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_2(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_3(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_4(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_5(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_6(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_7(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_8(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_9(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
+    #
+    # def test_day_is_correct_10(self):
+    #     res = asyncio.run(check_day_is_correct(""))
+    #     self.assertEqual(res, )
 
-    def test_day_2(self):  # a week ago
-        week_ago = datetime.now(timezone.utc) + timedelta(days=-7)
-        day: int = int(week_ago.strftime('%d'))
-        month: int = int(week_ago.strftime('%m'))
-        year: int = int(week_ago.strftime('%Y'))
-        res = asyncio.run(check_day_is_correct(year, month, day))
-        self.assertEqual(res, True)
+    # datetime.now(timezone.utc) + timedelta(days=1) and datetime.now(timezone.utc) - timedelta(days=3650)
+    # There is no point in checking, since the result will differ due to time zones
+    # TODO add separate tests for timezone (i.e. manually set timezone and time - and check
 
-    def test_day_3(self):  # tomorrow
-        tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
-        day: int = int(tomorrow.strftime('%d'))
-        month: int = int(tomorrow.strftime('%m'))
-        year: int = int(tomorrow.strftime('%Y'))
-        res = asyncio.run(check_day_is_correct(year, month, day))
-        self.assertEqual(res, False)
+    def test_comparison_dates_unix_format_1(self):
+        for day_delta in range(0, 120):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, True)
 
-    def test_day_validator_4(self):  # leap year
-        res = asyncio.run(check_day_is_correct(2020, 2, 29))
-        self.assertEqual(res, True)
+    def test_comparison_dates_unix_format_2(self):
+        for day_delta in range(3250, 3650):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, True)
 
-    def test_day_5(self):  # February 29th in non-leap years
-        res = asyncio.run(check_day_is_correct(2021, 2, 29))
-        self.assertEqual(res, False)
+    def test_comparison_dates_unix_format_3(self):
+        for day_delta in range(2, 120):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) + timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, False)
 
-    def test_day_6(self):  # yesterday
-        yesterday = datetime.now(timezone.utc) + timedelta(days=-1)
-        day: int = int(yesterday.strftime('%d'))
-        month: int = int(yesterday.strftime('%m'))
-        year: int = int(yesterday.strftime('%Y'))
-        res = asyncio.run(check_day_is_correct(year, month, day))
-        self.assertEqual(res, True)
-
-    def test_year_1(self):
-        year: int = datetime.now(timezone.utc).year
-        res = asyncio.run(check_year_is_correct(year))
-        self.assertEqual(res, True)
-
-    def test_year_2(self):
-        year: int = datetime.now(timezone.utc).year - 10
-        res = asyncio.run(check_year_is_correct(year))
-        self.assertEqual(res, True)
-
-    def test_year_3(self):
-        year: int = datetime.now(timezone.utc).year - 11
-        res = asyncio.run(check_year_is_correct(year))
-        self.assertEqual(res, False)
-
-    def test_year_4(self):
-        year: int = datetime.now(timezone.utc).year + 1
-        res = asyncio.run(check_year_is_correct(year))
-        self.assertEqual(res, False)
-
-    def test_year_5(self):
-        year: int = datetime.now(timezone.utc).year - 5
-        res = asyncio.run(check_year_is_correct(year))
-        self.assertEqual(res, True)
+    def test_comparison_dates_unix_format_4(self):
+        for day_delta in range(3651, 3700):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, False)
 
     def test_leap_year_1(self):
         res = asyncio.run(check_year_is_leap(2020))
@@ -96,6 +110,18 @@ class TestDateValidation(unittest.TestCase):
 
     def test_leap_year_5(self):
         res = asyncio.run(check_year_is_leap(2024))
+        self.assertEqual(res, True)
+
+    def test_leap_year_6(self):
+        res = asyncio.run(check_year_is_leap(2028))
+        self.assertEqual(res, True)
+
+    def test_leap_year_7(self):
+        res = asyncio.run(check_year_is_leap(2030))
+        self.assertEqual(res, False)
+
+    def test_leap_year_8(self):
+        res = asyncio.run(check_year_is_leap(2032))
         self.assertEqual(res, True)
 
     def test_check_date_in_correct_format_1(self):
@@ -151,46 +177,40 @@ class TestDateValidation(unittest.TestCase):
         self.assertEqual(res, False)
 
     def test_date_validation_3(self):
-        current_date = datetime.now(timezone.utc)
-        current_day_month: str = current_date.strftime('%d/%m')
-        year: int = int(current_date.strftime('%Y')) - 10
-        res = asyncio.run(date_validation(f"{current_day_month}/{year}"))
+        tomorrow = datetime.now(timezone.utc).date() + timedelta(days=1)
+        tomorrow_day: str = tomorrow.strftime('%d')
+        month: str = tomorrow.strftime('%m')
+        year: int = int(tomorrow.strftime('%Y'))
+        res = asyncio.run(date_validation(f"{tomorrow_day}/{month}/{year}"))
         self.assertEqual(res, True)
 
     def test_date_validation_4(self):
-        tomorrow = datetime.now(timezone.utc).date() + timedelta(days=1)
-        tomorrow_day_month: str = tomorrow.strftime('%d/%m')
-        year: int = int(tomorrow.strftime('%Y'))
-        res = asyncio.run(date_validation(f"{tomorrow_day_month}/{year}"))
-        self.assertEqual(res, False)
-
-    def test_date_validation_5(self):
         yesterday = datetime.now(timezone.utc) + timedelta(days=-1)
         yesterday_day_month: str = yesterday.strftime('%d/%m')
         year: int = int(yesterday.strftime('%Y'))
         res = asyncio.run(date_validation(f"{yesterday_day_month}/{year}"))
         self.assertEqual(res, True)
 
-    def test_date_validation_6(self):
+    def test_date_validation_5(self):
         res = asyncio.run(date_validation(""))
         self.assertEqual(res, False)
 
-    def test_date_validation_7(self):
+    def test_date_validation_6(self):
         current_date = datetime.now(timezone.utc).strftime('%d-%m-%Y')
         res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
-    def test_date_validation_8(self):
+    def test_date_validation_7(self):
         current_date = datetime.now(timezone.utc).strftime('%Y/%m/%d')
         res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
-    def test_date_validation_9(self):
+    def test_date_validation_8(self):
         current_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
-    def test_date_validation_10(self):
+    def test_date_validation_9(self):
         current_date = datetime.now(timezone.utc)
         current_day_month: str = current_date.strftime('%d/%m')
         year: int = int(current_date.strftime('%Y')) + 1
@@ -214,16 +234,68 @@ class TestRegistrationValidation(unittest.TestCase):
 
 class TestNumberValidation(unittest.TestCase):
     def test_number_validation_1(self):
-        res = number_validation("100aaa0")
-        self.assertEqual(res, 0)
+        res: int = value_validation("999999999")
+        self.assertEqual(res, 999999999)
 
     def test_number_validation_2(self):
-        res = number_validation("0")
+        res: int = value_validation("1000000000")
         self.assertEqual(res, 0)
 
     def test_number_validation_3(self):
-        res = number_validation("1o")
+        res: int = value_validation("1000000001")
         self.assertEqual(res, 0)
+
+    def test_number_validation_4(self):
+        res: int = value_validation("0")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_5(self):
+        res: int = value_validation("1o")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_6(self):
+        res: int = value_validation("100a")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_7(self):
+        res: int = value_validation("01")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_8(self):
+        res: int = value_validation("010")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_9(self):
+        res: int = value_validation("")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_10(self):
+        res: int = value_validation("00")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_11(self):
+        res: int = value_validation("100_000")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_12(self):
+        for value in range(0, 1_500_000):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, value)
+
+    def test_number_validation_13(self):
+        for value in range(10_000_000, 11_250_000):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, value)
+
+    def test_number_validation_14(self):
+        for value in range(999_999_999, 998_500_000, -1):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, value)
+
+    def test_number_validation_15(self):
+        for value in range(1_000_000_000, 1_000_500_000):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, 0)
 
 
 class TestDescriptionValidator(unittest.TestCase):
@@ -232,59 +304,32 @@ class TestDescriptionValidator(unittest.TestCase):
         self.assertEqual(res, True)
 
 
-class TestTableNameValidator(unittest.TestCase):
-    """
-    Used in the create_table_group() function in database_control.py
-    """
-    def test_table_name_validator_1(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_1") else False
-        res = True if res else False
-        self.assertEqual(res, True)
-
-    def test_table_name_validator_2(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_01") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_3(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_100") else False
-        self.assertEqual(res, True)
-
-    def test_table_name_validator_4(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_5(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_6(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_0") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_7(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_8(self):
-        res = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget") else False
-        self.assertEqual(res, False)
-
-
 class TestCategoryValidation(unittest.TestCase):
-    def test_category_validation_1(self):
-        pass
+    def test_category_validation_1(self):  # All categories for all languages
+        categories_keys: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport",
+                                  "devices", "education", "services", "travel", "housing", "investments",
+                                  "hobby", "jewelry", "salary", "charity", "other")
 
-    def test_category_validation_2(self):
-        pass
+        _languages: tuple = tuple(Dictionary._languages.keys())
 
-    def test_category_validation_3(self):
-        pass
+        # We get all the values by keys (tuple above) from all language dictionaries
+        categories_values: tuple = tuple(Dictionary._languages[lang][_key] for lang in _languages for _key in categories_keys)  # noqa
 
-    def test_category_validation_4(self):
-        pass
+        # Now we check that they all pass validation
+        res: bool = all(category_validation(lang, Dictionary.receive_translation(lang, category)) for lang in _languages for category in categories_keys)  # noqa
+        self.assertEqual(res, True)
 
-    def test_category_validation_5(self):
-        pass
+    def test_category_validation_2(self):  # The phrase exists, but in a different language
+        res: bool = category_validation("en", "Viajar")
+        self.assertEqual(res, False)
+
+    def test_category_validation_3(self):  # The language is in the dictionary, but there is no phrase
+        res: bool = category_validation("is", "Dictionary")
+        self.assertEqual(res, False)
+
+    def test_category_validation_4(self):  # Typo in phrase
+        res: bool = category_validation("en", "Service")  # 'Service', but in the dictionary 'Services'
+        self.assertEqual(res, False)
 
 
 if __name__ == '__main__':

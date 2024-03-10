@@ -1,6 +1,12 @@
 """
-    This package is used to switch languages in the chatbot
+    This package is used to switch languages in the chatbot.
+
+    Also stores emoji and sticker codes for use inside the bot.
 """
+
+from app.logger import setup_logger
+
+logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
 
 
 class Emoji:
@@ -115,10 +121,9 @@ class Dictionary:
                     "investments": "Investments",
                     "hobby": "Hobby",
                     "jewelry": "Jewelry",
-                    "sale": "Sale",
                     "salary": "Salary",
                     "other": "Other",
-                    "select_category": "Select category or enter your own",
+                    "select_category": "Select category",
                     "add_description": "Add description (no more than 50 characters)",
                     "no_description": "No description",
                     "entry_add_success": "Entry added successfully",
@@ -179,9 +184,17 @@ class Dictionary:
                     "not_deleted_by_owner": "The group can only be removed by its owner - "
                                             "contact the owner of the group, or delete the account.",
                     "remove_completed": "The group and users are completely deleted!",
-                    "not_register.": "You are not register.",
+                    "not_register": "You are not register.",
                     "file_size": "File size",
-                    "hashsum": "Checksum"
+                    "hashsum": "Checksum",
+                    "unsupported_language": "We're sorry, but this language is not supported. "
+                                            "Select from those presented in the button menu.",
+                    "charity": "Charity",
+                    "invalid_category": "Incorrect category selected.",
+                    "entry_add_error": "Error adding a new transaction.",
+                    "start_after_change_language": "To change the language correctly, "
+                                                   "please restart the bot by clicking on the /start button.",
+                    "data_is_safe": "Your data will not be harmed!"
                 },
 
             "ru":
@@ -240,10 +253,9 @@ class Dictionary:
                     "investments": "Вложения",
                     "hobby": "Хобби",
                     "jewelry": "Ювелирные изделия",
-                    "sale": "Распродажа",
                     "salary": "Зарплата",
                     "other": "Другое",
-                    "select_category": "Выберите категорию или введите свою",
+                    "select_category": "Выберите категорию:",
                     "add_description": "Добавить описание (не более 50 символов)",
                     "no_description": "без описания",
                     "entry_add_success": "Запись успешно добавлена",
@@ -306,9 +318,17 @@ class Dictionary:
                     "not_deleted_by_owner": "Удалить группу может только ее владелец — "
                                             "обратитесь к владельцу группы или удалите аккаунт.",
                     "remove_completed": "Группа и пользователи полностью удалены!",
-                    "not_register.": "Вы не зарегистрированы.",
+                    "not_register": "Вы не зарегистрированы.",
                     "file_size": "Размер файла",
-                    "hashsum": "Хэш-сумма"
+                    "hashsum": "Хэш-сумма",
+                    "unsupported_language": "Извините, но данный язык не поддерживается."
+                                            " Выбирайте из кнопок, представленных в нижнем меню",
+                    "charity": "Благотворительность",
+                    "invalid_category": "Выбрана некорректная категория",
+                    "entry_add_error": "Ошибка добавления новой транзакции.",
+                    "start_after_change_language": "Чтобы корректно изменить язык, "
+                                                   "перезапустите бота, нажав кнопку /start.",
+                    "data_is_safe": "Ваши данные не пострадают!"
                 },
 
             "es":
@@ -367,10 +387,9 @@ class Dictionary:
                     "investments": "Inversiones",
                     "hobby": "Pasatiempo",
                     "jewelry": "Joyas",
-                    "sale": "Venta",
                     "salary": "Salario",
                     "other": "Otro",
-                    "select_category": "Selecciona una categoría o introduce la tuya",
+                    "select_category": "Selecciona una categoría",
                     "add_description": "Agregar descripción (no más de 50 caracteres)",
                     "no_description": "Sin descripción",
                     "entry_add_success": "Entrada agregada exitosamente",
@@ -432,9 +451,17 @@ class Dictionary:
                     "not_deleted_by_owner": "El grupo solo puede ser eliminado por su propietario: comuníquese con "
                                             "el propietario del grupo o elimine la cuenta.",
                     "remove_completed": "¡El grupo y los usuarios están completamente eliminados!",
-                    "not_register.": "No estás registrado.",
+                    "not_register": "No estás registrado.",
                     "file_size": "Tamaño del archivo",
-                    "hashsum": "Suma de comprobación"
+                    "hashsum": "Suma de comprobación",
+                    "unsupported_language": "Lo sentimos, pero este idioma no es compatible."
+                                            " Seleccione entre los presentados en el menú de botones.",
+                    "charity": "Caridad",
+                    "invalid_category": "Categoría incorrecta seleccionada.",
+                    "entry_add_error": "Error al agregar una nueva transacción.",
+                    "start_after_change_language": "Para cambiar el idioma correctamente, "
+                                                   "reinicie el bot haciendo clic en el botón /start.",
+                    "data_is_safe": "¡Tus datos no se verán perjudicados!"
                 },
 
             "de":
@@ -493,10 +520,9 @@ class Dictionary:
                     "investments": "Investitionen",
                     "hobby": "Hobby",
                     "jewelry": "Schmuck",
-                    "sale": "Verkauf",
                     "salary": "Gehalt",
                     "other": "Andere",
-                    "select_category": "Wählen Sie eine Kategorie aus oder geben Sie Ihre eigene ein",
+                    "select_category": "Wählen Sie eine Kategorie",
                     "add_description": "Beschreibung hinzufügen (nicht mehr als 50 Zeichen)",
                     "no_description": "Keine Beschreibung",
                     "entry_add_success": "Eintrag erfolgreich hinzugefügt",
@@ -560,9 +586,17 @@ class Dictionary:
                     "not_deleted_by_owner": "Die Gruppe kann nur von ihrem Besitzer entfernt werden – wenden Sie sich "
                                             "an den Besitzer der Gruppe oder löschen Sie das Konto.",
                     "remove_completed": "Die Gruppe und Benutzer werden vollständig gelöscht!",
-                    "not_register.": "Sie sind nicht registriert.",
+                    "not_register": "Sie sind nicht registriert.",
                     "file_size": "Dateigröße",
-                    "hashsum": "Prüfsumme"
+                    "hashsum": "Prüfsumme",
+                    "unsupported_language": "Es tut uns leid, aber diese Sprache wird nicht unterstützt."
+                                            " Wählen Sie aus den im Schaltflächenmenü angezeigten Optionen aus.",
+                    "charity": "Wohltätigkeit",
+                    "invalid_category": "Falsche Kategorie ausgewählt.",
+                    "entry_add_error": "Fehler beim Hinzufügen einer neuen Transaktion.",
+                    "start_after_change_language": "Um die Sprache korrekt zu ändern, starten Sie bitte den Bot neu, "
+                                                   "indem Sie auf die Schaltfläche /start klicken.",
+                    "data_is_safe": "Ihre Daten werden nicht beschädigt!"
                 },
 
             "fr":
@@ -621,10 +655,9 @@ class Dictionary:
                     "investments": "Investissements",
                     "hobby": "Passe-temps",
                     "jewelry": "Bijoux",
-                    "sale": "Vente",
                     "salary": "Salaire",
                     "other": "Autre",
-                    "select_category": "Sélectionnez une catégorie ou entrez la vôtre",
+                    "select_category": "Sélectionnez une catégorie",
                     "add_description": "Ajouter une description (pas plus de 50 caractères)",
                     "no_description": "Pas de description",
                     "entry_add_success": "Entrée ajoutée avec succès",
@@ -686,9 +719,17 @@ class Dictionary:
                     "not_deleted_by_owner": "Le groupe ne peut être supprimé que par son propriétaire - contactez le "
                                             "propriétaire du groupe ou supprimez le compte.",
                     "remove_completed": "Le groupe et les utilisateurs sont complètement supprimés!",
-                    "not_register.": "Vous n'êtes pas inscrit.",
+                    "not_register": "Vous n'êtes pas inscrit.",
                     "file_size": "Taille du fichier",
-                    "hashsum": "Somme de contrôle"
+                    "hashsum": "Somme de contrôle",
+                    "unsupported_language": "Nous sommes désolés, mais cette langue n'est pas prise en charge."
+                                            " Sélectionnez parmi ceux présentés dans le menu des boutons.",
+                    "charity": "Charité",
+                    "invalid_category": "Mauvaise catégorie sélectionnée.",
+                    "entry_add_error": "Erreur lors de l'ajout d'une nouvelle transaction.",
+                    "start_after_change_language": "Pour changer correctement la langue, "
+                                                   "veuillez redémarrer le bot en cliquant sur le bouton /start.",
+                    "data_is_safe": "Vos données ne seront pas endommagées !"
                 },
 
             "is":
@@ -747,10 +788,9 @@ class Dictionary:
                     "investments": "Fjárfestingar",
                     "hobby": "Áhugamál",
                     "jewelry": "Skartgripir",
-                    "sale": "Útsala",
                     "salary": "Laun",
                     "other": "Annað",
-                    "select_category": "Veldu flokk eða sláðu inn þinn eigin",
+                    "select_category": "Veldu flokk",
                     "add_description": "Bæta við lýsingu (ekki meira en 50 stafir)",
                     "no_description": "engin lýsing",
                     "entry_add_success": "Færslu bætt við",
@@ -812,11 +852,31 @@ class Dictionary:
                     "not_deleted_by_owner": "Einungis eigandi hans getur fjarlægt hópinn - hafðu samband við eiganda "
                                             "hópsins eða eyddu reikningnum.",
                     "remove_completed": "Hópnum og notendum er alveg eytt!",
-                    "not_register.": "Þú ert ekki skráður.",
+                    "not_register": "Þú ert ekki skráður.",
                     "file_size": "Skjala stærð",
-                    "hashsum": "Athugunarsumma"
+                    "hashsum": "Athugunarsumma",
+                    "unsupported_language": "Því miður er þetta tungumál ekki stutt."
+                                            " Veldu úr þeim sem kynntar eru í hnappavalmyndinni.",
+                    "charity": "Kærleikur",
+                    "invalid_category": "Rangur flokkur valinn.",
+                    "entry_add_error": "Villa við að bæta við nýrri færslu.",
+                    "start_after_change_language": "Til að breyta tungumálinu rétt skaltu endurræsa "
+                                                   "vélina með því að smella á /start hnappinn.",
+                    "data_is_safe": "Gögnin þín verða ekki fyrir skaða!"
                 }
         }
+
+    @staticmethod
+    def check_lang_in_dict(language: str) -> bool:
+        if language in Dictionary._languages.keys():
+            return True
+        return False
+
+    @staticmethod
+    def check_phrase_in_dict(language: str, phrase: str) -> bool:
+        if phrase in Dictionary._languages[language]:
+            return True
+        return False
 
     @staticmethod
     def receive_translation(language: str, phrase: str) -> str:
@@ -833,15 +893,3 @@ class Dictionary:
             str: value in the dictionary in the selected language
         """
         return Dictionary._languages[language].get(phrase)
-
-    @staticmethod
-    def check_lang_in_dict(language: str) -> bool:
-        if language in Dictionary._languages.keys():
-            return True
-        return False
-
-    @staticmethod
-    def check_phrase_in_dict(language: str, phrase: str) -> bool:
-        if phrase in Dictionary._languages[language]:
-            return True
-        return False

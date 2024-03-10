@@ -1,20 +1,16 @@
-import sys
-
-sys.path.append('../')
-
 from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
 import asyncio
+import sys
 
-from app.database_control import get_db, close_db_g, create_table_group, DatabaseQueries
+sys.path.append('../')
 
-from app.encryption import getting_hash, get_salt
-
-from app.validation import number_validation, description_validation, date_validation, registration_validation
-
-from app.logger import setup_logger
+from app.db_manager import connect_db_flask_g, close_db_flask_g, create_table_group, DatabaseQueries  # noqa
+from app.encryption import getting_hash, get_salt  # noqa
+from app.validation import value_validation, description_validation, date_validation, registration_validation  # noqa
+from app.logger import setup_logger  # noqa
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -24,7 +20,7 @@ app.config.from_object(__name__)
 # Get the secret key to encrypt the Flask session from an environment variable
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
-app.teardown_appcontext(close_db_g)  # Disconnects the database connection after a query
+app.teardown_appcontext(close_db_flask_g)  # Disconnects the database connection after a query
 
 # session lifetime in browser cookies
 app.permanent_session_lifetime = timedelta(days=14)  # timedelta from datetime module
@@ -34,7 +30,7 @@ logger_app = setup_logger("logs/AppLog.log", "app_loger")
 
 @app.route('/')
 def homepage():
-    return render_template("homepage.html", title="Budget control - Home page")
+    return render_template("homepage.html", title="Budget Graph - Homepage")
 
 
 @app.route('/registration', methods=["GET", "POST"])
@@ -50,7 +46,7 @@ def registration():
             if asyncio.run(registration_validation(username, psw, telegram_id)):
                 telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
                 psw_salt: str = get_salt()  # generating salt for a new user
-                dbase = DatabaseQueries(get_db())
+                dbase = DatabaseQueries(connect_db_flask_g())
                 user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
                 group_id: int = dbase.get_group_id_by_token(user_token)
                 create_table_group(f"budget_{group_id}")
@@ -76,7 +72,7 @@ def registration():
         # User is added to an existing group
         elif len(token) == 32 and token.isalnum():  # token consists only of letters and numbers
             if asyncio.run(registration_validation(username, psw, telegram_id)):
-                dbase = DatabaseQueries(get_db())
+                dbase = DatabaseQueries(connect_db_flask_g())
                 group_id: int = dbase.get_group_id_by_token(token)
                 group_not_full: bool = dbase.check_limit_users_in_group(group_id)  # checking places in the group
 
@@ -104,7 +100,7 @@ def registration():
             logger_app.info(f"The user entered a token of incorrect length: {token}.")
             flash("Error - token length must be 32 characters", category="error")
 
-    return render_template("registration.html", title="Budget control - Registration")
+    return render_template("registration.html", title="Budget Graph - Registration")
 
 
 @app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
@@ -112,7 +108,7 @@ def login():
     session.permanent = True
 
     if "userLogged" in session:  # If the client has logged in before
-        dbase = DatabaseQueries(get_db())
+        dbase = DatabaseQueries(connect_db_flask_g())
         username = session["userLogged"]
         user_is_exist: bool = dbase.check_username_is_exist(username)
         if user_is_exist:
@@ -127,19 +123,19 @@ def login():
     if request.method == "POST":
         username: str = request.form["username"]
         psw: str = request.form["password"]
-        dbase = DatabaseQueries(get_db())
+        dbase = DatabaseQueries(connect_db_flask_g())
         psw_salt: str = dbase.get_salt_by_username(username)
 
         if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt)):
             session["userLogged"] = username
-            dbase.update_user_last_login(username)
+            dbase.update_user_last_login_by_username(username)
             logger_app.info(f"Successful authorization: {username}.")
             return redirect(url_for("household", username=session["userLogged"]))
         else:
             flash("This user doesn't exist.", category="error")
             logger_app.warning(f"Failed authorization attempt: {username}, user salt is exist: {len(psw_salt) != 0}")
 
-    return render_template("login.html", title="Budget control - Login")
+    return render_template("login.html", title="Budget Graph - Login")
 
 
 @app.route('/household/<username>', methods=["GET", "POST"])  # user's personal account
@@ -150,28 +146,34 @@ def household(username):
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
 
-    dbase = DatabaseQueries(get_db())
+    dbase = DatabaseQueries(connect_db_flask_g())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
 
     if request.method == "POST":
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
-            value: int = number_validation(value)
+            value: int = value_validation(value)
+            last_total_sum: int = dbase.get_last_sum_in_group(group_id)
             record_date: str = request.form.get("record-date")
             record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # YYYY-MM-DD -> DD/MM/YYYY
             record_date_is_valid: bool = asyncio.run(date_validation(record_date))
             category: str = request.form.get("category")
             description = request.form.get("description")
-            if "submit-button-2" in request.form:
-                value: int = value * (-1)
+            if "submit-button-2" in request.form:  # If this is an expense category
+                value *= -1
+
             if not value:
                 flash("The value format is invalid", category="error")
+
             elif not record_date_is_valid:
                 flash("Date format is invalid", category="error")
+
             elif not description_validation(description):
                 flash("Description format is invalid", category="error")
-            elif not dbase.add_monetary_transaction_to_db(username, value, record_date, category, description):
+
+            elif not dbase.add_monetary_transaction_to_db(username, group_id, value, last_total_sum, record_date,
+                                                          category, description):
                 logger_app.error(f"Error adding data to database: "
                                  f"operation: {request.form}"
                                  f"table: budget_{group_id}")
@@ -180,7 +182,7 @@ def household(username):
                 flash("Data added successfully.", category="success")
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
-            record_id: int = number_validation(record_id)
+            record_id: int = value_validation(record_id)
 
             if not record_id or not dbase.check_record_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
@@ -196,10 +198,15 @@ def household(username):
                                       "Education", "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby",
                                       "Jewelry", "Sale", "Salary", "Other")
     headers: tuple[str, ...] = ("№", "Total", "Username", "Transfer", "Category", "Date", "Description")
-    data: list = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
+    data: tuple = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
-    return render_template("household.html", title=f"Budget control - {username}",
-                           token=token, username=username, data=data, headers=headers, category_list=category_list)
+    return render_template("household.html",
+                           title=f"Budget Graph - {username}",
+                           token=token,
+                           username=username,
+                           data=data,
+                           headers=headers,
+                           category_list=category_list)
 
 
 @app.route('/settings/<username>')
@@ -210,7 +217,7 @@ def settings(username):
     if "userLogged" not in session or session["userLogged"] != username:
         abort(401)
 
-    dbase = DatabaseQueries(get_db())
+    dbase = DatabaseQueries(connect_db_flask_g())
     token: str = dbase.get_token_by_username(username)
     group_id: int = dbase.get_group_id_by_token(token)
     group_owner: str = dbase.get_group_owner_username_by_group_id(group_id)
@@ -230,8 +237,12 @@ def conditions():
     """
     privacy Policy page
     """
-    return render_template("conditions.html", title="Usage Policy", site_name="", site_url="",
-                           contact_email="", contact_url="")
+    return render_template("conditions.html",
+                           title="Usage Policy",
+                           site_name="",
+                           site_url="",
+                           contact_email="",
+                           contact_url="")
 
 
 @app.route('/logout', methods=['GET'])
@@ -245,12 +256,12 @@ def logout():
 
 
 @app.errorhandler(401)
-def page_not_found(error):  # do not remove the parameter
+def page_not_found(error):  # DO NOT REMOVE the parameter  # noqa
     return render_template("error401.html", title="UNAUTHORIZED"), 401
 
 
 @app.errorhandler(404)
-def page_not_found(error):  # do not remove the parameter
+def page_not_found(error):  # DO NOT REMOVE the parameter  # noqa
     return render_template("error404.html", title="PAGE NOT FOUND"), 404
 
 

@@ -3,7 +3,7 @@ name: Scripts Test
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1'  # https://crontab.cronhub.io/
   push:
     branches: [ master, postgresql ]
   pull_request:
@@ -34,4 +34,4 @@ jobs:
           cd ..
 
       - name: Run scripts test
-        run: bash run_scripts_test.sh
+        run: bash scripts/run_scripts_test.sh
