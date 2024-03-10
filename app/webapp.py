@@ -7,7 +7,7 @@ import sys
 
 sys.path.append('../')
 
-from app.db_manager import connect_db_flask_g, close_db_flask_g, create_table_group, DatabaseQueries  # noqa
+from app.db_manager import connect_db_flask_g, close_db_flask_g, DatabaseQueries  # noqa
 from app.encryption import getting_hash, get_salt  # noqa
 from app.validation import value_validation, description_validation, date_validation, registration_validation  # noqa
 from app.logger import setup_logger  # noqa
@@ -49,7 +49,6 @@ def registration():
                 dbase = DatabaseQueries(connect_db_flask_g())
                 user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
                 group_id: int = dbase.get_group_id_by_token(user_token)
-                create_table_group(f"budget_{group_id}")
 
                 """
                 if an error occurred while defining the variables above, 
@@ -128,7 +127,8 @@ def login():
 
         if psw_salt and dbase.auth_by_username(username, getting_hash(psw, psw_salt)):
             session["userLogged"] = username
-            dbase.update_user_last_login_by_username(username)
+            telegram_id: int = dbase.get_telegram_id_by_username(username)
+            dbase.update_user_last_login_by_telegram_id(telegram_id)
             logger_app.info(f"Successful authorization: {username}.")
             return redirect(url_for("household", username=session["userLogged"]))
         else:
@@ -154,13 +154,17 @@ def household(username):
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
             value: int = value_validation(value)
-            last_total_sum: int = dbase.get_last_sum_in_group(group_id)
+
             record_date: str = request.form.get("record-date")
             record_date: str = f"{record_date[-2:]}/{record_date[5:7]}/{record_date[:4]}"  # YYYY-MM-DD -> DD/MM/YYYY
-            record_date_is_valid: bool = asyncio.run(date_validation(record_date))
+
             category: str = request.form.get("category")
             description = request.form.get("description")
-            if "submit-button-2" in request.form:  # If this is an expense category
+
+            record_date_is_valid: bool = asyncio.run(date_validation(record_date))
+            description_is_valid: bool = description_validation(description)
+
+            if "submit-button-2" in request.form:  # if this is an expense category
                 value *= -1
 
             if not value:
@@ -169,35 +173,36 @@ def household(username):
             elif not record_date_is_valid:
                 flash("Date format is invalid", category="error")
 
-            elif not description_validation(description):
+            elif not description_is_valid:
                 flash("Description format is invalid", category="error")
 
-            elif not dbase.add_monetary_transaction_to_db(username, group_id, value, last_total_sum, record_date,
-                                                          category, description):
-                logger_app.error(f"Error adding data to database: "
-                                 f"operation: {request.form}"
-                                 f"table: budget_{group_id}")
+            # Sending a transaction
+            elif not dbase.add_transaction_to_db(username, value, record_date, category, description):
                 flash("Error adding data to database", category="error")
-            else:
+
+            else:  # If all checks are successful
                 flash("Data added successfully.", category="success")
+
         elif "delete-record-submit-button" in request.form:
             record_id: str = request.form.get("record-id")
             record_id: int = value_validation(record_id)
 
             if not record_id or not dbase.check_record_id_is_exist(group_id, record_id):
                 flash("Error. The format of the entered data is incorrect.", category="error")
-            elif not dbase.delete_budget_entry_by_id(group_id, record_id):
+
+            elif not dbase.process_delete_transaction_record(group_id, record_id):
                 logger_app.error(f"Error deletion record from database: table: budget_{group_id}, "
                                  f"username: {username}, record id: {record_id}.")
                 flash("Error deleting a record from the database. Check that the entered data is correct.",
                       category="error")
+
             else:
                 flash("Record successfully deleted", category="success")
 
     category_list: tuple[str, ...] = ("Supermarkets", "Restaurants", "Clothes", "Medicine", "Transport", "Devices",
-                                      "Education", "Services", "Travel", "Housing", "Transfers", "Investments", "Hobby",
-                                      "Jewelry", "Sale", "Salary", "Other")
-    headers: tuple[str, ...] = ("№", "Total", "Username", "Transfer", "Category", "Date", "Description")
+                                      "Education", "Services", "Travel", "Housing", "Transfers", "Investments",
+                                      "Hobby", "Jewelry", "Sale", "Salary", "Other")
+    headers: tuple[str, ...] = ("№", "Username", "Transfer", "Total", "Date", "Category", "Description")
     data: tuple = dbase.select_data_for_household_table(group_id, 15)  # In case of error group_id == 0 -> data = []
 
     return render_template("household.html",
