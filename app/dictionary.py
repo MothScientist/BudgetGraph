@@ -8,6 +8,7 @@ from app.logger import setup_logger
 
 logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
 
+
 class Emoji:
     _emoji_codes: dict = \
         {
@@ -189,7 +190,11 @@ class Dictionary:
                     "unsupported_language": "We're sorry, but this language is not supported. "
                                             "Select from those presented in the button menu.",
                     "charity": "Charity",
-                    "invalid_category": "Incorrect category selected."
+                    "invalid_category": "Incorrect category selected.",
+                    "entry_add_error": "Error adding a new transaction.",
+                    "start_after_change_language": "To change the language correctly, "
+                                                   "please restart the bot by clicking on the /start button.",
+                    "data_is_safe": "Your data will not be harmed!"
                 },
 
             "ru":
@@ -319,7 +324,11 @@ class Dictionary:
                     "unsupported_language": "Извините, но данный язык не поддерживается."
                                             " Выбирайте из кнопок, представленных в нижнем меню",
                     "charity": "Благотворительность",
-                    "invalid_category": "Выбрана некорректная категория"
+                    "invalid_category": "Выбрана некорректная категория",
+                    "entry_add_error": "Ошибка добавления новой транзакции.",
+                    "start_after_change_language": "Чтобы корректно изменить язык, "
+                                                   "перезапустите бота, нажав кнопку /start.",
+                    "data_is_safe": "Ваши данные не пострадают!"
                 },
 
             "es":
@@ -448,7 +457,11 @@ class Dictionary:
                     "unsupported_language": "Lo sentimos, pero este idioma no es compatible."
                                             " Seleccione entre los presentados en el menú de botones.",
                     "charity": "Caridad",
-                    "invalid_category": "Categoría incorrecta seleccionada."
+                    "invalid_category": "Categoría incorrecta seleccionada.",
+                    "entry_add_error": "Error al agregar una nueva transacción.",
+                    "start_after_change_language": "Para cambiar el idioma correctamente, "
+                                                   "reinicie el bot haciendo clic en el botón /start.",
+                    "data_is_safe": "¡Tus datos no se verán perjudicados!"
                 },
 
             "de":
@@ -579,7 +592,11 @@ class Dictionary:
                     "unsupported_language": "Es tut uns leid, aber diese Sprache wird nicht unterstützt."
                                             " Wählen Sie aus den im Schaltflächenmenü angezeigten Optionen aus.",
                     "charity": "Wohltätigkeit",
-                    "invalid_category": "Falsche Kategorie ausgewählt."
+                    "invalid_category": "Falsche Kategorie ausgewählt.",
+                    "entry_add_error": "Fehler beim Hinzufügen einer neuen Transaktion.",
+                    "start_after_change_language": "Um die Sprache korrekt zu ändern, starten Sie bitte den Bot neu, "
+                                                   "indem Sie auf die Schaltfläche /start klicken.",
+                    "data_is_safe": "Ihre Daten werden nicht beschädigt!"
                 },
 
             "fr":
@@ -708,7 +725,11 @@ class Dictionary:
                     "unsupported_language": "Nous sommes désolés, mais cette langue n'est pas prise en charge."
                                             " Sélectionnez parmi ceux présentés dans le menu des boutons.",
                     "charity": "Charité",
-                    "invalid_category": "Mauvaise catégorie sélectionnée."
+                    "invalid_category": "Mauvaise catégorie sélectionnée.",
+                    "entry_add_error": "Erreur lors de l'ajout d'une nouvelle transaction.",
+                    "start_after_change_language": "Pour changer correctement la langue, "
+                                                   "veuillez redémarrer le bot en cliquant sur le bouton /start.",
+                    "data_is_safe": "Vos données ne seront pas endommagées !"
                 },
 
             "is":
@@ -837,7 +858,11 @@ class Dictionary:
                     "unsupported_language": "Því miður er þetta tungumál ekki stutt."
                                             " Veldu úr þeim sem kynntar eru í hnappavalmyndinni.",
                     "charity": "Kærleikur",
-                    "invalid_category": "Rangur flokkur valinn."
+                    "invalid_category": "Rangur flokkur valinn.",
+                    "entry_add_error": "Villa við að bæta við nýrri færslu.",
+                    "start_after_change_language": "Til að breyta tungumálinu rétt skaltu endurræsa "
+                                                   "vélina með því að smella á /start hnappinn.",
+                    "data_is_safe": "Gögnin þín verða ekki fyrir skaða!"
                 }
         }
 

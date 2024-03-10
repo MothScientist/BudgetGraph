@@ -1,12 +1,11 @@
 import os
-import psycopg2
+from psycopg2 import connect, DatabaseError
 from dotenv import load_dotenv
+from flask import g
+
 from app.logger import setup_logger
 from app.encryption import get_token
 from app.time_checking import timeit
-import re
-
-import time
 
 load_dotenv()  # Load environment variables from .env file
 db_host = os.getenv("POSTGRES_HOST")
@@ -22,11 +21,11 @@ logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
 
 def connect_db():
     try:
-        conn = psycopg2.connect(DSN)
+        conn = connect(DSN)
         logger_database.debug("success: connecting to database")
         return conn
 
-    except (psycopg2.DatabaseError, UnicodeDecodeError) as err:
+    except (DatabaseError, UnicodeDecodeError) as err:
         logger_database.critical(f"connecting to database: {str(err)}")
 
 
@@ -36,24 +35,22 @@ def close_db(conn):
         logger_database.debug("success: connecting to database")
 
 
-def create_db() -> None:
+def connect_db_flask_g():
     """
-    Creates tables, using create_db.sql file describing their structures.
+    connect to a database using a Flask application object.
+    :return: connection
     """
-    conn = connect_db()
-    try:
-        with conn.cursor() as cur:
-            with open("create_db.sql", 'r') as file:
-                cur.execute(file.read())
+    if not hasattr(g, "link_db"):
+        g.link_db = connect_db()
+    return g.link_db
 
-            conn.commit()
 
-    except (psycopg2.DatabaseError, IOError, AttributeError) as err:
-        print(f"Critical error when creating tables in the database: {err}")
-        logger_database.critical(f"{err}")
-
-    finally:
-        close_db(conn)
+def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
+    """
+    Closing a database connection using a Flask application object.
+    """
+    if hasattr(g, "link_db"):
+        g.link_db.close()
 
 
 class DatabaseQueries:
@@ -92,7 +89,7 @@ class DatabaseQueries:
                     else:
                         return ""
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             # The logs store the error and parameters that were passed to the function (except secrets)
             # The time and function where the error occurred will be added automatically
             logger_database.error(f"{str(err)}, "
@@ -118,7 +115,7 @@ class DatabaseQueries:
                     else:
                         return 0
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {username}")
             return 0
@@ -139,7 +136,7 @@ class DatabaseQueries:
                     else:
                         return 0
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"token: {token}")
             return 0
@@ -161,28 +158,9 @@ class DatabaseQueries:
                     else:
                         return 0
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {telegram_id}")
-            return 0
-
-    def get_group_id_by_username(self, username: str) -> int:
-        try:
-            with self.__conn as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""SELECT group_id 
-                                   FROM Users 
-                                   WHERE username = %s""", (username,))
-                    res = cur.fetchone()
-
-                    if res:
-                        return res[0]
-                    else:
-                        return 0
-
-        except (psycopg2.DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
             return 0
 
     def get_token_by_username(self, username: str) -> str:
@@ -202,7 +180,7 @@ class DatabaseQueries:
                     else:
                         return ""
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {username}")
             return ""
@@ -224,7 +202,7 @@ class DatabaseQueries:
                     else:
                         return ""
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {telegram_id}")
             return ""
@@ -245,7 +223,7 @@ class DatabaseQueries:
                     else:
                         return ""
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {username}")
             return ""
@@ -261,14 +239,14 @@ class DatabaseQueries:
                                    FROM Users u
                                    JOIN Groups g ON g.id = u.group_id
                                    WHERE u.username = %s
-                                   AND password_hash = %s""", (username, psw_hash))
+                                   AND psw_hash = %s""", (username, psw_hash))
                     res = cur.fetchone()
                     if res:
                         return True
                     else:
                         return False
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {username}, "
                                   f"psw_hash: {psw_hash}")
@@ -276,38 +254,38 @@ class DatabaseQueries:
 
     def select_data_for_household_table(self, group_id: int, number_of_last_records: int) -> tuple:
         """
-        returns the specified number of rows (starting with the most recent) from the budget table.
+        Returns the specified number of rows (starting with the most recent) from monetary_transactions table.
         :param group_id:
         :param number_of_last_records: number of rows returned.
-        :return: list of n elements | empty list
+        :return: tuple of n elements | empty list
         """
-        table_name = f"budget_{group_id}"
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     if number_of_last_records == 0:  # getting all records
-                        cur.execute(f"""SELECT *
-                                        FROM {table_name}
-                                        ORDER BY id DESC""")
+                        cur.execute("""SELECT transaction_id, username, transfer, total, to_char(record_date, 'DD/MM/YYYY') as record_date, category, description
+                                       FROM monetary_transactions
+                                       WHERE group_id = %s
+                                       ORDER BY transaction_id DESC""", (group_id,))  # noqa
                         res = cur.fetchall()
                     else:
-                        cur.execute(f"""SELECT *
-                                        FROM {table_name}
-                                        ORDER BY id DESC
-                                        LIMIT %s""", (number_of_last_records,))
+                        cur.execute(f"""SELECT transaction_id, username, transfer, total, to_char(record_date, 'DD/MM/YYYY') as record_date, category, description
+                                        FROM monetary_transactions
+                                        WHERE group_id = %s
+                                        ORDER BY transaction_id DESC
+                                        LIMIT %s""", (group_id, number_of_last_records,))  # noqa
                         res = cur.fetchall()
 
                     res_list: tuple[tuple, ...] = tuple(tuple(row) for row in res)
                     return res_list
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
-                                  f"n: {number_of_last_records}, "
-                                  f"table name: {table_name}")
+                                  f"n: {number_of_last_records}")
             return ()
 
-    def get_group_users(self, group_id: int) -> list:
+    def get_group_users(self, group_id: int) -> tuple:
         """
         :return: list (empty or with usernames of group members)
         """
@@ -318,13 +296,13 @@ class DatabaseQueries:
                                    FROM Users
                                    WHERE group_id = %s""", (group_id,))
                     res = cur.fetchall()
-                    res_list = [str(row[0]) for row in res]
+                    res_list = tuple(str(row[0]) for row in res)
                     return res_list
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
-            return []
+            return ()
 
     def get_group_users_data(self, group_id: int) -> list:
         """
@@ -340,10 +318,36 @@ class DatabaseQueries:
                     res_list = [list(row) for row in res]
                     return res_list
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
             return []
+
+    def get_group_owner_telegram_id_by_group_id(self, group_id: int) -> int:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""SELECT owner
+                                   FROM Groups
+                                   WHERE id = %s""", (group_id,))
+                    res = cur.fetchone()
+                    if res:
+                        return res[0]
+                    else:
+                        return 0
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"group id: {group_id}")
+            return 0
+
+    def check_user_is_group_owner_by_telegram_id(self, telegram_id: int, group_id: int) -> bool:
+        owner_telegram_id: int = self.get_group_owner_telegram_id_by_group_id(group_id)
+        if not owner_telegram_id or not telegram_id:  # check that we did not receive empty lines as input
+            return False
+        if owner_telegram_id == telegram_id:  # TODO security
+            return True
+        return False
 
     def get_group_owner_username_by_group_id(self, group_id: int) -> str:
         try:
@@ -359,37 +363,27 @@ class DatabaseQueries:
                     else:
                         return ""
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
             return ""
 
-    def check_username_is_group_owner(self, username: str, group_id: int) -> bool:
-        owner_username: str = self.get_group_owner_username_by_group_id(group_id)
-        if not owner_username or not username:  # check that we did not receive empty lines as input
-            return False
-        if owner_username == username:
-            return True
-        return False
-
-    def check_record_id_is_exist(self, group_id: int, record_id: int) -> bool:
-        table_name = f"budget_{group_id}"
+    def check_record_id_is_exist(self, group_id: int, transaction_id: int) -> bool:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute(f"""SELECT *
-                                    FROM {table_name}
-                                    WHERE id = %s""", (record_id,))
+                    cur.execute(f"""SELECT 1
+                                    FROM monetary_transactions
+                                    WHERE group_id = %s AND transaction_id = %s""", (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return True
                     return False
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"group id: {group_id}, "
-                                  f"record id: {record_id}, "
-                                  f"table name: {table_name}")
+                                  f"group ID: {group_id}, "
+                                  f"transaction ID: {transaction_id}")
             return False
 
     def check_username_is_exist(self, username: str) -> bool:
@@ -404,7 +398,7 @@ class DatabaseQueries:
                         return True
                     return False
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {username}")
             return False
@@ -421,19 +415,19 @@ class DatabaseQueries:
                         return True
                     return False
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram ID: {telegram_id}")
             return False
 
-    """
-    Functions for checking uniqueness are necessary to avoid problems when inserting data into a unique column
-    """
-    def check_token_is_unique(self, token: str) -> bool:  # necessary if you want to reduce the token length
+    def check_token_is_unique(self, token: str) -> bool:
+        """
+        Checking the uniqueness of the generated token to avoid problems when inserting data into a unique column.
+        """
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT *
+                    cur.execute("""SELECT 1
                                    FROM Groups
                                    WHERE token = %s""", (token,))
                     res = cur.fetchone()
@@ -442,7 +436,7 @@ class DatabaseQueries:
                     else:
                         return True
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"new token: {token}")
             return False
@@ -465,12 +459,12 @@ class DatabaseQueries:
                         return True
                     return False
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
             return False  # to prevent a user from being written to a non-existent group
 
-    def get_user_language(self, telegram_id) -> str:
+    def get_user_language(self, telegram_id: int) -> str:
         """
         Gets the user's (telegram_id) language from the database.
         If there is no entry for the user in the database, the default language is used.
@@ -487,33 +481,10 @@ class DatabaseQueries:
                         return str(res[0])
                     return "en"  # if the user did not change the default language
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {telegram_id}")
             return "en"  # return default language
-
-    def get_last_sum_in_group(self, group_id: int) -> int:
-        """
-        Gets the last total amount in the group table to then add/subtract the amount of the new transaction.
-        Returns 0 if there are no records.
-        """
-        table_name = f"budget_{group_id}"
-        try:
-            with self.__conn as conn:
-                with conn.cursor() as cur:
-                    cur.execute(f"""SELECT total
-                                    FROM {table_name}
-                                    ORDER BY id DESC
-                                    LIMIT 1""")
-                    res = cur.fetchone()
-                    if res:
-                        return int(res[0])
-                    return 0
-
-        except (psycopg2.DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
-                                  f"group id: {group_id}")
-            return 0
 
     def add_user_language(self, telegram_id: int, language: str) -> bool:
         try:
@@ -525,7 +496,7 @@ class DatabaseQueries:
                                    DO UPDATE SET language = %s""", (telegram_id, language, language))
                     conn.commit()
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {telegram_id}, "
                                   f"language: {language}")
@@ -548,7 +519,7 @@ class DatabaseQueries:
                     # to_char is required to change the date-time format
                     conn.commit()
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {username}, "
                                   f"psw_salt: {psw_salt}, "
@@ -561,41 +532,149 @@ class DatabaseQueries:
             return True
 
     @timeit
-    def add_monetary_transaction_to_db(self, username: str, group_id: int, value: int, last_total_sum: int, record_date: str, category: str, description: str) -> bool:  # noqa (E501)
+    def add_transaction_to_db(self,
+                              username: str,
+                              transaction_amount: int,
+                              record_date: str,
+                              category: str,
+                              description: str) -> bool:
         """
-        submits the "add_expense" and "add_income" forms to the database.
-        :param username: the name of the user is making the changes.
-        :param group_id:
-        :param value: value of the deposited amount (can be both negative and positive)
-        :param last_total_sum: last 'total' value in the table (can be both negative and positive)
-        :param category:  # TODO сделать тоже необязательным параметром (как и description)
-        :param description: optional parameter
+        The function records user transactions in the database.
+
+        :param username: username of the user is making the transaction.
+        :param transaction_amount: value of the deposited amount (can be both negative and positive)
+        :param category:
+        :param description:
         :param record_date:
         """
-        table_name = f"budget_{group_id}"
-        total_sum: int = last_total_sum + value
-        # In the table must be entered with the user's name in the text format because the user can later be deleted,
-        # but their entries must remain in the table until it is deleted or cleared by the group owner.
+        telegram_id: int = self.get_telegram_id_by_username(username)
+        group_id: int = self.get_group_id_by_telegram_id(telegram_id)
+        last_total_sum: int = self.get_last_sum_in_group(group_id)
+        total_sum: int = last_total_sum + transaction_amount
+        transaction_id: int = self.get_last_transaction_id_in_group(group_id) + 1
+
         try:
             with self.__conn as conn:
-                with conn.cursor() as cur:  # TODO тут дату нашего формата надо пометить как date внутри postgres
-                    cur.execute(f"""INSERT INTO {table_name} (total, username, transfer, category, record_date, description)
-                                    VALUES (%s, %s,%s, %s, %s, %s)""",  # noqa (E501)
-                                    (total_sum, username, value, category, record_date, description))
-                    conn.commit()
-        except (psycopg2.DatabaseError, TypeError) as err:
+                with conn.cursor() as cur:
+                    cur.execute(f"""INSERT INTO monetary_transactions 
+                                    (group_id, transaction_id, username, total, transfer, record_date, category, description)
+                                    VALUES (%s, %s,%s, %s, %s, %s, %s, %s)""",  # noqa
+                                    (group_id, transaction_id, username, total_sum, transaction_amount, record_date, category, description))  # noqa
+
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
-                                  f"table name: {table_name}, "
+                                  f"transaction_id: {transaction_id}"
                                   f"username: {username}, "
-                                  f"value: {value}, "
+                                  f"total_sum: {total_sum}, "
+                                  f"transaction_amount: {transaction_amount},"
+                                  f"record_date: {record_date},"
+                                  f"category: {category},"
                                   f"description: {description}")
             return False
 
         else:
             return True
 
-    def create_new_group(self, owner: int) -> str:  # TODO что-то сделать с проверкой токена - выносить за функцию
+    def get_last_sum_in_group(self, group_id: int) -> int:
+        """
+        Gets the last 'total' amount in table by group ID.
+        Returns 0 if there are no records.
+        """
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""SELECT total
+                                   FROM monetary_transactions
+                                   WHERE group_id = %s
+                                   ORDER BY transaction_id DESC
+                                   LIMIT 1""", (group_id,))
+                    res = cur.fetchone()
+                    if res:
+                        return int(res[0])
+                    return 0
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"group id: {group_id}")
+            return 0
+
+    def get_last_transaction_id_in_group(self, group_id: int) -> int:
+        """
+        Gets the ID of the last transaction in the table by group ID.
+        Returns 0 if there are no entries.
+        """
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""SELECT transaction_id
+                                   FROM monetary_transactions
+                                   WHERE group_id = %s
+                                   ORDER BY transaction_id DESC
+                                   LIMIT 1""", (group_id,))
+                    res = cur.fetchone()
+                    if res:
+                        return int(res[0])
+                    return 0
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"group id: {group_id}")
+            return 0
+
+    def get_group_transfer_by_transaction_id(self, group_id: int, transaction_id: int) -> int:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""SELECT transfer
+                                   FROM monetary_transactions
+                                   WHERE group_id = %s AND transaction_id = %s""", (group_id, transaction_id,))
+                    res = cur.fetchone()
+                    if res:
+                        return int(res[0])
+                    return 0
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"group id: {group_id},"
+                                  f"transaction_id: {transaction_id}")
+            return 0
+
+    def process_delete_transaction_record(self, group_id: int, transaction_id: int) -> bool:
+        """
+        Calls 3 functions in sequence, which:
+        1. Receive the amount of this transaction - Gets the value of the 'transfer' field based on the group's transaction ID  # noqa
+        2. Adjust subsequent transactions - Recalculation of 'total' fields that come after the deleted field.
+        3. Delete the required entry - Removes a record from a group transaction.
+        """
+        # Getting the value 'transfer' in the field being deleted
+        difference_transfer: int = self.get_group_transfer_by_transaction_id(group_id, transaction_id)
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    # Correction of the 'total' field in all records following the one being deleted
+                    cur.execute("""UPDATE monetary_transactions 
+                                   SET total = total - %s
+                                   WHERE group_id = %s AND transaction_id > %s""",
+                                   (difference_transfer, group_id, transaction_id,))
+
+                    # Delete transaction record
+                    cur.execute("""DELETE 
+                                   FROM monetary_transactions
+                                   WHERE group_id = %s AND transaction_id = %s""",
+                                   (group_id, transaction_id,))
+                    conn.commit()
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"group ID: {group_id}, "
+                                  f"transaction ID: {transaction_id}")
+            return False
+
+        else:
+            return True
+
+    def create_new_group(self, owner: int) -> str:  # TODO do something with token verification - make it a function
         """
         creating a new group in the Groups table and generate a new token for this group.
         :param owner: link to the telegram of the user who initiates the creation of the group.
@@ -615,15 +694,13 @@ class DatabaseQueries:
                                           VALUES(%s, %s)""", (owner, token,))
                     conn.commit()
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"owner (telegram id): {owner}")
             return ""
 
         else:
             return token
-
-# Methods for updating data in a database (UPDATE)
 
     def update_user_last_login_by_telegram_id(self, telegram_id: int) -> None:
         """
@@ -638,26 +715,9 @@ class DatabaseQueries:
                                    WHERE telegram_id = %s""", (telegram_id,))  # noqa: E501
                     conn.commit()
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {telegram_id}")
-
-    def update_user_last_login_by_username(self, username: str) -> None:
-        """
-        Changes the user's last login time in the last_login column in the Users table.
-        :return: None
-        """
-        try:
-            with self.__conn as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""UPDATE users 
-                                   SET last_login = to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS')
-                                   WHERE username = %s""", (username,))  # noqa: E501
-                    conn.commit()
-
-        except (psycopg2.DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
 
     def update_group_owner(self, telegram_id: int, group_id: int) -> bool:
         """
@@ -672,60 +732,27 @@ class DatabaseQueries:
                     conn.commit()
                     return True
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {telegram_id}, "
                                   f"group_id: {group_id}")
             return False
 
-# Methods for deleting database data (DELETE)
-
-    def delete_budget_entry_by_id(self, group_id: int, record_id: int) -> bool:
-        """
-        Removes an entry from the group budget table.
-        :param group_id:
-        :param record_id: Row id in the table
-        :return: True - if the entry is found and successfully deleted, else - False
-        """
-        table_name = f"budget_{group_id}"
-        try:
-            with self.__conn as conn:
-                with conn.cursor() as cur:
-                    cur.execute(f"""DELETE FROM {table_name} 
-                                    WHERE id = %s""", (record_id,))
-                    conn.commit()
-
-        except (psycopg2.DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
-                                  f"group id: {group_id}, "
-                                  f"record id: {record_id}, "
-                                  f"table name: {table_name}")
-            return False
-
-        else:
-            return True
-
-    def update_total_sum_after_delete_record(self, transaction: int, record_id: int) -> bool:
-        pass  # TODO
-
-    def delete_username_from_users(self, username: str) -> bool:
-        """
-        Removes a user from a group (not the owner)
-        """
+    def delete_username_from_users_by_telegram_id(self, telegram_id: int) -> bool:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""DELETE FROM users 
-                                   WHERE username = %s""", (username,))
+                                   WHERE telegram_id = %s""", (telegram_id,))
                     conn.commit()
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
+                                  f"telegram ID: {telegram_id}")
             return False
 
         else:
-            logger_database.info(f"User '{username}' has been removed from the database")
+            logger_database.info(f"Telegram ID {telegram_id} has been removed from the database")
             return True
 
     def delete_group_with_users(self, group_id: int) -> bool:  # TODO REFERENCES IN .sql
@@ -741,49 +768,16 @@ class DatabaseQueries:
                     cur.execute("""DELETE FROM groups 
                                    WHERE id = %s""", (group_id,))
 
-                    cur.execute(f"""DROP TABLE budget_{group_id}""")
+                    cur.execute("""DELETE FROM monetary_transactions 
+                                   WHERE group_id = %s""", (group_id,))
+
                     conn.commit()
 
-        except (psycopg2.DatabaseError, TypeError) as err:
+        except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"group id: {group_id}")
+                                  f"group ID: {group_id}")
             return False
 
         else:
             logger_database.info(f"Group #{group_id} has been completely deleted")
             return True
-
-
-def create_table_group(table_name: str) -> None:  # TODO вынести валидацию
-    """  # TODO но вообще нужно отказаться от концепции динамического создания таблиц
-    creates a table in the database called budget_?
-    (id, total, username, transfer, date_time, description)
-
-    contains table_name_validator -> to protect against sql injection, validation of the table_name parameter is needed
-    :param table_name: "budget_?"
-    """
-    try:  # TODO делать проверку категории
-        if not re.match(r"^budget_[1-9]\d{0,4}$", table_name):
-            raise ValueError("Possible SQL injection attempt")
-        conn = connect_db()
-        with conn:
-            with conn.cursor() as cur:  # TODO date format
-                query = (f"""CREATE TABLE IF NOT EXISTS {table_name}
-                             (id SERIAL PRIMARY KEY,
-                             total integer NOT NULL,
-                             username varchar(20) NOT NULL,
-                             transfer integer NOT NULL,
-                             category varchar(25) NOT NULL,
-                             record_date text NOT NULL,
-                             description text NOT NULL CHECK(LENGTH(description) <= 50));""")
-                cur.execute(query)
-                conn.commit()
-
-    except (psycopg2.DatabaseError, TypeError) as err:
-        logger_database.error(f"{str(err)}, Table name: {table_name}")
-
-    except ValueError as err:
-        logger_database.error(f"{str(err)}, Value (table name): {table_name}")
-
-    else:
-        logger_database.info(f"Successful table creation: {table_name}")

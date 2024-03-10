@@ -56,44 +56,41 @@ class TestDateValidation(unittest.TestCase):
     #     res = asyncio.run(check_day_is_correct(""))
     #     self.assertEqual(res, )
 
+    # datetime.now(timezone.utc) + timedelta(days=1) and datetime.now(timezone.utc) - timedelta(days=3650)
+    # There is no point in checking, since the result will differ due to time zones
+    # TODO add separate tests for timezone (i.e. manually set timezone and time - and check
+
     def test_comparison_dates_unix_format_1(self):
-        _date = datetime.now(timezone.utc) + timedelta(days=-1)
-        # Redefine the date in our format: DD/MM/YYYY
-        redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
-        res = asyncio.run(comparison_dates_unix_format(redefine_date))
-        self.assertEqual(res, True)
+        for day_delta in range(0, 120):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, True)
 
     def test_comparison_dates_unix_format_2(self):
-        _date = datetime.now(timezone.utc)
-        # Redefine the date in our format: DD/MM/YYYY
-        redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
-        res = asyncio.run(comparison_dates_unix_format(redefine_date))
-        self.assertEqual(res, True)
-
-    # timedelta(days=1) There is no point in checking, since the result will differ due to time zones
+        for day_delta in range(3250, 3650):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, True)
 
     def test_comparison_dates_unix_format_3(self):
-        _date = datetime.now(timezone.utc) + timedelta(days=2)
-        # Redefine the date in our format: DD/MM/YYYY
-        redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
-        res = asyncio.run(comparison_dates_unix_format(redefine_date))
-        self.assertEqual(res, False)
+        for day_delta in range(2, 120):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) + timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, False)
 
     def test_comparison_dates_unix_format_4(self):
-        _date = datetime.now(timezone.utc) - timedelta(days=3649)
-        # Redefine the date in our format: DD/MM/YYYY
-        redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
-        res = asyncio.run(comparison_dates_unix_format(redefine_date))
-        self.assertEqual(res, True)
-
-    # timedelta(days=3650) There is no point in checking, since the result will differ due to time zones
-
-    def test_comparison_dates_unix_format_5(self):
-        _date = datetime.now(timezone.utc) - timedelta(days=3651)
-        # Redefine the date in our format: DD/MM/YYYY
-        redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
-        res = asyncio.run(comparison_dates_unix_format(redefine_date))
-        self.assertEqual(res, False)
+        for day_delta in range(3651, 3700):  # TODO DOCUMENTATION
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            # Redefine the date in our format: DD/MM/YYYY
+            redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            res = asyncio.run(comparison_dates_unix_format(redefine_date))
+            self.assertEqual(res, False)
 
     def test_leap_year_1(self):
         res = asyncio.run(check_year_is_leap(2020))
@@ -237,59 +234,74 @@ class TestRegistrationValidation(unittest.TestCase):
 
 class TestNumberValidation(unittest.TestCase):
     def test_number_validation_1(self):
-        res: int = value_validation("100aaa0")
-        self.assertEqual(res, 0)
+        res: int = value_validation("999999999")
+        self.assertEqual(res, 999999999)
 
     def test_number_validation_2(self):
-        res: int = value_validation("0")
+        res: int = value_validation("1000000000")
         self.assertEqual(res, 0)
 
     def test_number_validation_3(self):
+        res: int = value_validation("1000000001")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_4(self):
+        res: int = value_validation("0")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_5(self):
         res: int = value_validation("1o")
         self.assertEqual(res, 0)
+
+    def test_number_validation_6(self):
+        res: int = value_validation("100a")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_7(self):
+        res: int = value_validation("01")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_8(self):
+        res: int = value_validation("010")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_9(self):
+        res: int = value_validation("")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_10(self):
+        res: int = value_validation("00")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_11(self):
+        res: int = value_validation("100_000")
+        self.assertEqual(res, 0)
+
+    def test_number_validation_12(self):
+        for value in range(0, 1_500_000):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, value)
+
+    def test_number_validation_13(self):
+        for value in range(10_000_000, 11_250_000):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, value)
+
+    def test_number_validation_14(self):
+        for value in range(999_999_999, 998_500_000, -1):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, value)
+
+    def test_number_validation_15(self):
+        for value in range(1_000_000_000, 1_000_500_000):
+            res: int = value_validation(str(value))
+            self.assertEqual(res, 0)
 
 
 class TestDescriptionValidator(unittest.TestCase):
     def test_description_validator_1(self):
         res = description_validation("")
         self.assertEqual(res, True)
-
-
-class TestTableNameValidator(unittest.TestCase):  # TODO delete after changing data storage concept
-    """
-    Used in the create_table_group() function in db_manager.py
-    """
-    def test_table_name_validator_1(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_1") else False
-        self.assertEqual(res, True)
-
-    def test_table_name_validator_2(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_01") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_3(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_100") else False
-        self.assertEqual(res, True)
-
-    def test_table_name_validator_4(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budjet_10") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_5(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "bubget_1") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_6(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_0") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_7(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget_") else False
-        self.assertEqual(res, False)
-
-    def test_table_name_validator_8(self):
-        res: bool = True if re.match(r"^budget_[1-9]\d{0,4}$", "budget") else False
-        self.assertEqual(res, False)
 
 
 class TestCategoryValidation(unittest.TestCase):

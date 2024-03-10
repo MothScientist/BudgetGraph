@@ -145,6 +145,15 @@ class TestLanguages(unittest.TestCase):
         res = _keys_test == _keys
         self.assertEqual(res, True)
 
+    def test_languages_13(self):
+        res = Dictionary.receive_translation("en", "start_after_change_language")
+        self.assertEqual(res, "To change the language correctly, "
+                              "please restart the bot by clicking on the /start button.")
+
+    def test_languages_14(self):
+        res = Dictionary.receive_translation("es", "data_is_safe")
+        self.assertEqual(res, "¡Tus datos no se verán perjudicados!")
+
 
 if __name__ == '__main__':
     unittest.main()
