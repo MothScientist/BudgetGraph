@@ -1,5 +1,5 @@
-[![UnitTests](https://github.com/MothScientist/BudgetControl/actions/workflows/run_unit_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetControl/actions/workflows/run_unit_tests.yml)
-[![Scripts Test](https://github.com/MothScientist/BudgetControl/actions/workflows/run_scripts_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetControl/actions/workflows/run_scripts_tests.yml)
+[![UnitTests](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml)
+[![ScriptsTest](https://github.com/MothScientist/BudgetGraph/actions/workflows/scripts_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/scripts_tests.yml)
 ![Status](https://img.shields.io/github/v/release/MothScientist/BudgetControl?label=Unstable&color=yellow)
 
 ![GIF](presentation/budget_donuts.gif)
