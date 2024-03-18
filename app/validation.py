@@ -59,7 +59,7 @@ async def password_validation(psw: str) -> bool:
 
 
 async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
-    if re.match(r'^[1-9]\d{2,11}$', telegram_id):
+    if re.match(r'^[1-9]\d{2,11}$', telegram_id):  # 3-12 digits
         telegram_id: int = int(telegram_id)
     else:
         return False

@@ -1,189 +1,128 @@
-CREATE TABLE IF NOT EXISTS Users (
-    telegram_id integer PRIMARY KEY NOT NULL UNIQUE,
-    username text NOT NULL UNIQUE,
-    psw_salt text NOT NULL CHECK(LENGTH(psw_salt) = 32),
-    password_hash text NOT NULL CHECK(LENGTH(password_hash) = 64),
-    group_id integer NOT NULL,
-    last_login text NOT NULL
+CREATE TABLE IF NOT EXISTS groups (
+    id    serial      PRIMARY KEY,
+    owner bigint      NOT NULL UNIQUE CHECK(telegram_id BETWEEN 1 AND 999999999999),
+    token varchar(32) NOT NULL UNIQUE CHECK(LENGTH(token) = 32)
 );
 
-CREATE TABLE IF NOT EXISTS Groups (
-    id integer PRIMARY KEY AUTOINCREMENT,
-    owner integer NOT NULL UNIQUE,
-    token text NOT NULL UNIQUE CHECK(LENGTH(token) = 32)
+CREATE TABLE IF NOT EXISTS users (
+    telegram_id bigint      NOT NULL        CHECK(telegram_id BETWEEN 1 AND 999999999999),
+    username    varchar(20) NOT NULL UNIQUE CHECK(LENGTH(username) >= 3),
+    psw_salt    varchar(32) NOT NULL        CHECK(LENGTH(psw_salt) = 32),
+    psw_hash    varchar(64) NOT NULL        CHECK(LENGTH(psw_hash) = 64),
+    group_id    integer     NOT NULL        CHECK(group_id > 0),
+    last_login  varchar(19) NOT NULL,
+    PRIMARY KEY (telegram_id)
 );
 
-CREATE TABLE IF NOT EXISTS UserLanguages (
-    telegram_id integer NOT NULL UNIQUE,
-    language text NOT NULL CHECK(language IN ('en', 'ru', 'de', 'fr', 'es', 'is'))
+CREATE TABLE IF NOT EXISTS monetary_transactions (
+    group_id       integer     NOT NULL  CHECK(group_id > 0),
+    transaction_id integer     NOT NULL  CHECK(transaction_id > 0),
+    username       varchar(20) NOT NULL  CHECK(LENGTH(username) >= 3),
+    total          integer     NOT NULL,
+    transfer       integer     NOT NULL,
+    record_date    date        NOT NULL,
+    category       varchar(25) NOT NULL,
+    description    varchar(50) NOT NULL,
+    PRIMARY KEY (group_id, transaction_id)
 );
 
-CREATE TABLE IF NOT EXISTS PremiumUsers (
-    telegram_id integer NOT NULL UNIQUE,
-    paid_until text NOT NULL
+CREATE TABLE IF NOT EXISTS user_languages_telegram (
+    telegram_id bigint     NOT NULL CHECK(telegram_id BETWEEN 1 AND 999999999999),
+    language    varchar(2) NOT NULL CHECK(language IN ('en', 'ru', 'de', 'fr', 'es', 'is')),
+    PRIMARY KEY (telegram_id)
 );
 
-CREATE TABLE IF NOT EXISTS budget_1 (
-    id integer PRIMARY KEY AUTOINCREMENT,
-    total integer NOT NULL,
-    username text NOT NULL,
-    transfer integer NOT NULL,
-    category text NOT NULL,
-    record_date text NOT NULL,
-    description text CHECK(LENGTH(description) <= 50)
+CREATE TABLE IF NOT EXISTS premium_groups (
+    id             serial      PRIMARY KEY,
+    paid_until     date        NOT NULL,
+    premium_status boolean     NOT NULL,
+    owner          bigint      NOT NULL UNIQUE CHECK(owner > 0),
+    token          varchar(16) NOT NULL UNIQUE CHECK(LENGTH(token) = 16),
+    user_limit     smallint                    CHECK(user_limit > 0)
 );
 
-CREATE TABLE IF NOT EXISTS budget_2 (
-    id integer PRIMARY KEY AUTOINCREMENT,
-    total integer NOT NULL,
-    username text NOT NULL,
-    transfer integer NOT NULL,
-    category text NOT NULL,
-    record_date text NOT NULL,
-    description text CHECK(LENGTH(description) <= 50)
+CREATE TABLE IF NOT EXISTS premium_users (
+    telegram_id bigint  NOT NULL CHECK(telegram_id > 0),
+    group_id    integer NOT NULL CHECK(group_id > 0),
+    PRIMARY KEY (telegram_id),
+    FOREIGN KEY (group_id) REFERENCES premium_groups(id)
 );
 
-CREATE TABLE IF NOT EXISTS budget_3 (
-    id integer PRIMARY KEY AUTOINCREMENT,
-    total integer NOT NULL,
-    username text NOT NULL,
-    transfer integer NOT NULL,
-    category text NOT NULL,
-    record_date text NOT NULL,
-    description text CHECK(LENGTH(description) <= 50)
-);
 
-CREATE TABLE IF NOT EXISTS budget_10 (
-    id integer PRIMARY KEY AUTOINCREMENT,
-    total integer NOT NULL,
-    username text NOT NULL,
-    transfer integer NOT NULL,
-    category text NOT NULL,
-    record_date text NOT NULL,
-    description text CHECK(LENGTH(description) <= 50)
-);
+INSERT INTO groups (id, owner, token)
+VALUES (1, 104500, '1522ec5ff608a6d1d52e56bfa205666c');
 
-INSERT INTO Groups (owner, token)
-VALUES ('123456780', '3cf060bde115a4b3a3c29e7459150673');
+INSERT INTO groups (id, owner, token)
+VALUES (2, 43251001, '4069ca3e7b5c0fc1cf8101764e1ee468');
 
-INSERT INTO Groups (owner, token)
-VALUES ('1234561', 'e00a6e6d1d1a54b017d5fa348534b7e8');
+INSERT INTO groups (id, owner, token)
+VALUES (3, 5236002, '28b670e597ab8ba047c2009bea2e093b');
 
-INSERT INTO Groups (owner, token)
-VALUES ('2222222', '3fdf370474a3a0e4008499c44a420f8e');
+INSERT INTO groups (id, owner, token)
+VALUES (4, 3242003, 'cf58916a5ff94010fe2308255c060da0');
 
-INSERT INTO Groups (id, owner, token)
-VALUES (10, '1111111', '3c376424479c9a92649721e23ff9cc9b');
+INSERT INTO groups (id, owner, token)
+VALUES (5, 3430004, 'cd8bbf16d323e2eaf38d8be9232784de');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Alex_Alex12345', '71Zwm1hvnlyD7eQUJK0RlfOBqF3lYhYY', 'c20b735096a231a491d94fe15de5cfefd181c82ae8cef38f3abb9174feddf98d', 1, 123456780, '01/10/2023');
+INSERT INTO groups (id, owner, token)
+VALUES (6, 5345005, '0f05dc849d0fa05cf75b96a406b90f50');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Thomas_Thomas1', 'eFrt7GqNHlFHLMbmcE2U8Fc1x0ysMMQJ', '42ac2f592de057b3384158fdfe05e18dda61f686f03fbf1b61f71dd2d4a377bb', 1, 123456781, '01/10/2023');
+INSERT INTO groups (id, owner, token)
+VALUES (7, 2345456, '0f6d4b6d1be3ef50dd3759e9e589c82b');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Juliette_Juliette2', 'cLZZfzclKmw4hKwQN5MNHr9jQjQbWCX4', '52279909441af52e377302c896f5596b94faf4234b70f92cf7e0c0ddbf97caca', 1, 123456782, '01/10/2023');
+INSERT INTO groups (id, owner, token)
+VALUES (8, 1254557, '33cc7e17d399b5bf51225ef74fd49d61');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Alexandre_Alexandre0', 'Q9biK0IFensNyzicpHJQTbUXKqaGEfzA', 'eb03b0d84ef676645760add6b84eecebdbefeac61e14e736901db008b55ab7bd', 1, 123456783, '01/10/2023');
+INSERT INTO groups (id, owner, token)
+VALUES (9, 1131538, '936ac0c10704f0dd8fb4fe465644b90a');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Hugo', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456799, '01/10/2023');
+INSERT INTO groups (id, owner, token)
+VALUES (10, 2462609, 'dbc3731b827a12f9564d73540cb230cb');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Marco', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456798, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (104500, 'User1', '', '', 1, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Francesca', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456797, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (43251001, 'User2', '', '', 2, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Giovanni', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456796, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (5236002, 'User3', '', '', 3, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Isabella', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456795, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (3242003, 'User4', '', '', 4, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Giorgio', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456794, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (3430004, 'User5', '', '', 5, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Valentina', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456793, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (5345005, 'User6', '', '', 6, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Lorenzo', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456792, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (2345456, 'User7', '', '', 7, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Elena', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456791, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (1254557, 'User8', '', '', 8, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Vincenzo', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456790, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (1131538, 'User9', '', '', 9, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Bianca', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456789, '01/10/2023');
+INSERT INTO users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+VALUES (2462609, 'User10', '', '', 10, '');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Carter', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456788, '01/10/2023');
+INSERT INTO user_languages_telegram (telegram_id, language)
+VALUES (104500, 'en');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Stella', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456787, '01/10/2023');
+INSERT INTO user_languages_telegram (telegram_id, language)
+VALUES (2462609, 'en');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Jackson', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456786, '01/10/2023');
+INSERT INTO user_languages_telegram (telegram_id, language)
+VALUES (43251001, 'ru');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Aria', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456785, '01/10/2023');
+INSERT INTO user_languages_telegram (telegram_id, language)
+VALUES (3242003, 'es');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Olivier', 'NiWfL76NRWx3hmLBQMJkhkIfRwWGHZ0U', '7755b9530886bf1468005c6ef04a1fa7f0516a7e224491efac91b19e4c72b87c', 1, 123456784, '01/10/2023');
+INSERT INTO user_languages_telegram (telegram_id, language)
+VALUES (5345005, 'is');
 
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Grayson', 'Shvugemj43TFPcnyIQ4MWPnKhdo7q3Ee', 'd65d87a2833d1ac0f159b6b5b3fa70ad5d0f369db786b0ed9fceb853ab703e1c', 2, 1234561, '01/10/2023');
-
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Alessandro', 'Shvugemj43TFPcnyIQ4MWPnKhdo7q3Ee', 'd65d87a2833d1ac0f159b6b5b3fa70ad5d0f369db786b0ed9fceb853ab703e1c', 2, 1234562, '01/10/2023');
-
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Nathan', 'Shvugemj43TFPcnyIQ4MWPnKhdo7q3Ee', 'd65d87a2833d1ac0f159b6b5b3fa70ad5d0f369db786b0ed9fceb853ab703e1c', 2, 1234563, '01/10/2023');
-
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Lincoln', '2hsGtWb6x2U1R9ci4ZSXjF5EpRxV9KxN', '65c70178e16b2fb28667f10fdab320fc128e0dc71bf1f5725e29e145972e0cdd', 3, 2222222, '01/10/2023');
-
-INSERT INTO Users (username, psw_salt, password_hash, group_id, telegram_id, last_login)
-VALUES ('Kennedy', 'NFqP8q7QrCZbBv6X4vfzf5Wxu3pjTU3T', '9aa93aa6aeb222653c3deb2f5e6e004db066a972cb2a08b7038926fd45f99f05', 10, 1111111, '01/10/2023');
-
-INSERT INTO budget_1 (total, username, transfer, category, record_date)
-VALUES (500, 'Hugo', 500, 'Other', '15/06/2021');
-
-INSERT INTO budget_1 (total, username, transfer, category, record_date)
-VALUES (0, 'Hugo', -500, 'Other', '15/06/2021');
-
-INSERT INTO budget_1 (total, username, transfer, category, record_date)
-VALUES (5000, 'Hugo', 5000, 'Other', '15/06/2021');
-
-INSERT INTO budget_1 (total, username, transfer, category, record_date)
-VALUES (37500, 'Hugo', 32500, 'Other', '15/06/2021');
-
-INSERT INTO budget_2 (total, username, transfer, category, record_date)
-VALUES (120000, 'Alessandro', 120000, 'Other', '01/01/2021');
-
-INSERT INTO budget_2 (total, username, transfer, category, record_date)
-VALUES (240000, 'Alessandro', 120000, 'Other', '01/01/2021');
-
-INSERT INTO budget_2 (total, username, transfer, category, record_date)
-VALUES (0, 'Alessandro', -240000, 'Other', '01/01/2021');
-
--- Table budget_10 is empty
-
-INSERT INTO UserLanguages (telegram_id, language)
-VALUES (123456783, 'en');
-
-INSERT INTO UserLanguages (telegram_id, language)
-VALUES (123456780, 'ru');
-
-INSERT INTO UserLanguages (telegram_id, language)
-VALUES (123456793, 'es');
-
-INSERT INTO UserLanguages (telegram_id, language)
-VALUES (123456786, 'is');
-
-INSERT INTO UserLanguages (telegram_id, language)
-VALUES (1234563, 'de');
+INSERT INTO user_languages_telegram (telegram_id, language)
+VALUES (1254557, 'de');
