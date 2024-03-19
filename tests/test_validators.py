@@ -10,7 +10,10 @@ from app.validation import (check_day_is_correct,
                             description_validation,
                             value_validation,
                             date_validation,
-                            category_validation)
+                            category_validation,
+                            telegram_id_validation,
+                            password_validation,
+                            username_validation)
 
 from app.dictionary import Dictionary
 
@@ -177,40 +180,32 @@ class TestDateValidation(unittest.TestCase):
         self.assertEqual(res, False)
 
     def test_date_validation_3(self):
-        tomorrow = datetime.now(timezone.utc).date() + timedelta(days=1)
-        tomorrow_day: str = tomorrow.strftime('%d')
-        month: str = tomorrow.strftime('%m')
-        year: int = int(tomorrow.strftime('%Y'))
-        res = asyncio.run(date_validation(f"{tomorrow_day}/{month}/{year}"))
-        self.assertEqual(res, True)
-
-    def test_date_validation_4(self):
         yesterday = datetime.now(timezone.utc) + timedelta(days=-1)
         yesterday_day_month: str = yesterday.strftime('%d/%m')
         year: int = int(yesterday.strftime('%Y'))
         res = asyncio.run(date_validation(f"{yesterday_day_month}/{year}"))
         self.assertEqual(res, True)
 
-    def test_date_validation_5(self):
+    def test_date_validation_4(self):
         res = asyncio.run(date_validation(""))
         self.assertEqual(res, False)
 
-    def test_date_validation_6(self):
+    def test_date_validation_5(self):
         current_date = datetime.now(timezone.utc).strftime('%d-%m-%Y')
         res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
-    def test_date_validation_7(self):
+    def test_date_validation_6(self):
         current_date = datetime.now(timezone.utc).strftime('%Y/%m/%d')
         res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
-    def test_date_validation_8(self):
+    def test_date_validation_7(self):
         current_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         res = asyncio.run(date_validation(current_date))
         self.assertEqual(res, False)
 
-    def test_date_validation_9(self):
+    def test_date_validation_8(self):
         current_date = datetime.now(timezone.utc)
         current_day_month: str = current_date.strftime('%d/%m')
         year: int = int(current_date.strftime('%Y')) + 1
@@ -220,16 +215,36 @@ class TestDateValidation(unittest.TestCase):
 
 class TestRegistrationValidation(unittest.TestCase):
     def test_telegram_id_1(self):
-        pass
+        res = asyncio.run(telegram_id_validation("99"))  # 2
+        self.assertEqual(res, False)
 
-    def test_password_1(self):
-        pass
+    def test_telegram_id_2(self):
+        res = asyncio.run(telegram_id_validation("100"))  # 3
+        self.assertEqual(res, True)
 
-    def test_username_1(self):
-        pass
+    def test_telegram_id_3(self):
+        res = asyncio.run(telegram_id_validation("0"))
+        self.assertEqual(res, False)
 
-    def test_telegram_id_unique_1(self):
-        pass
+    def test_telegram_id_4(self):
+        res = asyncio.run(telegram_id_validation("00000"))
+        self.assertEqual(res, False)
+
+    def test_telegram_id_5(self):
+        res = asyncio.run(telegram_id_validation("100oo"))
+        self.assertEqual(res, False)
+
+    def test_telegram_id_6(self):
+        res = asyncio.run(telegram_id_validation("123456781942"))  # 12
+        self.assertEqual(res, True)
+
+    def test_telegram_id_7(self):
+        res = asyncio.run(telegram_id_validation("1232456784192"))  # 13
+        self.assertEqual(res, False)
+
+    def test_telegram_id_8(self):
+        res = asyncio.run(telegram_id_validation("5"))  # 1
+        self.assertEqual(res, False)
 
 
 class TestNumberValidation(unittest.TestCase):
@@ -302,6 +317,18 @@ class TestDescriptionValidator(unittest.TestCase):
     def test_description_validator_1(self):
         res = description_validation("")
         self.assertEqual(res, True)
+
+    def test_description_validator_2(self):
+        res = description_validation("The clarity of our position is obvious: modern de")  # 49
+        self.assertEqual(res, True)
+
+    def test_description_validator_3(self):
+        res = description_validation("The clarity of our position is obvious: modern dev")  # 50
+        self.assertEqual(res, True)
+
+    def test_description_validator_4(self):
+        res = description_validation("The clarity of our position is obvious: modern deve")  # 51
+        self.assertEqual(res, False)
 
 
 class TestCategoryValidation(unittest.TestCase):
