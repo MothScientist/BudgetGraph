@@ -26,19 +26,15 @@ from secrets import compare_digest
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import sys
-
+from os import path
 sys.path.append('../')
 
 from app.db_manager import DatabaseQueries, connect_db, close_db  # noqa
-
 from app.encryption import getting_hash, get_salt  # noqa
-
 from app.validation import (date_validation, value_validation, description_validation,
                             username_validation, password_validation, category_validation)  # noqa
-
 from app.create_csv import create_csv_file, get_file_size_kb, get_file_checksum  # noqa
-
-from app.dictionary import Dictionary, Stickers  # noqa
+from app.dictionary import Stickers, receive_translation  # noqa
 from app.time_checking import timeit  # noqa
 from app.logger import setup_logger  # noqa
 
@@ -892,7 +888,7 @@ def check_user_language(telegram_id: int) -> str:
 
 
 def get_phrase_by_language(language: str, phrase: str) -> str:
-    return Dictionary.receive_translation(language, phrase)
+    return receive_translation(language, phrase)
 
 
 @bot.message_handler(content_types=['text'])

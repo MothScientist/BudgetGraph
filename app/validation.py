@@ -7,7 +7,7 @@ import sys
 sys.path.append('../')
 
 from app.db_manager import DatabaseQueries, connect_db, close_db
-from app.dictionary import Dictionary
+from app.dictionary import receive_translation
 from app.time_checking import timeit
 
 
@@ -171,23 +171,23 @@ def value_validation(value: str) -> int:
 @timeit
 def category_validation(lang: str, category: str) -> bool:
     categories: tuple = (
-        f"{Dictionary.receive_translation(lang, "supermarkets")}",
-        f"{Dictionary.receive_translation(lang, "restaurants")}",
-        f"{Dictionary.receive_translation(lang, "clothes")}",
-        f"{Dictionary.receive_translation(lang, "medicine")}",
-        f"{Dictionary.receive_translation(lang, "transport")}",
-        f"{Dictionary.receive_translation(lang, "devices")}",
-        f"{Dictionary.receive_translation(lang, "education")}",
-        f"{Dictionary.receive_translation(lang, "services")}",
-        f"{Dictionary.receive_translation(lang, "travel")}",
-        f"{Dictionary.receive_translation(lang, "housing")}",
-        f"{Dictionary.receive_translation(lang, "transfer")}",
-        f"{Dictionary.receive_translation(lang, "investments")}",
-        f"{Dictionary.receive_translation(lang, "hobby")}",
-        f"{Dictionary.receive_translation(lang, "jewelry")}",
-        f"{Dictionary.receive_translation(lang, "salary")}",
-        f"{Dictionary.receive_translation(lang, "charity")}",
-        f"{Dictionary.receive_translation(lang, "other")}"
+        f"{receive_translation(lang, "supermarkets")}",
+        f"{receive_translation(lang, "restaurants")}",
+        f"{receive_translation(lang, "clothes")}",
+        f"{receive_translation(lang, "medicine")}",
+        f"{receive_translation(lang, "transport")}",
+        f"{receive_translation(lang, "devices")}",
+        f"{receive_translation(lang, "education")}",
+        f"{receive_translation(lang, "services")}",
+        f"{receive_translation(lang, "travel")}",
+        f"{receive_translation(lang, "housing")}",
+        f"{receive_translation(lang, "transfer")}",
+        f"{receive_translation(lang, "investments")}",
+        f"{receive_translation(lang, "hobby")}",
+        f"{receive_translation(lang, "jewelry")}",
+        f"{receive_translation(lang, "salary")}",
+        f"{receive_translation(lang, "charity")}",
+        f"{receive_translation(lang, "other")}"
     )  # TODO: make a faster algorithm, although this one works within 0.00001 sec.
 
     if category in categories:
