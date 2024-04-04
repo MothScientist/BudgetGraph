@@ -554,9 +554,9 @@ def get_csv(message) -> None:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-        file_path: str = f"csv_tables/table_{group_id}.csv"
+        file_path: str = path.join(path.dirname(__file__), f"csv_tables/table_{group_id}.csv")
         table_headers: tuple = ("ID", "USERNAME", "TRANSFER", "TOTAL", "DATE", "CATEGORY", "DESCRIPTION")
-        table_data: tuple = bot_db.select_data_for_household_table(group_id, 0)
+        table_data: tuple[tuple, ...] = bot_db.select_data_for_household_table(group_id, 0)
         close_db(connection)
         if table_data:
             try:
@@ -699,7 +699,7 @@ def process_delete_account(message, username: str):
     if user_choice == f"👍 {get_phrase_by_language(user_language, "YES")}":
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        bot_db.delete_username_from_users(username)
+        bot_db.delete_username_from_users_by_telegram_id(telegram_id)
         close_db(connection)
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "account_is_deleted")}",
