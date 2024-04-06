@@ -30,7 +30,7 @@ from os import path
 sys.path.append('../')
 
 from app.db_manager import DatabaseQueries, connect_db, close_db  # noqa
-from app.encryption import getting_hash, get_salt  # noqa
+from app.encryption import getting_hash, get_salt, logging_hash  # noqa
 from app.validation import (date_validation, value_validation, description_validation,
                             username_validation, password_validation, category_validation)  # noqa
 from app.create_csv import create_csv_file, get_file_size_kb, get_file_checksum  # noqa
@@ -136,14 +136,14 @@ def start(message) -> None:
                                           f"{get_phrase_by_language(user_language, "our_user")}")
         bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_1")}")
         reply_menu_buttons_register(message)
-        logger_bot.info(f"Bot start with registration: username: {res}, tg id={telegram_id}.")
+        logger_bot.info(f"Bot start with registration: TelegramId={logging_hash(telegram_id)}")
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "greetings")}"
                                           f" {message.from_user.first_name}!\n"
                                         f"{get_phrase_by_language(user_language, "unknown_user")}")
         bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_2")}")
         reply_menu_buttons_not_register(message)
-        logger_bot.info(f"Bot start without registration: tg id={telegram_id}.")
+        logger_bot.info(f"Bot start without registration: TelegramId={logging_hash(telegram_id)}")
 
 
 @bot.message_handler(commands=['help'])
@@ -211,13 +211,13 @@ def callback_query_change_language(call):
         bot.answer_callback_query(call.id,
                                   f"{get_phrase_by_language(user_language, "great")}\n"
                                   f"{get_phrase_by_language(user_language, "language_changed")}")
-        logger_bot.info(f"Successful language change. Telegram ID: {telegram_id}, language: {new_user_language}")
+        logger_bot.info(f"Successful language change. TelegramID: {logging_hash(telegram_id)}, language: {new_user_language}")
         restart_language_after_changes(call)  # Reload button names and text for new language
     else:
         bot.answer_callback_query(call.id,
                                   f"{get_phrase_by_language(user_language, "error_change_language")}.\n"
                                   f"{get_phrase_by_language(user_language, "contact_support")}")
-        logger_bot.error(f"Error language change. Telegram ID: {telegram_id}, language: {new_user_language}")
+        logger_bot.error(f"Error language change. TelegramID: {logging_hash(telegram_id)}, language: {new_user_language}")
 
 
 def restart_language_after_changes(call) -> None:
@@ -477,19 +477,19 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
                 bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_4")}")
                 bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "your")} token:")
                 bot.send_message(message.chat.id, new_group_token)
-                logger_bot.info(f"New user (new group): ID: {telegram_id}, group: {group_id}")
+                logger_bot.info(f"New user (new group): TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
                 reply_menu_buttons_register(message)
             else:
                 bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
                                                   f"{get_phrase_by_language(user_language, "contact_support")}")
-                logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
-                                 f"psw salt: {psw_salt}, psw hash: {psw_hash}, group id: {group_id}")
+                logger_bot.error(f"Error adding new user to database: TelegramID: {logging_hash(telegram_id)}, "
+                                 f"username: {logging_hash(username)}, group id #{group_id}")
                 reply_menu_buttons_not_register(message)
         else:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
                                               f"{get_phrase_by_language(user_language, "contact_support")}")
-            logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
-                             f"psw salt: {psw_salt}, psw hash: {psw_hash}")
+            logger_bot.error(f"Error adding new user to database: TelegramID: {logging_hash(telegram_id)}, "
+                             f"username: {logging_hash(username)}")
             reply_menu_buttons_not_register(message)
 
     elif len(token) == 32 and token.isalnum() and token.islower():
@@ -499,20 +499,22 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str):
             if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
                 bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "congratulations")}")
                 bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_4")}")
-                logger_bot.info(f"New user: ID: {telegram_id}, group: {group_id}")
+                logger_bot.info(f"New user: TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
                 reply_menu_buttons_register(message)
             else:
                 bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
                                                   f"{get_phrase_by_language(user_language, "contact_support")}")
-                logger_bot.error(f"Error adding new user to database: ID: {telegram_id}, username: {username}, "
-                                 f"psw salt: {psw_salt}, psw hash: {psw_hash}, group id: {group_id}")
+                logger_bot.error(f"Error adding new user to database: TelegramID: {logging_hash(telegram_id)}, "
+                                 f"username: {logging_hash(username)}, group id #{group_id}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "group_is_full")}")
-            logger_bot.info(f"Trying to add to a full group: ID: {telegram_id}, group id: {group_id}")
+            logger_bot.info(f"Trying to add to a full group: TelegramID: {logging_hash(telegram_id)},"
+                            f" group id #{group_id}")
 
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_token_format")}")
-        logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, ID: {telegram_id}")
+        logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, "
+                        f"TelegramID: {logging_hash(telegram_id)}")
         reply_buttons(message)
 
     close_db(connection)
@@ -570,12 +572,12 @@ def get_csv(message) -> None:
                                           f"(sha-256): {file_checksum}")
             except FileNotFoundError:
                 bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "csv_not_found_error")}.")
-                logger_bot.error(f"CSV FileNotFoundError. ID: {telegram_id}, group: {group_id}")
-            except PermissionError:  # TODO what catches this exception?
+                logger_bot.error(f"CSV FileNotFoundError. TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
+            except PermissionError:  # raised when trying to run an operation without the adequate access rights
                 bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "csv_not_found_error")}.")
-                logger_bot.error(f"CSV PermissionError. ID: {telegram_id}, group: {group_id}")
+                logger_bot.error(f"CSV PermissionError. TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
             else:
-                logger_bot.info(f"CSV: SUCCESS. ID: {telegram_id}, group: {group_id}. "
+                logger_bot.info(f"CSV: SUCCESS. TelegramID: {logging_hash(telegram_id)}, group #{group_id}. "
                                 f"File size: {"{:.3f}".format(file_size)} kB, hashsum: {file_checksum}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "table_is_empty")}")
@@ -637,11 +639,11 @@ def process_change_owner(message, group_id: int) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
 
-    new_owner: str = message.text
+    new_owner_username: str = message.text
 
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
-    telegram_id_new_owner: int = bot_db.get_telegram_id_by_username(new_owner)
+    telegram_id_new_owner: int = bot_db.get_telegram_id_by_username(new_owner_username)
     user_from_current_group: bool = True if bot_db.get_group_id_by_telegram_id(telegram_id_new_owner) == group_id else False  # noqa
     user_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id_new_owner, group_id)
 
@@ -650,15 +652,18 @@ def process_change_owner(message, group_id: int) -> None:
     elif user_from_current_group:
         if bot_db.update_group_owner(telegram_id_new_owner, group_id):
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "owner_has_been_changed")}")
-            logger_bot.info(f"Group owner changed: group #{group_id}, new owner: {new_owner}")
+            logger_bot.info(f"Group owner changed: group #{group_id},"
+                            f" new owner username: {logging_hash(new_owner_username)}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "error_change_owner")}")
-            logger_bot.error(f"Owner change error. Current owner: {telegram_id}, desired owner: {telegram_id_new_owner} "
+            logger_bot.error(f"Owner change error. group #{group_id}, current owner: {logging_hash(telegram_id)},"
+                             f" desired owner: {logging_hash(telegram_id_new_owner)} "
                              f"- this user is a member of the group.")
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "check_correct_username")}\n"
                                           f"{get_phrase_by_language(user_language, "unknown_user_in_group")}")
-        logger_bot.error(f"Owner change error. Current owner: {telegram_id}, desired owner: {new_owner} "
+        logger_bot.error(f"Owner change error. group #{group_id}, current owner: {logging_hash(telegram_id)},"
+                         f" desired owner: {logging_hash(new_owner_username)} "
                          f"- this user is not a member of the group.")
     close_db(connection)
     group_settings_get_buttons(message)
@@ -704,7 +709,7 @@ def process_delete_account(message, username: str):
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "account_is_deleted")}",
                          reply_markup=markup_1)
-        logger_bot.info(f"User deleted the account. ID: {message.from_user.id}")
+        logger_bot.info(f"User deleted the account. TelegramID: {logging_hash(telegram_id)}")
         start(message)
 
     elif user_choice == f"👎 {get_phrase_by_language(user_language, "NO")}":
@@ -714,7 +719,7 @@ def process_delete_account(message, username: str):
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "unknown_message")}")
         logger_bot.info(f"Unrecognized message when deleting an account. "
-                        f"ID: {message.from_user.id}, message: {user_choice}")
+                        f"TelegramID: {logging_hash(telegram_id)}, message: {user_choice}")
         group_settings_get_buttons(message)
 
 
@@ -762,10 +767,11 @@ def process_delete_user(message, group_id: int, group_users_list: tuple) -> None
     else:
         if bot_db.delete_username_from_users_by_telegram_id(telegram_id_user_to_delete):
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "user_removed")}")
-            logger_bot.info(f"'{username_user_to_delete}' deleted by group owner from group #{group_id}")
+            logger_bot.info(f"'User {logging_hash(username_user_to_delete)}' "
+                            f"deleted by group owner from group #{group_id}")
         else:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "error_user_delete")}")
-            logger_bot.warning(f"Error removing '{username_user_to_delete}' from group #{group_id}")
+            logger_bot.warning(f"Error removing user '{logging_hash(username_user_to_delete)}' from group #{group_id}")
 
     close_db(connection)
     group_settings_get_buttons(message)
@@ -809,7 +815,7 @@ def process_delete_group(message, group_id: int) -> None:
         close_db(connection)
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "remove_completed")}")
-        logger_bot.info(f"User deleted the group. ID: {message.from_user.id}, group #{group_id}")
+        logger_bot.info(f"User deleted the group. TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
         start(message)
     elif user_choice == f"🌤️ {get_phrase_by_language(user_language, "NO")}":
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "stay_with_us")}")
@@ -817,7 +823,7 @@ def process_delete_group(message, group_id: int) -> None:
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "unknown_message")}")
         logger_bot.info(f"Unrecognized message when deleting group. "
-                        f"ID: {message.from_user.id}, message: {user_choice}, group #{group_id}")
+                        f"TelegramID: {logging_hash(telegram_id)}, message: {user_choice}, group #{group_id}")
         group_settings_get_buttons(message)
 
 
@@ -871,7 +877,7 @@ def check_user_access(message) -> bool:
         return True
     bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "not_register")}")
     bot.send_sticker(message.chat.id, f"{Stickers.get_sticker_by_id("id_5")}")
-    logger_bot.info(f"Unregistered user interaction. ID: {telegram_id}")
+    logger_bot.info(f"Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}")
     return False
 
 
@@ -888,7 +894,8 @@ def check_user_language(telegram_id: int) -> str:
 
 
 def get_phrase_by_language(language: str, phrase: str) -> str:
-    return receive_translation(language, phrase)
+    res = receive_translation(language, phrase)
+    return res if res else "ERROR"
 
 
 @bot.message_handler(content_types=['text'])

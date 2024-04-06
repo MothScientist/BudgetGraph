@@ -3,7 +3,6 @@
 
     Also stores emoji and sticker codes for use inside the bot.
 """
-
 import json
 from os import path
 from app.logger import setup_logger
@@ -61,12 +60,21 @@ def receive_translation(language: str, phrase: str) -> str:
     :param phrase: string that is a key in the language dictionary.
     :return: value in the json-dictionary in the selected language.
     """
-    localization_dir_path: str = path.join(path.dirname(__file__), f"localization/{language}.json")
-    with open(localization_dir_path, encoding='utf-8') as json_file:
-        json_dict = json_file.read()
-
-    dict_language_obj = json.loads(json_dict)
+    dict_language_obj: dict = get_translate_from_json(language)
     return dict_language_obj.get(phrase)
+
+
+def get_translate_from_json(language: str) -> dict:
+    """
+    This function works with reading JSON files.
+    """
+    localization_dir_path: str = path.join(path.dirname(__file__), f"localization/{language}.json")
+    try:
+        with open(localization_dir_path, encoding='utf-8') as json_file:
+            json_dict: str = json_file.read()
+        return json.loads(json_dict)
+    except FileNotFoundError:
+        return {}
 
 
 if __name__ == "__main__":

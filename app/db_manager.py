@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import g
 
 from app.logger import setup_logger
-from app.encryption import get_token
+from app.encryption import get_token, logging_hash
 from app.time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
@@ -93,7 +93,7 @@ class DatabaseQueries:
             # The logs store the error and parameters that were passed to the function (except secrets)
             # The time and function where the error occurred will be added automatically
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}")
+                                  f"telegram_id: {logging_hash(telegram_id)}")
             # Returning an empty string (or zero) in an exception block
             # allows validators to treat this as no data in the database
             return ""
@@ -117,7 +117,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
+                                  f"username: {logging_hash(username)}")
             return 0
 
     def get_group_id_by_token(self, token: str) -> int:
@@ -160,7 +160,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}")
+                                  f"telegram_id: {logging_hash(telegram_id)}")
             return 0
 
     def get_token_by_username(self, username: str) -> str:
@@ -182,7 +182,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
+                                  f"username: {logging_hash(username)}")
             return ""
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
@@ -204,7 +204,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}")
+                                  f"telegram_id: {logging_hash(telegram_id)}")
             return ""
 
     def get_salt_by_username(self, username: str) -> str:
@@ -225,7 +225,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
+                                  f"username: {logging_hash(username)}")
             return ""
 
     def auth_by_username(self, username: str, psw_hash: str) -> bool:
@@ -248,8 +248,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}, "
-                                  f"psw_hash: {psw_hash}")
+                                  f"username: {logging_hash(username)}")
             return False
 
     def select_data_for_household_table(self, group_id: int, number_of_last_records: int) -> tuple:
@@ -400,7 +399,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}")
+                                  f"username: {logging_hash(username)}")
             return False
 
     def check_telegram_id_is_exist(self, telegram_id: int) -> bool:
@@ -417,7 +416,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram ID: {telegram_id}")
+                                  f"telegram ID: {logging_hash(telegram_id)}")
             return False
 
     def check_token_is_unique(self, token: str) -> bool:
@@ -483,7 +482,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}")
+                                  f"telegram_id: {logging_hash(telegram_id)}")
             return "en"  # return default language
 
     def add_user_language(self, telegram_id: int, language: str) -> bool:
@@ -498,7 +497,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}, "
+                                  f"telegram_id: {logging_hash(telegram_id)}, "
                                   f"language: {language}")
             return False
 
@@ -521,11 +520,9 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {username}, "
-                                  f"psw_salt: {psw_salt}, "
-                                  f"psw_hash: {psw_hash}, "
+                                  f"username: {logging_hash(username)}, "
                                   f"group_id: {group_id}, "
-                                  f"telegram_id: {telegram_id}")
+                                  f"telegram_id: {logging_hash(telegram_id)}")
             return False
 
         else:
@@ -565,7 +562,7 @@ class DatabaseQueries:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
                                   f"transaction_id: {transaction_id}"
-                                  f"username: {username}, "
+                                  f"username: {logging_hash(username)}, "
                                   f"total_sum: {total_sum}, "
                                   f"transaction_amount: {transaction_amount},"
                                   f"record_date: {record_date},"
@@ -696,7 +693,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"owner (telegram id): {owner}")
+                                  f"owner (telegram id): {logging_hash(owner)}")
             return ""
 
         else:
@@ -717,7 +714,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}")
+                                  f"telegram_id: {logging_hash(telegram_id)}")
 
     def update_group_owner(self, telegram_id: int, group_id: int) -> bool:
         """
@@ -734,7 +731,7 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id: {telegram_id}, "
+                                  f"telegram_id: {logging_hash(telegram_id)}, "
                                   f"group_id: {group_id}")
             return False
 
@@ -748,11 +745,11 @@ class DatabaseQueries:
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram ID: {telegram_id}")
+                                  f"telegram ID: {logging_hash(telegram_id)}")
             return False
 
         else:
-            logger_database.info(f"Telegram ID {telegram_id} has been removed from the database")
+            logger_database.info(f"Telegram ID {logging_hash(telegram_id)} has been removed from the database")
             return True
 
     def delete_group_with_users(self, group_id: int) -> bool:  # TODO REFERENCES IN .sql
