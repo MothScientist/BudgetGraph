@@ -332,7 +332,7 @@ class TestDescriptionValidator(unittest.TestCase):
 
 
 class TestCategoryValidation(unittest.TestCase):
-    def test_category_validation_1(self):  # All categories for all languages
+    def test_category_validation_1(self):  # All categories for all localization
         categories_keys: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport",
                                   "devices", "education", "services", "travel", "housing", "investments",
                                   "hobby", "jewelry", "salary", "charity", "other")

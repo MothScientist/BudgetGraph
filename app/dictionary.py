@@ -75,8 +75,3 @@ def get_translate_from_json(language: str) -> dict:
         return json.loads(json_dict)
     except FileNotFoundError:
         return {}
-
-
-if __name__ == "__main__":
-    res = receive_translation("es", "data_is_safe")
-    print(res)
