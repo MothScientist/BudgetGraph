@@ -189,8 +189,6 @@ def category_validation(lang: str, category: str) -> bool:
         f"{receive_translation(lang, "charity")}",
         f"{receive_translation(lang, "other")}"
     )  # TODO: make a faster algorithm, although this one works within 0.00001 sec.
-
     if category in categories:
         return True
     return False
-

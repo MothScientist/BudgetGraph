@@ -1,7 +1,7 @@
 # pylint: disable=missing-docstring
 
 import unittest
-import os
+from os import listdir
 import json
 from time import time
 from app.dictionary import receive_translation
@@ -9,13 +9,13 @@ from app.dictionary import receive_translation
 
 class TestLanguages(unittest.TestCase):
     def setUp(self):
-        self.localization_files: list = os.listdir('../app/localization')
-        self.languages: list = [lang[:2] for lang in self.localization_files]
+        self.localization_files: tuple = tuple(listdir('../app/localization'))
+        self.languages: tuple = tuple(lang[:2] for lang in self.localization_files)
 
         self.all_keys_for_each_language: list = []
         for lang in self.languages:
-            with open(f"../app/localization/{lang}.json", encoding='utf-8') as f:
-                keys_data = json.load(f)
+            with open(f"../app/localization/{lang}.json", encoding='utf-8') as language_json_file:
+                keys_data = json.load(language_json_file)
             keys_list: list = keys_data.keys()
             self.all_keys_for_each_language.append(keys_list)
 

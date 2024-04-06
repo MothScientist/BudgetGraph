@@ -1,8 +1,9 @@
 import unittest
 import asyncio
-import re
+from os import listdir
 from datetime import datetime, timedelta, timezone
 
+from app.dictionary import receive_translation
 from app.validation import (check_day_is_correct,
                             check_year_is_leap,
                             check_date_in_correct_format,
@@ -14,8 +15,6 @@ from app.validation import (check_day_is_correct,
                             telegram_id_validation,
                             password_validation,
                             username_validation)
-
-from app.dictionary import Dictionary
 
 
 class TestDateValidation(unittest.TestCase):
@@ -333,17 +332,13 @@ class TestDescriptionValidator(unittest.TestCase):
 
 class TestCategoryValidation(unittest.TestCase):
     def test_category_validation_1(self):  # All categories for all localization
-        categories_keys: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport",
-                                  "devices", "education", "services", "travel", "housing", "investments",
-                                  "hobby", "jewelry", "salary", "charity", "other")
-
-        _languages: tuple = tuple(Dictionary._languages.keys())
-
-        # We get all the values by keys (tuple above) from all language dictionaries
-        categories_values: tuple = tuple(Dictionary._languages[lang][_key] for lang in _languages for _key in categories_keys)  # noqa
-
+        categories: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport", "devices", "education",
+                             "services", "travel", "housing", "investments", "hobby", "jewelry", "salary", "charity",
+                             "other")
+        localization_files: tuple = tuple(listdir('../app/localization'))
+        languages: tuple = tuple(lang[:2] for lang in localization_files)
         # Now we check that they all pass validation
-        res: bool = all(category_validation(lang, Dictionary.receive_translation(lang, category)) for lang in _languages for category in categories_keys)  # noqa
+        res: bool = all(category_validation(lang, receive_translation(lang, category)) for lang in languages for category in categories)  # noqa
         self.assertEqual(res, True)
 
     def test_category_validation_2(self):  # The phrase exists, but in a different language
