@@ -1,2 +1,4 @@
 [MASTER]
 disable=logging-fstring-interpolation,missing-function-docstring,fixme
+[FORMAT]
+max-line-length=120
