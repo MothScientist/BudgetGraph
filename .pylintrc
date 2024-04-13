@@ -1,0 +1,2 @@
+[MASTER]
+disable=logging-fstring-interpolation,missing-function-docstring,fixme
