@@ -8,7 +8,7 @@ import sys
 sys.path.append('../')
 
 from app.db_manager import connect_db_flask_g, close_db_flask_g, DatabaseQueries  # noqa
-from app.encryption import getting_hash, get_salt  # noqa
+from app.encryption import getting_hash, get_salt, logging_hash  # noqa
 from app.validation import value_validation, description_validation, date_validation, registration_validation  # noqa
 from app.logger import setup_logger  # noqa
 
@@ -57,15 +57,12 @@ def registration():
                 """
                 if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
                     session.pop("userLogged", None)  # reset old cookies when registering a new user
-                    logger_app.info(f"Successful registration: {username}. New group created: id={group_id}.")
+                    logger_app.info(f"Successful registration: {logging_hash(username)}, new group #{group_id}.")
                     flash("Registration completed successfully!", category="success")
                     flash(f"{username}, your token: {user_token}", category="success_token")
                 else:
-                    logger_app.error(f"Error registering user with new group. Group ID: {group_id}, "
-                                     f"username: {username}, telegram ID: {telegram_id}, "
-                                     f"get_salt status: {len(psw_salt) == 32}, "
-                                     f"add_user_to_db return: {dbase.add_user_to_db(username, psw_salt, 
-                                                               getting_hash(psw, psw_salt), group_id, telegram_id)}")
+                    logger_app.error(f"Error registering user with new group, group #{group_id}, "
+                                     f"username: {logging_hash(username)}, TelegramID: {logging_hash(telegram_id)}")
                     flash("Unknown error while creating account. Please contact technical support!", category="error")
 
         # User is added to an existing group
@@ -81,14 +78,15 @@ def registration():
 
                     if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
                         flash("Registration completed successfully!", category="success")
-                        logger_app.info(f"Successful registration: {username}. Group: id={group_id}.")
+                        logger_app.info(f"Successful registration: {logging_hash(username)}, group #{group_id}.")
                     else:
-                        logger_app.info(f"Failed authorization  attempt: username = {username}, token = {token}.")
+                        logger_app.info(f"Failed authorization  attempt: username = {logging_hash(username)}, "
+                                        f"token = {token}.")
                         flash("Error creating user. Please try again and if the problem persists, "
                               "contact technical support.", category="error")
                 else:
                     logger_app.info(f"The user entered an incorrect token or group is full: "
-                                    f"username = {username}, token = {token}.")
+                                    f"username = {logging_hash(username)}, token = {token}.")
 
                     flash("There is no group with this token or it is full. "
                           "Contact the group members for more information, or create your own group!",
@@ -111,12 +109,13 @@ def login():
         username = session["userLogged"]
         user_is_exist: bool = dbase.check_username_is_exist(username)
         if user_is_exist:
-            logger_app.info(f"Successful authorization (cookies): {session['userLogged']}.")
-            return redirect(url_for("household", username=session["userLogged"]))
+            logger_app.info(f"Successful authorization (cookies) -> username: {logging_hash(username)}")
+            return redirect(url_for("household", username=username))
         else:
             session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
             flash("Your account was not found in the database. It may have been deleted.", category="error")
-            logger_app.warning(f"Failed registration attempt from browser cookies: {username}")
+            logger_app.warning(f"Failed registration attempt from browser cookies -> "
+                               f"username: {logging_hash(username)}")
 
     # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
@@ -129,11 +128,12 @@ def login():
             session["userLogged"] = username
             telegram_id: int = dbase.get_telegram_id_by_username(username)
             dbase.update_user_last_login_by_telegram_id(telegram_id)
-            logger_app.info(f"Successful authorization: {username}.")
+            logger_app.info(f"Successful authorization: username: {logging_hash(username)}.")
             return redirect(url_for("household", username=session["userLogged"]))
         else:
             flash("This user doesn't exist.", category="error")
-            logger_app.warning(f"Failed authorization attempt: {username}, user salt is exist: {len(psw_salt) != 0}")
+            logger_app.warning(f"Failed authorization attempt: username: {logging_hash(username)}, "
+                               f"user salt is exist: {len(psw_salt) != 0}")
 
     return render_template("login.html", title="Budget Graph - Login")
 
@@ -191,8 +191,8 @@ def household(username):
                 flash("Error. The format of the entered data is incorrect.", category="error")
 
             elif not dbase.process_delete_transaction_record(group_id, record_id):
-                logger_app.error(f"Error deletion record from database: table: budget_{group_id}, "
-                                 f"username: {username}, record id: {record_id}.")
+                logger_app.error(f"Error deletion record from database: group #{group_id}, "
+                                 f"username: {logging_hash(username)}, record id: {record_id}.")
                 flash("Error deleting a record from the database. Check that the entered data is correct.",
                       category="error")
 
@@ -255,7 +255,7 @@ def logout():
     """
     removing session from browser cookies
     """
-    logger_app.info(f"Successful logout: {session['userLogged']}.")
+    logger_app.info(f"Successful logout: username: {logging_hash(session['userLogged'])}.")
     session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
     return redirect(url_for('login'))  # redirecting the user to another page, such as the homepage
 

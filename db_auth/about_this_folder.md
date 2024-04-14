@@ -1,0 +1,1 @@
+# This directory stores .env files for authorization in the PostgreSQL database when running Docker containers

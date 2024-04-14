@@ -1,9 +1,11 @@
-FROM python:3.12.2
+FROM python:3.12.2-alpine3.18
 
 COPY requirements.txt run.sh  /main/
 COPY app /main/app
 
 WORKDIR /main
+
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y openssl
 
 RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 

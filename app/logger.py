@@ -11,7 +11,6 @@ def setup_logger(log_file: str, logger_name: str, level=logging.INFO) -> logging
     :return: logger
     """
     makedirs("logs", exist_ok=True)  # Creates a directory for logs when creating a database
-
     logger = logging.getLogger(logger_name)  # use unique logger per file
     logger.setLevel(level)
 
@@ -19,11 +18,9 @@ def setup_logger(log_file: str, logger_name: str, level=logging.INFO) -> logging
     # if full, a new file will be created
     # 100 Mb logs for package
     handler.setLevel(level)
-
     formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d - %(funcName)s]')
     handler.setFormatter(formatter)
 
     if not logger.hasHandlers():  # Checks if the logger has any handlers already installed
         logger.addHandler(handler)
-
     return logger

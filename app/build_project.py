@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append('../')
 from app.db_manager import connect_db, close_db  # noqa
@@ -7,6 +8,7 @@ def create_db() -> None:
     """
     Creates tables, using create_db.sql file describing their structures.
     """
+    os.makedirs('csv_tables', exist_ok=True)
     conn = connect_db()
     try:
         with conn.cursor() as cur:

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS groups (
     id    serial      PRIMARY KEY,
-    owner bigint      NOT NULL UNIQUE CHECK(telegram_id BETWEEN 1 AND 999999999999),
+    owner bigint      NOT NULL UNIQUE CHECK(owner BETWEEN 1 AND 999999999999),
     token varchar(32) NOT NULL UNIQUE CHECK(LENGTH(token) = 32)
 );
 
