@@ -68,7 +68,7 @@
     "enter_password": "Geben Sie Ihr Passwort ein (8-32 Zeichen / mindestens 1 Zahl und 1 Buchstabe)",
     "invalid_username": "Ungültiges Benutzernamenformat oder dieser Benutzername existiert bereits!",
     "enter_token": "Gruppentoken eingeben:",
-    "none_token": "(Wenn Sie noch keines haben, geben Sie \"None\" ein)",
+    "none_token": "(Wenn Sie noch keines haben, geben Sie 'None' ein)",
     "invalid_password_format": "Ungültiges Kennwort Format!",
     "congratulations": "Herzlichen Glückwunsch zur Registrierung!",
     "create_new_user_error": "Fehler beim Erstellen eines neuen Benutzers",

@@ -68,7 +68,7 @@
     "enter_password": "Entrez votre mot de passe (8 à 32 caractères / au moins 1 chiffre et 1 lettre)",
     "invalid_username": "Format de nom d'utilisateur invalide ou ce nom d'utilisateur existe déjà!",
     "enter_token": "Entrez le jeton de groupe:",
-    "none_token": "(si vous n'en avez pas, saisissez \"None\")",
+    "none_token": "(si vous n'en avez pas, saisissez 'None')",
     "invalid_password_format": "Format de mot de passe invalide!",
     "congratulations": "Félicitations pour votre inscription!",
     "create_new_user_error": "Erreur lors de la création d'un nouvel utilisateur",

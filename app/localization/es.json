@@ -68,7 +68,7 @@
     "enter_password": "Ingrese su contraseña (8-32 caracteres / al menos 1 número y 1 letra)",
     "invalid_username": "¡Formato de nombre de usuario no válido o este nombre de usuario ya existe!",
     "enter_token": "Ingrese el token de grupo:",
-    "none_token": "(si no tiene uno, ingrese \"None\")",
+    "none_token": "(si no tiene uno, ingrese 'None')",
     "invalid_password_format": "¡Formato de contraseña no válido!",
     "congratulations": "¡Felicitaciones por registrarse!",
     "create_new_user_error": "Error al crear un nuevo usuario",

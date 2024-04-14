@@ -68,7 +68,7 @@
     "enter_password": "Sláðu inn lykilorðið þitt (8-32 stafir / að minnsta kosti 1 tala og 1 stafur)",
     "invalid_username": "Ógilt notendanafnssnið eða þetta notendanafn er þegar til!",
     "enter_token": "Sláðu inn hóplykil:",
-    "none_token": "(ef þú ert ekki með einn, sláðu inn \"None\")",
+    "none_token": "(ef þú ert ekki með einn, sláðu inn 'None')",
     "invalid_password_format": "Ógilt lykilorðssnið!",
     "congratulations": "Til hamingju með skráninguna!",
     "create_new_user_error": "Villa við að búa til nýjan notanda",
