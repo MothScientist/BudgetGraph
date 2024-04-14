@@ -1,16 +1,24 @@
-import sqlite3
+import os
+import psycopg2
+from dotenv import load_dotenv
 
-db_path = "test_db.sqlite3"
+load_dotenv()  # Load environment variables from .env file
+db_host = os.getenv("POSTGRES_HOST_TEST")
+db_port = os.getenv("POSTGRES_PORT_TEST")
+db_name = os.getenv("POSTGRES_NAME_TEST")
+db_user = os.getenv("POSTGRES_USERNAME_TEST")
+db_psw = os.getenv("POSTGRES_PASSWORD_TEST")
+
+DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}"
 
 
 def connect_test_db():
     try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
+        conn = psycopg2.connect(DSN)
         return conn
 
-    except sqlite3.Error as err:
-        print(str(err))
+    except Exception as err:
+        print(err)
 
 
 def close_test_db(conn):
@@ -19,15 +27,23 @@ def close_test_db(conn):
 
 
 def create_test_db() -> None:
+    """
+    Creates tables, using create_db.sql file describing their structures.
+    """
+    conn = connect_test_db()
     try:
-        conn = connect_test_db()
-        cursor = conn.cursor()
+        with conn.cursor() as cur:
+            with open("create_test_db.sql", 'r') as file:
+                cur.execute(file.read())
 
-        with open("create_test_db.sql", 'r') as file:
-            cursor.executescript(file.read())
+            conn.commit()
 
-        conn.commit()
+    except Exception as err:
+        print(err)
+
+    finally:
         close_test_db(conn)
 
-    except sqlite3.Error as err:
-        print(str(err))
+
+if __name__ == "__main__":
+    create_test_db()
