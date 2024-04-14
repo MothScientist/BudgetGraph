@@ -253,26 +253,52 @@ class DatabaseQueries:
 
     def select_data_for_household_table(self, group_id: int, number_of_last_records: int) -> tuple:
         """
-        Returns the specified number of rows (starting with the most recent) from monetary_transactions table.
+        Returns the specified number of rows (starting with the most recent)
+        from monetary_transactions table.
         :param group_id:
         :param number_of_last_records: number of rows returned.
         :return: tuple of n elements | empty list
         """
+        # add a restriction on overload protection
+        # when requesting all data from the table
+        number_of_last_records = 10_000 if number_of_last_records == 0 else number_of_last_records
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    if number_of_last_records == 0:  # getting all records
-                        cur.execute("""SELECT transaction_id, username, transfer, total, to_char(record_date, 'DD/MM/YYYY') as record_date, category, description
+                    # getting all records (max 10.000)
+                    if number_of_last_records == 0:
+                        # use ASC
+                        cur.execute("""
+                                       SELECT 
+                                            transaction_id, 
+                                            username, 
+                                            transfer, 
+                                            total, 
+                                            to_char(record_date, 'DD/MM/YYYY') as record_date, 
+                                            category, 
+                                            description
                                        FROM monetary_transactions
                                        WHERE group_id = %s
-                                       ORDER BY transaction_id DESC""", (group_id,))  # noqa
+                                       ORDER BY transaction_id ASC
+                                       LIMIT %s""",
+                                    (group_id,number_of_last_records,))
                         res = cur.fetchall()
                     else:
-                        cur.execute(f"""SELECT transaction_id, username, transfer, total, to_char(record_date, 'DD/MM/YYYY') as record_date, category, description
+                        # use DESC to make it easier for the user to read
+                        cur.execute(f"""
+                                        SELECT 
+                                            transaction_id, 
+                                            username, 
+                                            transfer, 
+                                            total, 
+                                            to_char(record_date, 'DD/MM/YYYY') as record_date, 
+                                            category, 
+                                            description
                                         FROM monetary_transactions
                                         WHERE group_id = %s
                                         ORDER BY transaction_id DESC
-                                        LIMIT %s""", (group_id, number_of_last_records,))  # noqa
+                                        LIMIT %s""",
+                                    (group_id, number_of_last_records,))
                         res = cur.fetchall()
 
                     res_list: tuple[tuple, ...] = tuple(tuple(row) for row in res)
