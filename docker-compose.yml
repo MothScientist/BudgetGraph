@@ -41,7 +41,9 @@ services:
       - postgres
 
   bot:
-    build: Dockerfile-bot
+    build:
+      context: .
+      dockerfile: Dockerfile-bot
     restart: always
     secrets:
       - db-password

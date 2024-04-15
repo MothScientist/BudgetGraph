@@ -7,6 +7,8 @@ COPY requirements.txt run_bot.sh /main/
 # Copying the 'budget_graph' application bot with dependencies to the /main/app directory
 COPY budget_graph /main/app
 
+WORKDIR /main
+
 # Installing dependencies and required packages
 RUN apk update && apk upgrade && apk add openssl
 
