@@ -22,23 +22,23 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:  # pgAdmin running in server mode over HTTP or HTTPS
-    container_name: pgadmin_container
-    image: dpage/pgadmin4:8.4
-    secrets:
-      - pgadmin-email
-      - pgadmin-password
-    environment:
-      PGADMIN_DEFAULT_EMAIL: =/run/secrets/pgadmin-email
-      PGADMIN_DEFAULT_PASSWORD: =/run/secrets/pgadmin-password
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    restart: unless-stopped
-    networks:
-      - postgres
+#  pgadmin:  # pgAdmin running in server mode over HTTP or HTTPS
+#    container_name: pgadmin_container
+#    image: dpage/pgadmin4:8.4
+#    secrets:
+#      - pgadmin-email
+#      - pgadmin-password
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: =/run/secrets/pgadmin-email
+#      PGADMIN_DEFAULT_PASSWORD: =/run/secrets/pgadmin-password
+#      PGADMIN_CONFIG_SERVER_MODE: "False"
+#    volumes:
+#      - pgadmin-data:/var/lib/pgadmin
+#    ports:
+#      - "5050:80"
+#    restart: unless-stopped
+#    networks:
+#      - postgres
 
   bot:
     build:
