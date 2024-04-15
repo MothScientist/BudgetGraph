@@ -1,5 +1,4 @@
-# This version does not contain any detected vulnerabilities
-FROM python:3.12.2-alpine3.18
+FROM python:3.12.2
 
 # Copying dependencies and startup script to the /main/ directory
 COPY requirements.txt run_bot.sh /main/
