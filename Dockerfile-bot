@@ -1,0 +1,33 @@
+# This version does not contain any detected vulnerabilities
+FROM python:3.12.2-alpine3.18
+
+# Copying dependencies and startup script to the /main/ directory
+COPY requirements.txt run_bot.sh /main/
+
+# Copying the 'budget_graph' application bot with dependencies to the /main/app directory
+COPY budget_graph /main/app
+
+# Installing dependencies and required packages
+RUN apk update && apk upgrade && apk add openssl
+
+# Installing Python dependencies
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Go to the /main/app directory to build the source code
+WORKDIR /main/app
+
+# Build the project
+RUN python build_project.py
+
+# Removing unnecessary files after building the project
+RUN rm build_project.py create_db.sql webapp.py
+
+# Removing some unnecessary directories
+RUN rm -rf /static /templates /logs
+
+# Return to the root directory /main
+WORKDIR /main
+
+# Run the run_bot.sh script when the container starts
+CMD ["sh", "./run_bot.sh"]
+

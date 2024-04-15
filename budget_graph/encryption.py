@@ -2,7 +2,7 @@ from os import urandom
 from hashlib import pbkdf2_hmac, sha256
 from secrets import choice
 
-from app.logger import setup_logger  # noqa
+from budget_graph.logger import setup_logger  # noqa
 
 logger_encrypt = setup_logger("logs/BotLog.log", "bot_logger")
 

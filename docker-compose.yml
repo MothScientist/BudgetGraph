@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  postgresql:
+    container_name: budget-graph-postgres
+    image: postgres:16.2-alpine3.18
+    secrets:
+      - db-password
+    environment:
+      POSTGRES_DB: "budget_graph"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: /run/secrets/db-password
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - "6432:5432"
+    restart: always
+    networks:
+      - postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:  # pgAdmin running in server mode over HTTP or HTTPS
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:8.4
+    secrets:
+      - pgadmin-email
+      - pgadmin-password
+    environment:
+      PGADMIN_DEFAULT_EMAIL: =/run/secrets/pgadmin-email
+      PGADMIN_DEFAULT_PASSWORD: =/run/secrets/pgadmin-password
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    networks:
+      - postgres
+
+  bot:
+    build: Dockerfile-bot
+    restart: always
+    secrets:
+      - db-password
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
+
+secrets:
+  db-password:
+    file: db_auth/psq_psw.env
+  pgadmin-email:
+    file: db_auth/pg_admin_email.env
+  pgadmin-password:
+    file: db_auth/pg_admin_psw.env
+
+volumes:
+  pgadmin-data:

@@ -4,17 +4,17 @@ import unittest
 from os import listdir
 import json
 from time import time
-from app.dictionary import receive_translation
+from budget_graph.dictionary import receive_translation
 
 
 class TestLanguages(unittest.TestCase):
     def setUp(self):
-        self.localization_files: tuple = tuple(listdir('../app/localization'))
+        self.localization_files: tuple = tuple(listdir('../budget_graph/localization'))
         self.languages: tuple = tuple(lang[:2] for lang in self.localization_files)
 
         self.all_keys_for_each_language: list = []
         for lang in self.languages:
-            with open(f"../app/localization/{lang}.json", encoding='utf-8') as language_json_file:
+            with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as language_json_file:
                 keys_data = json.load(language_json_file)
             keys_list: list = keys_data.keys()
             self.all_keys_for_each_language.append(keys_list)
@@ -37,7 +37,7 @@ class TestLanguages(unittest.TestCase):
         test_list: list = []  # here we will add information about the dictionary for load simulation
         start = time()
         for lang in self.languages:
-            with open(f"../app/localization/{lang}.json", encoding='utf-8') as f:
+            with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as f:
                 keys_data = json.load(f)
             test_list += keys_data
         finish = time()

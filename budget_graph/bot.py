@@ -29,14 +29,14 @@ import sys
 from os import path
 sys.path.append('../')
 
-from app.db_manager import DatabaseQueries, connect_db, close_db
-from app.encryption import getting_hash, get_salt, logging_hash
-from app.validation import (date_validation, value_validation, description_validation,
-                            username_validation, password_validation, category_validation)
-from app.create_csv import create_csv_file, get_file_size_kb, get_file_checksum
-from app.dictionary import Stickers, receive_translation
-from app.time_checking import timeit
-from app.logger import setup_logger
+from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
+from budget_graph.encryption import getting_hash, get_salt, logging_hash
+from budget_graph.validation import (date_validation, value_validation, description_validation,
+                                     username_validation, password_validation, category_validation)
+from budget_graph.create_csv import create_csv_file, get_file_size_kb, get_file_checksum
+from budget_graph.dictionary import Stickers, receive_translation
+from budget_graph.time_checking import timeit
+from budget_graph.logger import setup_logger
 
 
 load_dotenv()  # Load environment variables from .env file

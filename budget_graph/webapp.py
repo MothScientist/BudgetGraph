@@ -7,10 +7,10 @@ import sys
 
 sys.path.append('../')
 
-from app.db_manager import connect_db_flask_g, close_db_flask_g, DatabaseQueries  # noqa
-from app.encryption import getting_hash, get_salt, logging_hash  # noqa
-from app.validation import value_validation, description_validation, date_validation, registration_validation  # noqa
-from app.logger import setup_logger  # noqa
+from budget_graph.db_manager import connect_db_flask_g, close_db_flask_g, DatabaseQueries  # noqa
+from budget_graph.encryption import getting_hash, get_salt, logging_hash  # noqa
+from budget_graph.validation import value_validation, description_validation, date_validation, registration_validation  # noqa
+from budget_graph.logger import setup_logger  # noqa
 
 load_dotenv()  # Load environment variables from .env file
 

@@ -5,7 +5,7 @@
 """
 import json
 from os import path
-from app.logger import setup_logger
+from budget_graph.logger import setup_logger
 
 logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
 

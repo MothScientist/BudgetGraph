@@ -6,9 +6,9 @@ from datetime import datetime, timezone
 import sys
 sys.path.append('../')
 
-from app.db_manager import DatabaseQueries, connect_db, close_db
-from app.dictionary import receive_translation
-from app.time_checking import timeit
+from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
+from budget_graph.dictionary import receive_translation
+from budget_graph.time_checking import timeit
 
 
 @timeit
