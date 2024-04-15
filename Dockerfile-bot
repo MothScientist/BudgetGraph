@@ -9,7 +9,7 @@ COPY budget_graph /main/app
 WORKDIR /main
 
 # Installing dependencies and required packages
-RUN apk update && apk upgrade && apk add openssl
+
 
 # Installing Python dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
