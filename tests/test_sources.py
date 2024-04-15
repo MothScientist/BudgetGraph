@@ -2,7 +2,7 @@
 
 import unittest
 
-from app.encryption import getting_hash, get_salt, get_token
+from budget_graph.encryption import getting_hash, get_salt, get_token
 
 
 class TestPasswordHashing(unittest.TestCase):

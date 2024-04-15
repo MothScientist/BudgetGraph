@@ -3,9 +3,9 @@ from psycopg2 import connect, DatabaseError
 from dotenv import load_dotenv
 from flask import g
 
-from app.logger import setup_logger
-from app.encryption import get_token, logging_hash
-from app.time_checking import timeit
+from budget_graph.logger import setup_logger
+from budget_graph.encryption import get_token, logging_hash
+from budget_graph.time_checking import timeit
 
 load_dotenv()  # Load environment variables from .env file
 db_host = os.getenv("POSTGRES_HOST")
