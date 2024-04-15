@@ -4,7 +4,7 @@ FROM python:3.12.2
 COPY requirements.txt run_bot.sh /main/
 
 # Copying the 'budget_graph' application bot with dependencies to the /main/app directory
-COPY budget_graph /main/app
+COPY budget_graph /main/budget_graph
 
 WORKDIR /main
 
@@ -15,7 +15,7 @@ WORKDIR /main
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Go to the /main/app directory to build the source code
-WORKDIR /main/app
+WORKDIR /main/budget_graph
 
 # Build the project
 RUN python build_project.py
