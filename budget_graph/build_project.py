@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append('../')
-from budget_graph.db_manager import connect_db, close_db  # noqa
+from app.db_manager import connect_db, close_db  # noqa
 
 
 def create_db() -> None:
