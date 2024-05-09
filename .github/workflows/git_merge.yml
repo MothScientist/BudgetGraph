@@ -1,0 +1,18 @@
+name: Git merge status
+
+on:
+  push:
+    branches: [ fix ]
+  pull_request:
+
+jobs:
+  build-and-deploy:
+    runs-on: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      # Action for checking out a repo - https://github.com/actions/checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Git merge test
+        run: bash scripts/git_merge_test.sh

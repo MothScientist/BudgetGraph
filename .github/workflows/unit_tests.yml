@@ -5,7 +5,6 @@ on:
   schedule:
     - cron: '0 0 * * 1'  # https://crontab.cronhub.io/
   push:
-    branches: [ master, postgresql ]
   pull_request:
 
 jobs:

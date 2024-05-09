@@ -19,6 +19,7 @@ DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={d
 logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
 
 
+@timeit
 def connect_db():
     try:
         conn = connect(DSN)
@@ -60,7 +61,9 @@ class DatabaseQueries:
     """
     def __init__(self, connection):
         self.__conn = connection
+        logger_database.info("SQL __init__: new database connection")
 
+    @timeit
     def get_username_by_telegram_id(self, telegram_id: int) -> str:
         """
         :return: username | empty string
@@ -79,9 +82,9 @@ class DatabaseQueries:
                     # Cursors can be used as context managers: leaving the context will close the cursor
 
                     # AttributeError occurs in this block if the database connection returned null
-                    cur.execute("""SELECT username 
-                                   FROM users 
-                                   WHERE telegram_id = %s""", (telegram_id,))  # DO NOT REMOVE parentheses and commas
+                    cur.execute("""SELECT "username" 
+                                   FROM "budget_graph"."users" 
+                                   WHERE "telegram_id" = %s""", (telegram_id,))  # DO NOT REMOVE commas
                     res = cur.fetchone()
 
                     if res:
@@ -105,9 +108,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT telegram_id 
-                                   FROM users 
-                                   WHERE username = %s""", (username,))
+                    cur.execute("""SELECT "telegram_id" 
+                                   FROM "budget_graph"."users" 
+                                   WHERE "username" = %s""", (username,))
                     res = cur.fetchone()
 
                     if res:
@@ -127,9 +130,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT id
-                                   FROM groups
-                                   WHERE token = %s""", (token,))
+                    cur.execute("""SELECT "id"
+                                   FROM "budget_graph"."groups"
+                                   WHERE "token" = %s""", (token,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -148,9 +151,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT group_id 
-                                   FROM users 
-                                   WHERE telegram_id = %s""", (telegram_id,))
+                    cur.execute("""SELECT "group_id"
+                                   FROM "budget_graph"."users"
+                                   WHERE "telegram_id" = %s""", (telegram_id,))
                     res = cur.fetchone()
 
                     if res:
@@ -170,10 +173,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT g.token
-                                   FROM Groups g
-                                   JOIN Users u ON g.id = u.group_id
-                                   WHERE u.username = %s""", (username,))
+                    cur.execute("""SELECT g."token"
+                                   FROM "budget_graph"."groups" g
+                                   JOIN "budget_graph"."users" u
+                                   ON g.id = u."group_id"
+                                   WHERE u."username" = %s""", (username,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -192,10 +196,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT g.token
-                                   FROM Groups g
-                                   JOIN Users u ON g.id = u.group_id
-                                   WHERE u.telegram_id = %s""", (telegram_id,))
+                    cur.execute("""SELECT g."token"
+                                   FROM "budget_graph"."groups" g
+                                   JOIN "budget_graph"."users" u
+                                   ON g."id" = u."group_id"
+                                   WHERE u."telegram_id" = %s""", (telegram_id,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -214,9 +219,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT psw_salt 
-                                   FROM Users 
-                                   WHERE username = %s""", (username,))
+                    cur.execute("""SELECT "psw_salt" 
+                                   FROM "budget_graph"."users" 
+                                   WHERE "username" = %s""", (username,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
@@ -235,11 +240,12 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT * 
-                                   FROM Users u
-                                   JOIN Groups g ON g.id = u.group_id
-                                   WHERE u.username = %s
-                                   AND psw_hash = %s""", (username, psw_hash))
+                    cur.execute("""SELECT 1
+                                   FROM "budget_graph"."users" u
+                                   JOIN "budget_graph"."groups" g
+                                   ON g."id" = u."group_id"
+                                   WHERE u."username" = %s
+                                   AND u."psw_hash" = %s""", (username, psw_hash))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -270,33 +276,33 @@ class DatabaseQueries:
                         # use ASC
                         cur.execute("""
                                        SELECT 
-                                            transaction_id, 
-                                            username, 
-                                            transfer, 
-                                            total, 
-                                            to_char(record_date, 'DD/MM/YYYY') as record_date, 
-                                            category, 
-                                            description
-                                       FROM monetary_transactions
-                                       WHERE group_id = %s
-                                       ORDER BY transaction_id ASC
+                                            "transaction_id", 
+                                            "username", 
+                                            "transfer", 
+                                            "total", 
+                                            to_char("record_date", 'DD/MM/YYYY') as record_date, 
+                                            "category", 
+                                            "description"
+                                       FROM "budget_graph"."monetary_transactions"
+                                       WHERE "group_id" = %s
+                                       ORDER BY "transaction_id" ASC
                                        LIMIT %s""",
-                                    (group_id,number_of_last_records,))
+                                    (group_id, number_of_last_records,))
                         res = cur.fetchall()
                     else:
                         # use DESC to make it easier for the user to read
                         cur.execute(f"""
                                         SELECT 
-                                            transaction_id, 
-                                            username, 
-                                            transfer, 
-                                            total, 
-                                            to_char(record_date, 'DD/MM/YYYY') as record_date, 
-                                            category, 
-                                            description
-                                        FROM monetary_transactions
-                                        WHERE group_id = %s
-                                        ORDER BY transaction_id DESC
+                                            "transaction_id", 
+                                            "username", 
+                                            "transfer", 
+                                            "total", 
+                                            "to_char"("record_date", 'DD/MM/YYYY') as record_date, 
+                                            "category", 
+                                            "description"
+                                        FROM "budget_graph"."monetary_transactions"
+                                        WHERE "group_id" = %s
+                                        ORDER BY "transaction_id" DESC
                                         LIMIT %s""",
                                     (group_id, number_of_last_records,))
                         res = cur.fetchall()
@@ -317,9 +323,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT username
-                                   FROM Users
-                                   WHERE group_id = %s""", (group_id,))
+                    cur.execute("""SELECT "username"
+                                   FROM "budget_graph"."users"
+                                   WHERE "group_id" = %s""", (group_id,))
                     res = cur.fetchall()
                     res_list = tuple(str(row[0]) for row in res)
                     return res_list
@@ -336,9 +342,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT username, last_login
-                                   FROM Users
-                                   WHERE group_id = %s""", (group_id,))
+                    cur.execute("""SELECT "username", "last_login"
+                                   FROM "budget_graph"."users"
+                                   WHERE "group_id" = %s""", (group_id,))
                     res = cur.fetchall()
                     res_list = [list(row) for row in res]
                     return res_list
@@ -352,9 +358,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT owner
-                                   FROM Groups
-                                   WHERE id = %s""", (group_id,))
+                    cur.execute("""SELECT "owner"
+                                   FROM "budget_graph"."groups"
+                                   WHERE "id" = %s""", (group_id,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -378,10 +384,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT u.username 
-                                   FROM Users u 
-                                   JOIN Groups g ON u.telegram_id = g.owner
-                                   WHERE g.id = %s""", (group_id,))
+                    cur.execute("""SELECT u."username" 
+                                   FROM "budget_graph"."users" u 
+                                   JOIN "budget_graph"."groups" g 
+                                   ON u."telegram_id" = g."owner"
+                                   WHERE g."id" = %s""", (group_id,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
@@ -398,8 +405,9 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(f"""SELECT 1
-                                    FROM monetary_transactions
-                                    WHERE group_id = %s AND transaction_id = %s""", (group_id, transaction_id,))
+                                    FROM "budget_graph"."monetary_transactions"
+                                    WHERE "group_id" = %s 
+                                    AND "transaction_id" = %s""", (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -412,12 +420,15 @@ class DatabaseQueries:
             return False
 
     def check_username_is_exist(self, username: str) -> bool:
+        """
+        The name is unique and case independent, i.e. you cannot create 'John' and 'john' -> only one of them
+        """
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT 1
-                                   FROM Users
-                                   WHERE username = %s""", (username,))
+                                   FROM "budget_graph"."users"
+                                   WHERE LOWER("username") = LOWER(%s)""", (username,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -433,8 +444,8 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT 1
-                                   FROM Users
-                                   WHERE telegram_id = %s""", (telegram_id,))
+                                   FROM "budget_graph"."users"
+                                   WHERE "telegram_id" = %s""", (telegram_id,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -453,8 +464,8 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT 1
-                                   FROM Groups
-                                   WHERE token = %s""", (token,))
+                                   FROM "budget_graph"."groups"
+                                   WHERE "token" = %s""", (token,))
                     res = cur.fetchone()
                     if res:
                         return False
@@ -476,9 +487,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT COUNT(telegram_id)
-                                   FROM Users
-                                   WHERE group_id = %s""", (group_id,))
+                    cur.execute("""SELECT COUNT(*)
+                                   FROM "budget_graph"."users"
+                                   WHERE "group_id" = %s""", (group_id,))
                     res = cur.fetchone()
                     if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
                         return True
@@ -498,9 +509,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT language
-                                   FROM user_languages_telegram
-                                   WHERE telegram_id = %s""", (telegram_id,))
+                    cur.execute("""SELECT "language"
+                                   FROM "budget_graph"."user_languages_telegram"
+                                   WHERE "telegram_id" = %s""", (telegram_id,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
@@ -515,10 +526,13 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""INSERT INTO user_languages_telegram (telegram_id, language)
+                    cur.execute("""
+                                   INSERT INTO "budget_graph"."user_languages_telegram"
+                                   ("telegram_id", "language")
                                    VALUES (%s, %s)
-                                   ON CONFLICT (telegram_id) 
-                                   DO UPDATE SET language = %s""", (telegram_id, language, language))
+                                   ON CONFLICT ("telegram_id") 
+                                   DO UPDATE SET "language" = %s
+                                """, (telegram_id, language, language))
                     conn.commit()
 
         except (DatabaseError, TypeError) as err:
@@ -537,10 +551,12 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""INSERT INTO Users (telegram_id, username, psw_salt, psw_hash, group_id, last_login)
+                    cur.execute("""
+                                   INSERT INTO "budget_graph"."users"
+                                   ("telegram_id", "username", "psw_salt", "psw_hash", "group_id", "last_login")
                                    VALUES(%s, %s, %s, %s, %s, 
-                                   to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS'))""",
-                                   (telegram_id, username, psw_salt, psw_hash, group_id,))
+                                   to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS'))
+                                """, (telegram_id, username, psw_salt, psw_hash, group_id,))
                     # to_char is required to change the date-time format
                     conn.commit()
 
@@ -575,14 +591,17 @@ class DatabaseQueries:
         last_total_sum: int = self.get_last_sum_in_group(group_id)
         total_sum: int = last_total_sum + transaction_amount
         transaction_id: int = self.get_last_transaction_id_in_group(group_id) + 1
-
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute(f"""INSERT INTO monetary_transactions 
-                                    (group_id, transaction_id, username, total, transfer, record_date, category, description)
-                                    VALUES (%s, %s,%s, %s, %s, %s, %s, %s)""",  # noqa
-                                    (group_id, transaction_id, username, total_sum, transaction_amount, record_date, category, description))  # noqa
+                    cur.execute(f"""
+                                    INSERT INTO "budget_graph"."monetary_transactions" 
+                                    ("group_id", "transaction_id", "username", "total", 
+                                    "transfer", "record_date", "category", "description")
+                                    VALUES (%s, %s,%s, %s, %s, %s, %s, %s)
+                                 """, (group_id, transaction_id,
+                                       username, total_sum, transaction_amount,
+                                       record_date, category, description))
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -607,10 +626,10 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT total
-                                   FROM monetary_transactions
-                                   WHERE group_id = %s
-                                   ORDER BY transaction_id DESC
+                    cur.execute("""SELECT "total"
+                                   FROM "budget_graph"."monetary_transactions"
+                                   WHERE "group_id" = %s
+                                   ORDER BY "transaction_id" DESC
                                    LIMIT 1""", (group_id,))
                     res = cur.fetchone()
                     if res:
@@ -630,10 +649,10 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT transaction_id
-                                   FROM monetary_transactions
-                                   WHERE group_id = %s
-                                   ORDER BY transaction_id DESC
+                    cur.execute("""SELECT "transaction_id"
+                                   FROM "budget_graph"."monetary_transactions"
+                                   WHERE "group_id" = %s
+                                   ORDER BY "transaction_id" DESC
                                    LIMIT 1""", (group_id,))
                     res = cur.fetchone()
                     if res:
@@ -649,9 +668,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT transfer
-                                   FROM monetary_transactions
-                                   WHERE group_id = %s AND transaction_id = %s""", (group_id, transaction_id,))
+                    cur.execute("""
+                                   SELECT "transfer"
+                                   FROM "budget_graph"."monetary_transactions"
+                                   WHERE "group_id" = %s AND "transaction_id" = %s
+                                """, (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return int(res[0])
@@ -676,15 +697,15 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     # Correction of the 'total' field in all records following the one being deleted
-                    cur.execute("""UPDATE monetary_transactions 
-                                   SET total = total - %s
-                                   WHERE group_id = %s AND transaction_id > %s""",
+                    cur.execute("""UPDATE "budget_graph"."monetary_transactions" 
+                                   SET "total" = "total" - %s
+                                   WHERE "group_id" = %s AND "transaction_id" > %s""",
                                    (difference_transfer, group_id, transaction_id,))
 
                     # Delete transaction record
                     cur.execute("""DELETE 
-                                   FROM monetary_transactions
-                                   WHERE group_id = %s AND transaction_id = %s""",
+                                   FROM "budget_graph"."monetary_transactions"
+                                   WHERE "group_id" = %s AND "transaction_id" = %s""",
                                    (group_id, transaction_id,))
                     conn.commit()
 
@@ -713,8 +734,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""INSERT INTO Groups (owner, token)
-                                          VALUES(%s, %s)""", (owner, token,))
+                    cur.execute("""
+                                   INSERT INTO "budget_graph"."groups" 
+                                   ("owner", "token")
+                                   VALUES(%s, %s)
+                                """, (owner, token,))
                     conn.commit()
 
         except (DatabaseError, TypeError) as err:
@@ -733,9 +757,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE users 
-                                   SET last_login = to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS')
-                                   WHERE telegram_id = %s""", (telegram_id,))  # noqa: E501
+                    cur.execute("""UPDATE "budget_graph"."users" 
+                                   SET "last_login" = to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS')
+                                   WHERE "telegram_id" = %s""", (telegram_id,))  # noqa: E501
                     conn.commit()
 
         except (DatabaseError, TypeError) as err:
@@ -749,9 +773,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE groups 
-                                   SET owner = %s 
-                                   WHERE id = %s""", (telegram_id, group_id,))
+                    cur.execute("""UPDATE "budget_graph"."groups" 
+                                   SET "owner" = %s 
+                                   WHERE "id" = %s""", (telegram_id, group_id,))
                     conn.commit()
                     return True
 
@@ -765,8 +789,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""DELETE FROM users 
-                                   WHERE telegram_id = %s""", (telegram_id,))
+                    cur.execute("""DELETE FROM "budget_graph"."users" 
+                                   WHERE "telegram_id" = %s""", (telegram_id,))
                     conn.commit()
 
         except (DatabaseError, TypeError) as err:
@@ -785,14 +809,14 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""DELETE FROM users 
-                                   WHERE group_id = %s""", (group_id,))
+                    cur.execute("""DELETE FROM "budget_graph"."users" 
+                                   WHERE "group_id" = %s""", (group_id,))
 
-                    cur.execute("""DELETE FROM groups 
-                                   WHERE id = %s""", (group_id,))
+                    cur.execute("""DELETE FROM "budget_graph"."groups" 
+                                   WHERE "id" = %s""", (group_id,))
 
-                    cur.execute("""DELETE FROM monetary_transactions 
-                                   WHERE group_id = %s""", (group_id,))
+                    cur.execute("""DELETE FROM "budget_graph"."monetary_transactions" 
+                                   WHERE "group_id" = %s""", (group_id,))
 
                     conn.commit()
 

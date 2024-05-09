@@ -18,7 +18,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 # Get the secret key to encrypt the Flask session from an environment variable
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
 app.teardown_appcontext(close_db_flask_g)  # Disconnects the database connection after a query
 
