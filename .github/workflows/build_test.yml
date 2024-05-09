@@ -41,7 +41,6 @@ jobs:
           echo "POSTGRES_USERNAME=${POSTGRES_USERNAME_TEST}" >> .env
           echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}" >> .env
           cd ..
-          mkdir db_auth
           cd db_auth
           echo "${PG_ADMIN_EMAIL}" >> pg_admin_email.env
           echo "${PG_ADMIN_PSW}" >> pg_admin_psw.env
