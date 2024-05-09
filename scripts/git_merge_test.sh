@@ -4,8 +4,6 @@ git config --global user.email "none"
 
 git config --global user.name "none"
 
-git checkout master
-
 # Time and date of test build
 current_datetime=$(date +'%H_%M__%d-%m-%Y')
 
