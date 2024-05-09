@@ -4,8 +4,6 @@ git config --global user.email "none"
 
 git config --global user.name "none"
 
-git clone https://github.com/MothScientist/BudgetGraph.git
-
 git checkout master
 
 # Time and date of test build

@@ -42,9 +42,11 @@ jobs:
           echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}" >> .env
           cd ..
           mkdir db_auth
+          cd db_auth
           echo "${PG_ADMIN_EMAIL}" >> pg_admin_email.env
           echo "${PG_ADMIN_PSW}" >> pg_admin_psw.env
           echo "${POSTGRES_PASSWORD_TEST}" >> psq_psw.env
+          cd ..
 
       - name: Run scripts test
         run: bash scripts/run_build_test.sh
