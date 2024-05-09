@@ -8,7 +8,9 @@ docker compose up --detach --build
 echo ">>> Pause 45s..."
 sleep 45 # time to start the containers
 
-if [ -z "$container_status" ]; then
+docker-compose ps -q
+
+if ! echo "$container_status" | grep -q "Up"; then
     echo ">>> Status: FAILED"
     echo ">>> Containers were not started"
     exit 1
