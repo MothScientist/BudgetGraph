@@ -29,6 +29,8 @@ jobs:
           POSTGRES_NAME_TEST: ${{ secrets.POSTGRES_NAME }}
           POSTGRES_USERNAME_TEST: ${{ secrets.POSTGRES_USERNAME }}
           POSTGRES_PASSWORD_TEST: ${{ secrets.POSTGRES_PASSWORD }}
+          PG_ADMIN_EMAIL: ${{ secrets.PG_ADMIN_EMAIL }}
+          PG_ADMIN_PSW: ${{ secrets.PG_ADMIN_PSW }}
         run: |
           cd budget_graph
           echo "SECRET_KEY=${FLASK_SECRET_KEY}" >> .env
@@ -39,6 +41,10 @@ jobs:
           echo "POSTGRES_USERNAME=${POSTGRES_USERNAME_TEST}" >> .env
           echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}" >> .env
           cd ..
+          mkdir db_auth
+          echo "${PG_ADMIN_EMAIL}" >> pg_admin_email.env
+          echo "${PG_ADMIN_PSW}" >> pg_admin_psw.env
+          echo "${POSTGRES_PASSWORD_TEST}" >> psq_psw.env
 
       - name: Run scripts test
         run: bash scripts/run_build_test.sh

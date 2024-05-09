@@ -6,8 +6,8 @@ on:
   pull_request:
 
 jobs:
-  build-and-deploy:
-    runs-on: [ubuntu-latest, macos-latest, windows-latest]
+  git-merge:
+    runs-on: ubuntu-latest
 
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
