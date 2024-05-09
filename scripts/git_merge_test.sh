@@ -1,23 +1,3 @@
 #!/bin/env sh
 
-git config --global user.email "none"
-
-git config --global user.name "none"
-
-# Time and date of test build
-current_datetime=$(date +'%H_%M__%d-%m-%Y')
-
-# Random number to avoid duplicate assembly names
-random_number=$(head -200 /dev/urandom | cksum | cut -c 1-5)
-
-git checkout -b build_"$current_datetime"_"$random_number"
-
-if git merge origin/master; then
-    echo "> Status: SUCCESS"
-    exit 0
-else
-    git merge --abort
-    echo "> Status: ERROR"
-    echo ">> Check the error message after 'git merge' command"
-    exit 1
-fi
+exit 0
