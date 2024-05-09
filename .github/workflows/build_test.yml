@@ -30,7 +30,7 @@ jobs:
           POSTGRES_USERNAME_TEST: ${{ secrets.POSTGRES_USERNAME }}
           POSTGRES_PASSWORD_TEST: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          cd app
+          cd budget_graph
           echo "SECRET_KEY=${FLASK_SECRET_KEY}" >> .env
           echo "BOT_TOKEN=${BOT_TOKEN_TEST}" >> .env
           echo "POSTGRES_HOST=${POSTGRES_HOST_TEST}" >> .env

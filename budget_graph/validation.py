@@ -126,15 +126,13 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
         return False
 
     if entered_month == 2:
-        if await check_year_is_leap(entered_year) and entered_day <= 29:
-            return True
-        elif entered_day <= 28:
-            return True
-        return False
-    elif entered_month in [1, 3, 5, 7, 8, 10, 12] and entered_day <= 31:
-        return True
-    elif entered_month in [4, 6, 9, 11] and entered_day <= 30:
-        return True
+        if await check_year_is_leap(entered_year):
+            return entered_day <= 29
+        return entered_day <= 28
+    elif entered_month in [1, 3, 5, 7, 8, 10, 12]:
+        return entered_day <= 31
+    elif entered_month in [4, 6, 9, 11]:
+        return entered_day <= 30
 
     return False
 
