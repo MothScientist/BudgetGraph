@@ -12,10 +12,6 @@ random_number=$(head -200 /dev/urandom | cksum | cut -c 1-5)
 
 git checkout -b build_"$current_datetime"_"$random_number"
 
-git add .
-
-git commit -m "GitHubActions_Git_'$current_datetime'_'$random_number'"
-
 if git merge origin/master; then
     echo "> Status: SUCCESS"
     exit 0
