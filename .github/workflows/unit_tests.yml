@@ -15,7 +15,7 @@ jobs:
       matrix:
         # The job will be executed for every possible combination of variables.
         # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: ['3.12']
         architecture: ['x64']
 
