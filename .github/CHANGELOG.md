@@ -31,7 +31,17 @@ This release represents testing of the functional component of the product befor
  - Code coverage by tests has increased significantly
  - The number of GitHub Actions events for assembly testing has increased (pylint, codeQL, GitMerge, flake8, BuildTest)
  - Reduced the number of external code dependencies
-
+ - Added caching of the user's language and his registration status. Functions execution time has decreased by 100 times:
+ ```
+   Before:
+          Number of queries to the database: 4
+          user_is_registered: 0.15s
+          check_user_language: 0.19s
+    Now:
+          Number of queries to the database: 2
+          user_is_registered: 0.115s
+          check_user_language: 0.002s
+ ```
 #### Functional changes:
  - Added localization into 6 languages (English, Spanish, Russian, German, French, Icelandic)
  - Added the ability to download all data in .csv format
@@ -39,7 +49,7 @@ This release represents testing of the functional component of the product befor
  - Queries are optimized by adding the necessary PostgreSQL indexes
 
 #### Plans before release:
-  - Add number of supported languages
+  - Increase the number of languages supported
   - Logs should be stored in separate storages
   - Add PGAdmin4 for remote database control
   - Possibility of restoring a group after deletion within six months
