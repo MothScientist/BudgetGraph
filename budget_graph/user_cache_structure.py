@@ -18,14 +18,13 @@ Starting from version 3.7, the keys in the dictionary maintain order, so we will
 
 from budget_graph.logger import setup_logger
 from budget_graph.encryption import logging_hash
-from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
 
 logger_cache = setup_logger("logs/CacheLog.log", "cache_logger")
 
 
 class UserLanguageCache:
     """ This class caches the user's language value """
-    __telegram_language_cache: dict = dict()
+    __telegram_language_cache: dict = {}
     __maximum_dict_size: int = 50
 
     @staticmethod
@@ -35,9 +34,8 @@ class UserLanguageCache:
             UserLanguageCache.update_data_position(telegram_id)
             logger_cache.info(f"<Language> Data from cache (SUCCESS): telegram_id={logging_hash(telegram_id)}")
             return UserLanguageCache.__telegram_language_cache[telegram_id]
-        else:
-            logger_cache.info(f"<Language> There is no data in the cache: telegram_id={logging_hash(telegram_id)}")
-            return ''
+        logger_cache.info(f"<Language> There is no data in the cache: telegram_id={logging_hash(telegram_id)}")
+        return ''
 
     @staticmethod
     def input_cache_data(telegram_id: int, user_language: str) -> None:
@@ -88,20 +86,13 @@ class UserRegistrationStatusCache:
 
     “Old data” will be at the beginning of the list, and current data at the very end.
     """
-    _users: list = list()
+    __users: list = []
     __maximum_list_size: int = 50
 
     @staticmethod
     def get_cache_data(telegram_id: int) -> bool:
-        if telegram_id in UserRegistrationStatusCache._users:
+        if telegram_id in UserRegistrationStatusCache.__users:
             UserRegistrationStatusCache.update_data_position(telegram_id)
-
-            # update the time of the last user activity
-            connection = connect_db()
-            db = DatabaseQueries(connection)
-            db.update_user_last_login_by_telegram_id(telegram_id)
-            close_db(connection)
-
             logger_cache.info(f"<RegistrationStatus> Data from cache (SUCCESS): "
                               f"telegram_id={logging_hash(telegram_id)}")
             return True
@@ -111,32 +102,31 @@ class UserRegistrationStatusCache:
 
     @staticmethod
     def input_cache_data(telegram_id: int) -> None:
-        _len_list: int = len(UserRegistrationStatusCache._users)
+        _len_list: int = len(UserRegistrationStatusCache.__users)
         # if the list is full
         if _len_list > UserRegistrationStatusCache.__maximum_list_size:
             _del_limit: int = UserRegistrationStatusCache.__maximum_list_size // 10  # 10%
-            del UserRegistrationStatusCache._users[0:_del_limit]
+            del UserRegistrationStatusCache.__users[0:_del_limit]
             logger_cache.info(f"<RegistrationStatus> Removed {_del_limit} keys from cache")
 
         # checking that the user is not yet in the cache
-        if telegram_id not in UserRegistrationStatusCache._users:
-            UserRegistrationStatusCache._users.append(telegram_id)
+        if telegram_id not in UserRegistrationStatusCache.__users:
+            UserRegistrationStatusCache.__users.append(telegram_id)
             logger_cache.info(f"<RegistrationStatus> New cache entry: telegram_id={logging_hash(telegram_id)}")
         else:
             logger_cache.warning(f"<RegistrationStatus> Trying to add data that is already in the cache: "
                                  f"telegram_id={logging_hash(telegram_id)}")
-            pass
 
     @staticmethod
     def update_data_position(telegram_id: int) -> None:
-        _data = UserRegistrationStatusCache._users.remove(telegram_id)
-        UserRegistrationStatusCache._users.append(_data)
+        UserRegistrationStatusCache.__users.remove(telegram_id)  # delete from current position
+        UserRegistrationStatusCache.__users.append(telegram_id)  # put it at the “beginning” of the cache list
         logger_cache.info(f"<RegistrationStatus> New cache priority set: telegram_id={logging_hash(telegram_id)}")
 
     @staticmethod
     def delete_data_from_cache(telegram_id: int) -> None:
-        if telegram_id in UserRegistrationStatusCache._users:
-            UserRegistrationStatusCache._users.remove(telegram_id)
+        if telegram_id in UserRegistrationStatusCache.__users:
+            UserRegistrationStatusCache.__users.remove(telegram_id)
             logger_cache.info(f"<RegistrationStatus> [OK] Data removed from cache (trigger): "
                               f"telegram_id={logging_hash(telegram_id)}")
         else:

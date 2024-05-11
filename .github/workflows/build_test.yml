@@ -22,8 +22,9 @@ jobs:
 
       - name: Create .env file
         env:
-          FLASK_SECRET_KEY: ${{ secrets.FLASK_SECRET_KEY }}
+          FLASK_SECRET_KEY_TEST: ${{ secrets.FLASK_SECRET_KEY_TEST }}
           BOT_TOKEN_TEST: ${{ secrets.BOT_TOKEN_TEST }}
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
           POSTGRES_HOST_TEST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_PORT_TEST: ${{ secrets.POSTGRES_PORT }}
           POSTGRES_NAME_TEST: ${{ secrets.POSTGRES_NAME }}
@@ -33,8 +34,9 @@ jobs:
           PG_ADMIN_PSW: ${{ secrets.PG_ADMIN_PSW }}
         run: |
           cd budget_graph
-          echo "SECRET_KEY=${FLASK_SECRET_KEY}" >> .env
+          echo "FLASK_SECRET_KEY=${FLASK_SECRET_KEY_TEST}" >> .env
           echo "BOT_TOKEN=${BOT_TOKEN_TEST}" >> .env
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
           echo "POSTGRES_HOST=${POSTGRES_HOST_TEST}" >> .env
           echo "POSTGRES_PORT=${POSTGRES_PORT_TEST}" >> .env
           echo "POSTGRES_NAME=${POSTGRES_NAME_TEST}" >> .env

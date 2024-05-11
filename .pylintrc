@@ -1,4 +1,4 @@
 [MASTER]
-disable=logging-fstring-interpolation,missing-module-docstring,missing-function-docstring,fixme
+disable=logging-fstring-interpolation,missing-module-docstring,missing-function-docstring,wrong-import-position,fixme
 [FORMAT]
 max-line-length=120

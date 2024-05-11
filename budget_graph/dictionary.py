@@ -11,7 +11,7 @@ logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
 
 
 class Emoji:
-    _emoji_codes: dict = \
+    __emoji_codes: dict = \
         {
             "question": "",
             "clip": "",
@@ -32,11 +32,11 @@ class Emoji:
 
     @staticmethod
     def get_emoji(emoji):
-        return Emoji._emoji_codes.get(emoji)
+        return Emoji.__emoji_codes.get(emoji)
 
 
 class Stickers:
-    _stickers: dict = \
+    __stickers: dict = \
         {
             "id_1": "CAACAgIAAxkBAAEKUtplB2lgxLm33sr3QSOP0WICC0JP0AAC-AgAAlwCZQPhVpkp0NcHSTAE",
             "id_2": "CAACAgIAAxkBAAEKUt5lB2nQ1DAfF_iqIA6d_e4QBchSzwACRSAAAqRUeUpWWm1f0rX_qzAE",
@@ -47,7 +47,7 @@ class Stickers:
 
     @staticmethod
     def get_sticker_by_id(sticker_id):
-        return Stickers._stickers.get(sticker_id)
+        return Stickers.__stickers.get(sticker_id)
 
 
 def receive_translation(language: str, phrase: str) -> str:
@@ -66,7 +66,7 @@ def receive_translation(language: str, phrase: str) -> str:
 
 def get_translate_from_json(language: str) -> dict:
     """
-    This function works with reading JSON files.
+    This function works with reading JSON files
     """
     localization_dir_path: str = path.join(path.dirname(__file__), f"localization/{language}.json")
     try:

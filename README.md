@@ -1,7 +1,6 @@
 [![UnitTests](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml)
-[![BuildTest](https://github.com/MothScientist/BudgetGraph/actions/workflows/build_test.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/build_test.yml)
-[![Pylint](https://github.com/MothScientist/BudgetGraph/actions/workflows/git_merge.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/git_merge.yml)
-[![GitMerge](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml)
+[![Build Test](https://github.com/MothScientist/BudgetGraph/actions/workflows/build_test.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/build_test.yml)
+[![Pylint](https://github.com/MothScientist/BudgetGraph/actions/workflows/pylint.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/pylint.yml)
 ![Status](https://img.shields.io/github/v/release/MothScientist/BudgetControl?label=Unstable&color=yellow)
 ![Static Badge](https://img.shields.io/badge/python-3.12-blue)
 ![Static Badge](https://img.shields.io/badge/First_commit-August_20%2C_2023-blue)
@@ -20,12 +19,12 @@
 - ### <font color="lime">High priority testing</font>
 
 
-| Technology                                                                                                             | Version                                            |
-|------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
-| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)                 | <center><font color="white">3.12.3</font></center> |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)                 | <center><font color="white">3.0.2</font></center>  |
-| **pyTelegramBotAPI**                                                                                                   | <center><font color="white">4.16.1</font></center> |
-| ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)   | <center><font color="white">16.2</font></center>   |
+| Technology            | Version                                            |
+|-----------------------|----------------------------------------------------|
+| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)        | <center><font color="white">3.12.3</font></center> |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)         | <center><font color="white">3.0.3</font></center>  |
+| **pyTelegramBotAPI**  | <center><font color="white">4.17.0</font></center> |
+| ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)      | <center><font color="white">16.2</font></center>   |
 
 ### Testing:
 - __Python UnitTest__
@@ -47,6 +46,9 @@ To successfully pass the __GitHub Action tests__, you need to create secrets ins
 
 ## Note about <font color="red">hashlib.pbkdf2_hmac()</font>: 
 #### Changed in version 3.12: <u>Function now only available when Python is built with OpenSSL</u>. The slow pure Python implementation has been removed.
+
+## When installed on <font color="aqua">MacOS</font> or run in a container on this operating system:
+#### When running on MacOS, pay attention to errors in the psycopg2 library - to solve them, you will need to install psycopg2-binary instead.
 
 # <font color="white">Installation:</font>
 ### For Linux (with <font color="DeepSkyBlue">Docker</font>):

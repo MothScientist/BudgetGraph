@@ -24,12 +24,8 @@ def get_file_size_kb(file_path: str) -> float:
 
 
 def get_file_checksum(file_path: str) -> str:
-    hash_sha256 = hashlib.sha256()  # TODO
+    hash_sha256 = hashlib.sha256()
     with open(file_path, 'rb') as f:
         for chunk in iter(lambda: f.read(1024), b""):
             hash_sha256.update(chunk)
     return hash_sha256.hexdigest()
-
-
-if __name__ == '__main__':
-    pass

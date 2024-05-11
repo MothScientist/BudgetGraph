@@ -853,7 +853,9 @@ def user_is_registered(telegram_id: int) -> bool:
     Since the user may accidentally end up in a menu
     intended only for registered users.
     """
-    res = UserRegistrationStatusCache.get_cache_data(telegram_id)
+    res: bool = UserRegistrationStatusCache.get_cache_data(telegram_id)
+    connection = connect_db()
+    bot_db = DatabaseQueries(connection)
     if not res:  # if the data is not found in the cache
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
@@ -861,13 +863,11 @@ def user_is_registered(telegram_id: int) -> bool:
         if res:
             # updating the data in the cache
             UserRegistrationStatusCache.input_cache_data(telegram_id)
-            # update date of the last user activity in database
-            bot_db.update_user_last_login_by_telegram_id(telegram_id)
-        close_db(connection)
-    # to avoid duplicating the function of closing the connection to database
-    if res:
-        return True
-    return False
+    if res:  # if you found data in the cache or received a response from the database
+        # update date of the last user activity in database
+        bot_db.update_user_last_login_by_telegram_id(telegram_id)
+    close_db(connection)
+    return res
 
 
 def check_user_language(telegram_id: int) -> str:

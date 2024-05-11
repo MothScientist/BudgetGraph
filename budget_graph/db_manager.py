@@ -23,9 +23,8 @@ logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
 def connect_db():
     try:
         conn = connect(DSN)
-        logger_database.debug("success: connecting to database")
+        logger_database.info("SUCCESS: connecting to database")
         return conn
-
     except (DatabaseError, UnicodeDecodeError) as err:
         logger_database.critical(f"connecting to database: {str(err)}")
 
@@ -33,7 +32,7 @@ def connect_db():
 def close_db(conn):
     if conn:
         conn.close()
-        logger_database.debug("success: connecting to database")
+        logger_database.info("SUCCESS: connection to database closed")
 
 
 def connect_db_flask_g():
@@ -82,15 +81,13 @@ class DatabaseQueries:
                     # Cursors can be used as context managers: leaving the context will close the cursor
 
                     # AttributeError occurs in this block if the database connection returned null
-                    cur.execute("""SELECT "username" 
-                                   FROM "budget_graph"."users" 
+                    cur.execute("""SELECT "username"
+                                   FROM "budget_graph"."users"
                                    WHERE "telegram_id" = %s""", (telegram_id,))  # DO NOT REMOVE commas
                     res = cur.fetchone()
-
                     if res:
                         return res[0]
-                    else:
-                        return ""
+                    return ''
 
         except (DatabaseError, TypeError) as err:
             # The logs store the error and parameters that were passed to the function (except secrets)
@@ -108,16 +105,14 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT "telegram_id" 
-                                   FROM "budget_graph"."users" 
+                    cur.execute("""SELECT "telegram_id"
+                                   FROM "budget_graph"."users"
                                    WHERE "username" = %s""", (username,))
                     res = cur.fetchone()
 
                     if res:
                         return res[0]
-                    else:
-                        return 0
-
+                    return 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -136,9 +131,7 @@ class DatabaseQueries:
                     res = cur.fetchone()
                     if res:
                         return res[0]
-                    else:
-                        return 0
-
+                    return 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"token: {token}")
@@ -158,9 +151,7 @@ class DatabaseQueries:
 
                     if res:
                         return res[0]
-                    else:
-                        return 0
-
+                    return 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
@@ -181,13 +172,11 @@ class DatabaseQueries:
                     res = cur.fetchone()
                     if res:
                         return res[0]
-                    else:
-                        return ""
-
+                    return ''
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
-            return ""
+            return ''
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
         """
@@ -204,9 +193,7 @@ class DatabaseQueries:
                     res = cur.fetchone()
                     if res:
                         return res[0]
-                    else:
-                        return ""
-
+                    return ""
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
@@ -219,15 +206,13 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT "psw_salt" 
-                                   FROM "budget_graph"."users" 
+                    cur.execute("""SELECT "psw_salt"
+                                   FROM "budget_graph"."users"
                                    WHERE "username" = %s""", (username,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
-                    else:
-                        return ""
-
+                    return ""
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -249,9 +234,7 @@ class DatabaseQueries:
                     res = cur.fetchone()
                     if res:
                         return True
-                    else:
-                        return False
-
+                    return False
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -275,13 +258,13 @@ class DatabaseQueries:
                     if number_of_last_records == 0:
                         # use ASC
                         cur.execute("""
-                                       SELECT 
-                                            "transaction_id", 
-                                            "username", 
-                                            "transfer", 
-                                            "total", 
-                                            to_char("record_date", 'DD/MM/YYYY') as record_date, 
-                                            "category", 
+                                       SELECT
+                                            "transaction_id",
+                                            "username",
+                                            "transfer",
+                                            "total",
+                                            to_char("record_date", 'DD/MM/YYYY') as record_date,
+                                            "category",
                                             "description"
                                        FROM "budget_graph"."monetary_transactions"
                                        WHERE "group_id" = %s
@@ -293,12 +276,12 @@ class DatabaseQueries:
                         # use DESC to make it easier for the user to read
                         cur.execute(f"""
                                         SELECT 
-                                            "transaction_id", 
-                                            "username", 
-                                            "transfer", 
-                                            "total", 
-                                            "to_char"("record_date", 'DD/MM/YYYY') as record_date, 
-                                            "category", 
+                                            "transaction_id",
+                                            "username",
+                                            "transfer",
+                                            "total",
+                                            "to_char"("record_date", 'DD/MM/YYYY') as record_date,
+                                            "category",
                                             "description"
                                         FROM "budget_graph"."monetary_transactions"
                                         WHERE "group_id" = %s
@@ -309,7 +292,6 @@ class DatabaseQueries:
 
                     res_list: tuple[tuple, ...] = tuple(tuple(row) for row in res)
                     return res_list
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
@@ -329,7 +311,6 @@ class DatabaseQueries:
                     res = cur.fetchall()
                     res_list = tuple(str(row[0]) for row in res)
                     return res_list
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -348,7 +329,6 @@ class DatabaseQueries:
                     res = cur.fetchall()
                     res_list = [list(row) for row in res]
                     return res_list
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -364,9 +344,7 @@ class DatabaseQueries:
                     res = cur.fetchone()
                     if res:
                         return res[0]
-                    else:
-                        return 0
-
+                    return 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -384,17 +362,15 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT u."username" 
-                                   FROM "budget_graph"."users" u 
-                                   JOIN "budget_graph"."groups" g 
+                    cur.execute("""SELECT u."username"
+                                   FROM "budget_graph"."users" u
+                                   JOIN "budget_graph"."groups" g
                                    ON u."telegram_id" = g."owner"
                                    WHERE g."id" = %s""", (group_id,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
-                    else:
-                        return ""
-
+                    return ""
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -406,13 +382,12 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     cur.execute(f"""SELECT 1
                                     FROM "budget_graph"."monetary_transactions"
-                                    WHERE "group_id" = %s 
+                                    WHERE "group_id" = %s
                                     AND "transaction_id" = %s""", (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return True
                     return False
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}, "
@@ -450,7 +425,6 @@ class DatabaseQueries:
                     if res:
                         return True
                     return False
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram ID: {logging_hash(telegram_id)}")
@@ -469,8 +443,7 @@ class DatabaseQueries:
                     res = cur.fetchone()
                     if res:
                         return False
-                    else:
-                        return True
+                    return True
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -494,12 +467,12 @@ class DatabaseQueries:
                     if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
                         return True
                     return False
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
             return False  # to prevent a user from being written to a non-existent group
 
+    @timeit
     def get_user_language(self, telegram_id: int) -> str:
         """
         Gets the user's (telegram_id) language from the database.
@@ -530,17 +503,15 @@ class DatabaseQueries:
                                    INSERT INTO "budget_graph"."user_languages_telegram"
                                    ("telegram_id", "language")
                                    VALUES (%s, %s)
-                                   ON CONFLICT ("telegram_id") 
+                                   ON CONFLICT ("telegram_id")
                                    DO UPDATE SET "language" = %s
                                 """, (telegram_id, language, language))
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}, "
                                   f"language: {language}")
             return False
-
         else:
             return True
 
@@ -554,19 +525,17 @@ class DatabaseQueries:
                     cur.execute("""
                                    INSERT INTO "budget_graph"."users"
                                    ("telegram_id", "username", "psw_salt", "psw_hash", "group_id", "last_login")
-                                   VALUES(%s, %s, %s, %s, %s, 
+                                   VALUES(%s, %s, %s, %s, %s,
                                    to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS'))
                                 """, (telegram_id, username, psw_salt, psw_hash, group_id,))
                     # to_char is required to change the date-time format
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}, "
                                   f"group_id: {group_id}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
             return False
-
         else:
             return True
 
@@ -595,14 +564,13 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(f"""
-                                    INSERT INTO "budget_graph"."monetary_transactions" 
-                                    ("group_id", "transaction_id", "username", "total", 
+                                    INSERT INTO "budget_graph"."monetary_transactions"
+                                    ("group_id", "transaction_id", "username", "total",
                                     "transfer", "record_date", "category", "description")
                                     VALUES (%s, %s,%s, %s, %s, %s, %s, %s)
                                  """, (group_id, transaction_id,
                                        username, total_sum, transaction_amount,
                                        record_date, category, description))
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
@@ -614,7 +582,6 @@ class DatabaseQueries:
                                   f"category: {category},"
                                   f"description: {description}")
             return False
-
         else:
             return True
 
@@ -635,7 +602,6 @@ class DatabaseQueries:
                     if res:
                         return int(res[0])
                     return 0
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -677,7 +643,6 @@ class DatabaseQueries:
                     if res:
                         return int(res[0])
                     return 0
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id},"
@@ -687,7 +652,8 @@ class DatabaseQueries:
     def process_delete_transaction_record(self, group_id: int, transaction_id: int) -> bool:
         """
         Calls 3 functions in sequence, which:
-        1. Receive the amount of this transaction - Gets the value of the 'transfer' field based on the group's transaction ID  # noqa
+        1. Receive the amount of this transaction - Gets the value of the 'transfer' field
+        based on the group's transaction ID.
         2. Adjust subsequent transactions - Recalculation of 'total' fields that come after the deleted field.
         3. Delete the required entry - Removes a record from a group transaction.
         """
@@ -697,24 +663,22 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     # Correction of the 'total' field in all records following the one being deleted
-                    cur.execute("""UPDATE "budget_graph"."monetary_transactions" 
+                    cur.execute("""UPDATE "budget_graph"."monetary_transactions"
                                    SET "total" = "total" - %s
                                    WHERE "group_id" = %s AND "transaction_id" > %s""",
                                    (difference_transfer, group_id, transaction_id,))
 
                     # Delete transaction record
-                    cur.execute("""DELETE 
+                    cur.execute("""DELETE
                                    FROM "budget_graph"."monetary_transactions"
                                    WHERE "group_id" = %s AND "transaction_id" = %s""",
                                    (group_id, transaction_id,))
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}, "
                                   f"transaction ID: {transaction_id}")
             return False
-
         else:
             return True
 
@@ -735,17 +699,15 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                                   INSERT INTO "budget_graph"."groups" 
+                                   INSERT INTO "budget_graph"."groups"
                                    ("owner", "token")
                                    VALUES(%s, %s)
                                 """, (owner, token,))
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"owner (telegram id): {logging_hash(owner)}")
             return ""
-
         else:
             return token
 
@@ -757,11 +719,10 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE "budget_graph"."users" 
+                    cur.execute("""UPDATE "budget_graph"."users"
                                    SET "last_login" = to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS')
                                    WHERE "telegram_id" = %s""", (telegram_id,))  # noqa: E501
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
@@ -773,12 +734,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE "budget_graph"."groups" 
-                                   SET "owner" = %s 
+                    cur.execute("""UPDATE "budget_graph"."groups"
+                                   SET "owner" = %s
                                    WHERE "id" = %s""", (telegram_id, group_id,))
                     conn.commit()
                     return True
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}, "
@@ -789,15 +749,13 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""DELETE FROM "budget_graph"."users" 
+                    cur.execute("""DELETE FROM "budget_graph"."users"
                                    WHERE "telegram_id" = %s""", (telegram_id,))
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram ID: {logging_hash(telegram_id)}")
             return False
-
         else:
             logger_database.info(f"Telegram ID {logging_hash(telegram_id)} has been removed from the database")
             return True
@@ -809,22 +767,20 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""DELETE FROM "budget_graph"."users" 
+                    cur.execute("""DELETE FROM "budget_graph"."users"
                                    WHERE "group_id" = %s""", (group_id,))
 
-                    cur.execute("""DELETE FROM "budget_graph"."groups" 
+                    cur.execute("""DELETE FROM "budget_graph"."groups"
                                    WHERE "id" = %s""", (group_id,))
 
-                    cur.execute("""DELETE FROM "budget_graph"."monetary_transactions" 
+                    cur.execute("""DELETE FROM "budget_graph"."monetary_transactions"
                                    WHERE "group_id" = %s""", (group_id,))
 
                     conn.commit()
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}")
             return False
-
         else:
             logger_database.info(f"Group #{group_id} has been completely deleted")
             return True
