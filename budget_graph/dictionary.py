@@ -1,7 +1,6 @@
 """
-    This package is used to switch localization in the chatbot.
-
-    Also stores emoji and sticker codes for use inside the bot.
+This package is used to switch localization in the chatbot.
+Also stores emoji and sticker codes for use inside the bot.
 """
 import json
 from os import path
@@ -75,3 +74,5 @@ def get_translate_from_json(language: str) -> dict:
         return json.loads(json_dict)
     except FileNotFoundError:
         return {}
+
+# TODO - logging

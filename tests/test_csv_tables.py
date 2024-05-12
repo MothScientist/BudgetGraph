@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring
+# pylint: disable=trailing-whitespace
 
 import os
 import unittest

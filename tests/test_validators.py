@@ -1,3 +1,6 @@
+# pylint: disable=missing-docstring
+# pylint: disable=trailing-whitespace
+
 import unittest
 import asyncio
 from os import listdir

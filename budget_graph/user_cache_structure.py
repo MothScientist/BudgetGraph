@@ -106,7 +106,7 @@ class UserRegistrationStatusCache:
         # if the list is full
         if _len_list > UserRegistrationStatusCache.__maximum_list_size:
             _del_limit: int = UserRegistrationStatusCache.__maximum_list_size // 10  # 10%
-            del UserRegistrationStatusCache.__users[0:_del_limit]
+            del UserRegistrationStatusCache.__users[0:_del_limit + 1]
             logger_cache.info(f"<RegistrationStatus> Removed {_del_limit} keys from cache")
 
         # checking that the user is not yet in the cache
