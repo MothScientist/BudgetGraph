@@ -23,7 +23,7 @@ logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
 def connect_db():
     try:
         conn = connect(DSN)
-        logger_database.info("SUCCESS: connecting to database")
+        logger_database.debug("SUCCESS: connecting to database")
         return conn
     except (DatabaseError, UnicodeDecodeError) as err:
         logger_database.critical(f"connecting to database: {str(err)}")
@@ -32,7 +32,7 @@ def connect_db():
 def close_db(conn):
     if conn:
         conn.close()
-        logger_database.info("SUCCESS: connection to database closed")
+        logger_database.debug("SUCCESS: connection to database closed")
 
 
 def connect_db_flask_g():
@@ -60,7 +60,6 @@ class DatabaseQueries:
     """
     def __init__(self, connection):
         self.__conn = connection
-        logger_database.info("SQL __init__: new database connection")
 
     @timeit
     def get_username_by_telegram_id(self, telegram_id: int) -> str:

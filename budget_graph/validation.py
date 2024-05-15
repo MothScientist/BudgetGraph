@@ -58,8 +58,8 @@ async def password_validation(psw: str) -> bool:
     return False
 
 
-async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
-    if re.match(r'^[1-9]\d{2,11}$', telegram_id):  # 3-12 digits
+async def telegram_id_validation(telegram_id: str) -> bool:
+    if re.match(r'^[1-9]\d{2,11}$', telegram_id):  # 3-12 digits  # TODO - можно заменить на \d{3,12}?
         telegram_id: int = int(telegram_id)
     else:
         return False
@@ -186,7 +186,9 @@ def category_validation(lang: str, category: str) -> bool:
         f"{receive_translation(lang, "salary")}",
         f"{receive_translation(lang, "charity")}",
         f"{receive_translation(lang, "other")}"
-    )  # TODO: make a faster algorithm, although this one works within 0.00001 sec.
+    )  # TODO: make a faster algorithm, although this one works within 0.00001 sec. -> map или lambda
     if category in categories:
         return True
     return False
+
+# TODO - logging -> выводить только отклоненные варианты валидации (без хэширования) - кроме паролей

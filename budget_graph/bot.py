@@ -539,6 +539,7 @@ def get_csv(message, user_language: str) -> None:
     # to be able to call a function from any file
     file_path: str = path.join(path.dirname(__file__), f"csv_tables/table_{group_id}.csv")
     table_headers: tuple = ("ID", "USERNAME", "TRANSFER", "TOTAL", "DATE", "CATEGORY", "DESCRIPTION")
+    # 10_000 row limit
     table_data: tuple[tuple, ...] = bot_db.select_data_for_household_table(group_id, 0)
     close_db(connection)
     if table_data:
@@ -551,15 +552,20 @@ def get_csv(message, user_language: str) -> None:
                                       f"{"{:.3f}".format(file_size)} kB\n\n"
                                       f"{get_phrase_by_language(user_language, "hashsum")} "
                                       f"(sha-256): {file_checksum}")
-        except FileNotFoundError:
+        except FileNotFoundError as err:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "csv_not_found_error")}.")
-            logger_bot.error(f"CSV FileNotFoundError. "
+            logger_bot.error(f"CSV FileNotFoundError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         # when trying to run an operation without access rights
-        except PermissionError:
+        except PermissionError as err:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "csv_not_found_error")}.")
-            logger_bot.error(f"CSV PermissionError. "
+            logger_bot.error(f"CSV PermissionError => {err}. "
+                             f"TelegramID: {logging_hash(telegram_id)}, "
+                             f"group #{group_id}")
+        except ValueError as err:
+            bot.send_message(message.chat.id, f"Ошибка в данных при заполнении таблицы - обратитесь в тп")  # TODO lang
+            logger_bot.error(f"CSV ValueError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         else:

@@ -3,7 +3,7 @@ This package is used to switch localization in the chatbot.
 Also stores emoji and sticker codes for use inside the bot.
 """
 import json
-from os import path
+from os import path, listdir
 from budget_graph.logger import setup_logger
 
 logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
@@ -74,5 +74,16 @@ def get_translate_from_json(language: str) -> dict:
         return json.loads(json_dict)
     except FileNotFoundError:
         return {}
+
+
+def get_list_languages() -> tuple:
+    """
+    Returns a list of available languages
+    """
+    localization_dir_path: str = path.join(path.dirname(__file__), f'localization')
+    lang_json = tuple([file[:2] for file in listdir(localization_dir_path) if file.endswith('.json')])
+    return lang_json
+
+print(get_list_languages())
 
 # TODO - logging

@@ -3,10 +3,11 @@
 
 import unittest
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
+from budget_graph.dictionary import get_list_languages
 
 
 class TestUserLanguageCache(unittest.TestCase):
-    lang: tuple = ('en', 'es', 'ru', 'de', 'fr', 'is')
+    lang: tuple = get_list_languages()
 
     def test_language_cache_1(self):
         # getting access to a private attribute of a class
@@ -108,7 +109,7 @@ class TestUserLanguageCache(unittest.TestCase):
             if i % 25 == 0:
                 UserLanguageCache.update_data_position(50)
         res_1: str = UserLanguageCache.get_cache_data(50)
-        self.assertEqual(res_1, 'is')
+        self.assertEqual(res_1, 'kk')
         # and additionally check that the old data has been deleted
         res_2: str = UserLanguageCache.get_cache_data(10)
         self.assertEqual(res_2, '')

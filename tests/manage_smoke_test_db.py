@@ -29,14 +29,14 @@ def close_test_db(conn):
         conn.close()
 
 
-def create_test_db() -> None:
+def create_smoke_test_db() -> None:
     """
     Creates tables, using create_db.sql file describing their structures.
     """
     conn = connect_test_db()
     try:
         with conn.cursor() as cur:
-            with open("create_test_db.sql", 'r') as file:
+            with open("create_smoke_test_db.sql", 'r') as file:
                 cur.execute(file.read())
 
             conn.commit()
@@ -49,4 +49,4 @@ def create_test_db() -> None:
 
 
 if __name__ == "__main__":
-    create_test_db()
+    create_smoke_test_db()
