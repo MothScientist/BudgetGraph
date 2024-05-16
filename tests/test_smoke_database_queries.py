@@ -2,6 +2,7 @@
 # pylint: disable=trailing-whitespace
 
 import unittest
+from datetime import datetime
 from random import randint
 
 from budget_graph.db_manager import DatabaseQueries
@@ -31,7 +32,7 @@ class SmokeTestData:
                                            'telegram_id': randint(1001,10000)
                                            },
                                       3:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
-                                           'username': get_token() + get_token()[:4],
+                                           'username': get_token()[:4],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': randint(1,2),
@@ -73,12 +74,12 @@ class SmokeTestForDatabaseQueries(unittest.TestCase):
         res = self.test_db.create_new_group(SmokeTestForDatabaseQueries._data.get_user_data(1, 'telegram_id'))
         self.assertEqual(len(res), 32)
 
-    def test_2_create_new_group_2(self):
+    def test_1_create_new_group_2(self):
         res = self.test_db.create_new_group(SmokeTestForDatabaseQueries._data.get_user_data(2, 'telegram_id'))
         self.assertEqual(len(res), 32)
 
     # Users
-    def test_3_add_user_to_db_1(self):
+    def test_2_add_user_to_db_1(self):
         res = self.test_db.add_user_to_db(SmokeTestForDatabaseQueries._data.get_user_data(1, 'username'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(1, 'psw_salt'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(1, 'psw_hash'),
@@ -86,7 +87,7 @@ class SmokeTestForDatabaseQueries(unittest.TestCase):
                                           SmokeTestForDatabaseQueries._data.get_user_data(1, 'telegram_id'))
         self.assertEqual(res, True)
 
-    def test_4_add_user_to_db_2(self):
+    def test_2_add_user_to_db_2(self):
         res = self.test_db.add_user_to_db(SmokeTestForDatabaseQueries._data.get_user_data(2, 'username'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(2, 'psw_salt'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(2, 'psw_hash'),
@@ -94,7 +95,7 @@ class SmokeTestForDatabaseQueries(unittest.TestCase):
                                           SmokeTestForDatabaseQueries._data.get_user_data(2, 'telegram_id'))
         self.assertEqual(res, True)
 
-    def test_5_add_user_to_db_3(self):
+    def test_2_add_user_to_db_3(self):
         res = self.test_db.add_user_to_db(SmokeTestForDatabaseQueries._data.get_user_data(3, 'username'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(3, 'psw_salt'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(3, 'psw_hash'),
@@ -102,7 +103,7 @@ class SmokeTestForDatabaseQueries(unittest.TestCase):
                                           SmokeTestForDatabaseQueries._data.get_user_data(3, 'telegram_id'))
         self.assertEqual(res, True)
 
-    def test_6_add_user_to_db_4(self):
+    def test_2_add_user_to_db_4(self):
         res = self.test_db.add_user_to_db(SmokeTestForDatabaseQueries._data.get_user_data(4, 'username'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(4, 'psw_salt'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(4, 'psw_hash'),
@@ -110,13 +111,65 @@ class SmokeTestForDatabaseQueries(unittest.TestCase):
                                           SmokeTestForDatabaseQueries._data.get_user_data(4, 'telegram_id'))
         self.assertEqual(res, True)
 
-    def test_7_add_user_to_db_5(self):
+    def test_2_add_user_to_db_5(self):
         res = self.test_db.add_user_to_db(SmokeTestForDatabaseQueries._data.get_user_data(5, 'username'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(5, 'psw_salt'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(5, 'psw_hash'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(5, 'group_id'),
                                           SmokeTestForDatabaseQueries._data.get_user_data(5, 'telegram_id'))
         self.assertEqual(res, True)
+
+    # Adding user language to the database
+    def test_3_add_user_language_1(self):
+        res = self.test_db.add_user_language(SmokeTestForDatabaseQueries._data.get_user_data(1, 'telegram_id'),
+                                             SmokeTestForDatabaseQueries._data.get_user_data(1, 'language'))
+        self.assertEqual(res, True)
+
+    def test_3_add_user_language_2(self):
+        res = self.test_db.add_user_language(SmokeTestForDatabaseQueries._data.get_user_data(2, 'telegram_id'),
+                                             SmokeTestForDatabaseQueries._data.get_user_data(2, 'language'))
+        self.assertEqual(res, True)
+
+    def test_3_add_user_language_3(self):
+        res = self.test_db.add_user_language(SmokeTestForDatabaseQueries._data.get_user_data(3, 'telegram_id'),
+                                             SmokeTestForDatabaseQueries._data.get_user_data(3, 'language'))
+        self.assertEqual(res, True)
+
+    def test_3_add_user_language_4(self):
+        res = self.test_db.add_user_language(SmokeTestForDatabaseQueries._data.get_user_data(4, 'telegram_id'),
+                                             SmokeTestForDatabaseQueries._data.get_user_data(4, 'language'))
+        self.assertEqual(res, True)
+
+    def test_3_add_user_language_5(self):
+        res = self.test_db.add_user_language(SmokeTestForDatabaseQueries._data.get_user_data(5, 'telegram_id'),
+                                             SmokeTestForDatabaseQueries._data.get_user_data(5, 'language'))
+        self.assertEqual(res, True)
+
+    # Filling the transaction table
+    def test_4_add_transaction_to_db_1(self):
+        current_year: int = int(datetime.now().strftime("%Y"))
+        res: list = []
+        for i in range(1_000):
+            random_integer: int = randint(1, 10_000)
+            transaction_amount: int = random_integer*(-1) if randint(1, 2) == 1 else random_integer
+            if i % 2 == 0:
+                res.append(self.test_db.add_transaction_to_db(
+                    SmokeTestForDatabaseQueries._data.get_user_data(1, 'username'),
+                    transaction_amount,
+                    f'{randint(15,28)}/{randint(6,12)}/{randint(current_year-6,
+                                                                current_year-1)}',
+                    'Other',
+                    ''))
+            else:
+                res.append(self.test_db.add_transaction_to_db(
+                    SmokeTestForDatabaseQueries._data.get_user_data(2, 'username'),
+                    transaction_amount,
+                    f'{randint(1,15)}/{randint(1,6)}/{randint(current_year-9,
+                                                              current_year-4)}',
+                    '',
+                    'OK'))
+        self.assertEqual(len(res), 1_000)
+        self.assertEqual(all(res), True)
 
 
 if __name__ == '__main__':
