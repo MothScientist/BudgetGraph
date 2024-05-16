@@ -1,3 +1,6 @@
+# pylint: disable=missing-docstring
+# pylint: disable=trailing-whitespace
+
 import unittest
 from budget_graph.db_manager import DatabaseQueries
 from tests.manage_test_db import connect_test_db, close_test_db
