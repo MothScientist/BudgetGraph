@@ -44,7 +44,6 @@ class TestCreateCSV(unittest.TestCase):
         self.assertEqual(file_size, '0.041')
 
         file_checksum: str = get_file_checksum(file_path)
-        print(file_checksum)
         self.assertEqual(file_checksum, '8b443b2986f52ce0b30c6181749143024e565f0b38a8627f814af73735431d0f')
 
 

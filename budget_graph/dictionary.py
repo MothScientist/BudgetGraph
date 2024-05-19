@@ -84,6 +84,5 @@ def get_list_languages() -> tuple:
     lang_json = tuple([file[:2] for file in listdir(localization_dir_path) if file.endswith('.json')])
     return lang_json
 
-print(get_list_languages())
 
 # TODO - logging

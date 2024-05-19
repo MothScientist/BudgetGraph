@@ -5,6 +5,7 @@ import hashlib
 
 # TODO - проверить время генерации при заполнении в 10_000 строк
 def create_csv_file(file_path: str, table_headers: tuple, table_data: tuple[tuple, ...]) -> None:
+    # table_data is never empty when calling a function
     if not table_headers or not table_data or not all(map(len, table_data)):
         # not all(map(len, table_data)) -> no nested tuple is empty
         raise ValueError('table_headers and table_data parameters cannot be empty')  # TODO lang
