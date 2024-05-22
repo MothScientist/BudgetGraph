@@ -1,7 +1,5 @@
 import sys
-
 sys.path.append('../')
-
 from budget_graph.logger import setup_logger
 from time import perf_counter
 from functools import wraps
@@ -15,6 +13,6 @@ def timeit(func):
         _start = perf_counter()
         result = func(*args, **kwargs)
         _end = perf_counter()
-        logger_time.info(f'{func.__name__}: {_end - _start:.6f} sec.')
+        logger_time.info(f'{func.__name__}: {_end - _start:.6f} s.')
         return result
     return wrapper
