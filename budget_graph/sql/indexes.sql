@@ -9,7 +9,7 @@
 
 -- Creating Indexes
 -- to get a list of group users:
-CREATE        INDEX IF NOT EXISTS "users_group_id"                       ON "budget_graph"."users"                 USING btree ("group_id");
+CREATE        INDEX IF NOT EXISTS "users_group_id"                       ON "budget_graph"."users_groups"          USING btree ("group_id");
 -- index to check the uniqueness of the username:
 CREATE UNIQUE INDEX IF NOT EXISTS "users_lower_username"                 ON "budget_graph"."users"                 USING btree (LOWER("username"));
 -- to get a list of group transactions:
