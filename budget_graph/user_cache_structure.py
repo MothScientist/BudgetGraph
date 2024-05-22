@@ -1,21 +1,16 @@
 """
 This module is designed to save us from unnecessary queries to the database,
 since it will store information about the current user authorization status and the language used.
-
 It is assumed that dictionaries will be stored for the last 50-100 users who performed actions.
-
 If the user deletes the account or changes the language, the trigger will be called and the cache value will change.
 
 Caching is based on the LRU algorithm:
-
 New dictionary keys are always placed "at the end",
 so to clear out the old values we will remove the "at the beginning" values.
-
 To update the value: remove it from the current position and insert “at the end”.
 
 Starting from version 3.7, the keys in the dictionary maintain order, so we will use a key-value implementation.
 """
-
 from budget_graph.logger import setup_logger
 from budget_graph.encryption import logging_hash
 
