@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
     "username"    varchar(20)              NOT NULL    UNIQUE CHECK(LENGTH("username") BETWEEN 3 AND 20),
     "psw_salt"    varchar(32)              NOT NULL           CHECK(LENGTH("psw_salt") = 32),
     "psw_hash"    varchar(64)              NOT NULL           CHECK(LENGTH("psw_hash") = 64),
-    "group_id"    integer                  NOT NULL           CHECK("group_id" > 0), -- TODO REMOVE!!!
     "last_login"  timestamp with time zone     NULL
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."groups" (

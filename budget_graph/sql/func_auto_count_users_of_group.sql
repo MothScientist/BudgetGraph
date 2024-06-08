@@ -8,7 +8,7 @@ BEGIN
     UPDATE "budget_graph"."groups"
     SET "users_number" = (
         SELECT COUNT(*)
-        FROM "budget_graph"."users"
+        FROM "budget_graph"."users_groups"
         WHERE "group_id" = NEW."group_id"
     )
     WHERE "id" = NEW."group_id";
@@ -22,7 +22,7 @@ CREATE TRIGGER
     after_add_user
   AFTER
   INSERT
-    ON "budget_graph"."users"
+    ON "budget_graph"."users_groups"
   FOR EACH ROW
   EXECUTE FUNCTION
     update_number_of_group_users();
@@ -36,7 +36,7 @@ BEGIN
     UPDATE "budget_graph"."groups"
     SET "users_number" = (
         SELECT COUNT(*)
-        FROM "budget_graph"."users"
+        FROM "budget_graph"."users_groups"
         WHERE "group_id" = OLD."group_id"
     )
     WHERE "id" = OLD."group_id";
@@ -50,7 +50,7 @@ CREATE TRIGGER
     after_delete_user
   AFTER
   DELETE
-  ON "budget_graph"."users"
+  ON "budget_graph"."users_groups"
   FOR EACH ROW
   EXECUTE FUNCTION
     update_number_of_group_users_after_delete();
