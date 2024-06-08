@@ -147,9 +147,7 @@ def household(username):
         abort(401)
 
     dbase = DatabaseQueries(connect_db_flask_g())
-    token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
-
+    token, group_id = dbase.get_group_id_token_by_username(username)
     if request.method == "POST":
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
@@ -223,8 +221,7 @@ def settings(username):
         abort(401)
 
     dbase = DatabaseQueries(connect_db_flask_g())
-    token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)
+    token, group_id = dbase.get_group_id_token_by_username(username)
     group_owner: str = dbase.get_group_owner_username_by_group_id(group_id)
     group_users_data: list = dbase.get_group_users_data(group_id)
 

@@ -595,7 +595,7 @@ def get_group_users(message, user_language: str):
     bot_db = DatabaseQueries(connection)
     group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
     group_owner_username: str = bot_db.get_group_owner_username_by_group_id(group_id)
-    group_users_list: tuple = bot_db.get_group_users(group_id)
+    group_users_list: tuple = bot_db.get_group_usernames(group_id)
     close_db(connection)
     group_users_str: str = '\n'.join(
         f"{user} ({get_phrase_by_language(user_language, "owner")})"
@@ -614,7 +614,7 @@ def change_owner(message, user_language: str):
     group_owner_username: str = bot_db.get_group_owner_username_by_group_id(group_id)
     username: str = bot_db.get_username_by_telegram_id(telegram_id)
     if compare_digest(group_owner_username, username):
-        group_users_list: tuple = bot_db.get_group_users(group_id)
+        group_users_list: tuple = bot_db.get_group_usernames(group_id)
         # if there are no users in the group except the owner
         if len(group_users_list) == 1:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "small_group_exception")}")
@@ -696,7 +696,7 @@ def process_delete_account(message, user_language: str):
         bot_db = DatabaseQueries(connection)
         # removing a user from the cache
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id)
-        bot_db.delete_username_from_users_by_telegram_id(telegram_id)
+        bot_db.delete_username_from_group_by_telegram_id(telegram_id)
         close_db(connection)
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "account_is_deleted")}",
@@ -723,7 +723,7 @@ def delete_user(message, user_language: str):
     group_owner: str = bot_db.get_group_owner_username_by_group_id(group_id)
     user_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id, group_id)
     if user_is_owner:
-        group_users_list: tuple = bot_db.get_group_users(group_id)
+        group_users_list: tuple = bot_db.get_group_usernames(group_id)
         if len(group_users_list) == 1:  # If there are no users in the group except the owner
             bot.send_message(message.chat.id,
                              f"{get_phrase_by_language(user_language, "exception_one_user_in_group")}\n"
@@ -756,7 +756,7 @@ def process_delete_user(message, group_id: int, group_users_list: tuple, user_la
     else:
         # removing a user from the cache
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id_user_to_delete)
-        if bot_db.delete_username_from_users_by_telegram_id(telegram_id_user_to_delete):
+        if bot_db.delete_username_from_group_by_telegram_id(telegram_id_user_to_delete):
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "user_removed")}")
             logger_bot.info(f"'User {logging_hash(username_user_to_delete)}' "
                             f"deleted by group owner from group #{group_id}")
@@ -801,9 +801,10 @@ def process_delete_group(message, group_id: int, user_language: str) -> None:
     if user_choice == f"🌧️ {get_phrase_by_language(user_language, "YES")}":
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        group_users: tuple = bot_db.get_group_users(group_id)
+        # get a list of telegram_id for each user of the group:
+        telegram_ids_of_group_users: tuple = bot_db.get_group_telegram_ids(group_id)
         # clearing group users from the cache
-        UserRegistrationStatusCache.delete_group_trigger(group_users)
+        UserRegistrationStatusCache.delete_group_trigger(telegram_ids_of_group_users)
         bot_db.delete_group_with_users(group_id)
         close_db(connection)
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
@@ -833,7 +834,7 @@ def get_str_with_group_users(telegram_id: int, with_owner: bool) -> str:
     bot_db = DatabaseQueries(connection)
     group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
     group_owner_username: str = bot_db.get_group_owner_username_by_group_id(group_id)
-    group_users_list: tuple = bot_db.get_group_users(group_id)
+    group_users_list: tuple = bot_db.get_group_usernames(group_id)
 
     if with_owner:
         res: str = '\n'.join(

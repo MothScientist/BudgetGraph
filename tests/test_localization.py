@@ -75,7 +75,7 @@ class TestLanguages(unittest.TestCase):
 
     def test_languages_9(self):
         res = receive_translation("en", "none_token")
-        self.assertEqual(res, "(if you don't have one, enter \"None\")")
+        self.assertEqual(res, "(if you don't have one, enter \'None\')")
 
     def test_languages_10(self):
         res = receive_translation("fr", "current_owner_exception")

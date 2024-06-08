@@ -158,11 +158,8 @@ def value_validation(value: str) -> int:
     """
     if re.match(r"^(?!0$)(?=.*\d)(?!0\d)\d{0,10}$", value):
         value: int = int(value)
-
-        if value < 1000000000:
+        if value < 100_000_000:
             return value
-        return 0
-
     return 0
 
 
