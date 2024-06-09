@@ -80,9 +80,11 @@ def get_list_languages() -> tuple:
     """
     Returns a list of available languages
     """
+    # some dictionaries already exist, but are not yet available to users
+    list_of_excluded_languages: tuple = ('kk', 'pt')
     localization_dir_path: str = path.join(path.dirname(__file__), f'localization')
     lang_json = tuple([file[:2] for file in listdir(localization_dir_path) if file.endswith('.json')])
-    return lang_json
+    return tuple(set(lang_json) - set(list_of_excluded_languages))
 
 
 # TODO - logging
