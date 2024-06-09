@@ -1,6 +1,3 @@
-# pylint: disable=missing-docstring
-# pylint: disable=trailing-whitespace
-
 import unittest
 from datetime import datetime
 from random import randint
@@ -344,8 +341,8 @@ class TestDbQueries(unittest.TestCase):
     _data = DatabaseTestData()
     _number_of_users_1: int = _data.get_number_of_users_1() - 1  # excluding the 21st user
     _number_of_users_2: int = _data.get_number_of_users_2()
-    group_3_token: str = ""
-    group_4_token: str = ""
+    group_3_token: str = ''
+    group_4_token: str = ''
 
     def test_004_add_users_to_db_1(self):
         for i in range(1, TestDbQueries._number_of_users_1 + 1):
@@ -406,6 +403,8 @@ class TestDbQueries(unittest.TestCase):
 #   # TODO -> check_limit_users_in_group
 
     # TODO -> select_data_for_household_table
+
+    # TODO -> get_group_users_data
 
     def test_007_get_username_by_telegram_id(self):
         number_of_user: int = randint(1, TestDbQueries._number_of_users_2)
@@ -510,6 +509,43 @@ class TestDbQueries(unittest.TestCase):
         res: tuple = self.test_db.get_group_usernames(group_id)
         self.assertEqual(res, tuple(TestDbQueries._data.get_user_data_2(i, 'username')
                                     for i in range(1, TestDbQueries._number_of_users_2 + 1)))
+
+    def test_015_get_group_usernames_3(self):
+        group_id: int = 5  # non-existent group
+        res: tuple = self.test_db.get_group_usernames(group_id)
+        self.assertEqual(res, tuple())
+
+    def test_016_get_group_telegram_ids_1(self):
+        group_id: int = 3
+        res: tuple = self.test_db.get_group_telegram_ids(group_id)
+        self.assertEqual(res, tuple(TestDbQueries._data.get_user_data_1(i, 'telegram_id')
+                                    for i in range(1, TestDbQueries._number_of_users_1 + 1)))
+
+    def test_016_get_group_telegram_ids_2(self):
+        group_id: int = 4
+        res: tuple = self.test_db.get_group_telegram_ids(group_id)
+        self.assertEqual(res, tuple(TestDbQueries._data.get_user_data_2(i, 'telegram_id')
+                                    for i in range(1, TestDbQueries._number_of_users_2 + 1)))
+
+    def test_016_get_group_telegram_ids_3(self):
+        group_id: int = 5  # non-existent group
+        res: tuple = self.test_db.get_group_telegram_ids(group_id)
+        self.assertEqual(res, tuple())
+
+    def test_017_get_group_owner_telegram_id_by_group_id_1(self):
+        group_id: int = 3
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(group_id)
+        self.assertEqual(res, TestDbQueries._data.get_user_data_1(1, 'telegram_id'))
+
+    def test_017_get_group_owner_telegram_id_by_group_id_2(self):
+        group_id: int = 4
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(group_id)
+        self.assertEqual(res, TestDbQueries._data.get_user_data_2(1, 'telegram_id'))
+
+    def test_017_get_group_owner_telegram_id_by_group_id_3(self):
+        group_id: int = 5  # non-existent group
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(group_id)
+        self.assertEqual(res, 0)
 
 
 if __name__ == '__main__':
