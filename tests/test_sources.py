@@ -1,6 +1,3 @@
-# pylint: disable=missing-docstring
-# pylint: disable=trailing-whitespace
-
 import unittest
 
 from budget_graph.encryption import getting_hash, get_salt, get_token
