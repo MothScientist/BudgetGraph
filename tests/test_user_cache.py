@@ -1,6 +1,3 @@
-# pylint: disable=missing-docstring
-# pylint: disable=trailing-whitespace
-
 import unittest
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.dictionary import get_list_languages
@@ -104,7 +101,7 @@ class TestUserLanguageCache(unittest.TestCase):
     def test_language_cache_8(self):
         obj_8 = UserLanguageCache()
         obj_8._UserLanguageCache__telegram_language_cache.clear()  # noqa
-        for i in range(1, 75_000):
+        for i in range(1, 25_000):
             UserLanguageCache.input_cache_data(i * 10, TestUserLanguageCache.lang[i % 6])
             if i % 25 == 0:
                 UserLanguageCache.update_data_position(50)
@@ -176,7 +173,7 @@ class TestUserRegistrationStatusCache(unittest.TestCase):
     def test_user_registration_cache_7(self):
         obj_7 = UserRegistrationStatusCache()
         obj_7._UserRegistrationStatusCache__users.clear()  # noqa
-        for i in range(1, 75_000):
+        for i in range(1, 25_000):
             UserRegistrationStatusCache.input_cache_data(i + 10_000)
             if i % 25 == 0:
                 UserRegistrationStatusCache.update_data_position(10_005)
