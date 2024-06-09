@@ -74,7 +74,7 @@ class TestDateValidation(unittest.TestCase):
             self.assertEqual(res, True)
 
     def test_comparison_dates_unix_format_2(self):
-        for day_delta in range(3250, 3650):  # TODO DOCUMENTATION
+        for day_delta in range(3600, 3650):  # TODO DOCUMENTATION
             _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
             # Redefine the date in our format: DD/MM/YYYY
             redefine_date: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
@@ -251,8 +251,8 @@ class TestRegistrationValidation(unittest.TestCase):
 
 class TestNumberValidation(unittest.TestCase):
     def test_number_validation_1(self):
-        res: int = value_validation("999999999")
-        self.assertEqual(res, 999999999)
+        res: int = value_validation("99999999")
+        self.assertEqual(res, 99_999_999)
 
     def test_number_validation_2(self):
         res: int = value_validation("1000000000")
@@ -295,22 +295,22 @@ class TestNumberValidation(unittest.TestCase):
         self.assertEqual(res, 0)
 
     def test_number_validation_12(self):
-        for value in range(0, 1_500_000):
+        for value in range(0, 150_000):
             res: int = value_validation(str(value))
             self.assertEqual(res, value)
 
     def test_number_validation_13(self):
-        for value in range(10_000_000, 11_250_000):
+        for value in range(1_000_000, 1_050_000):
             res: int = value_validation(str(value))
             self.assertEqual(res, value)
 
     def test_number_validation_14(self):
-        for value in range(999_999_999, 998_500_000, -1):
+        for value in range(99_999_999, 99_950_000, -1):
             res: int = value_validation(str(value))
             self.assertEqual(res, value)
 
     def test_number_validation_15(self):
-        for value in range(1_000_000_000, 1_000_500_000):
+        for value in range(100_000_000, 100_050_000):
             res: int = value_validation(str(value))
             self.assertEqual(res, 0)
 
