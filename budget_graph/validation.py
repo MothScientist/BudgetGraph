@@ -1,9 +1,9 @@
-import sys
+from sys import path as sys_path
 import asyncio
 import re
 from datetime import datetime, timezone
 from flask import flash
-sys.path.append('../')
+sys_path.append('../')
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
 from budget_graph.dictionary import receive_translation
 from budget_graph.time_checking import timeit

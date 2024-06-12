@@ -18,16 +18,15 @@ get_my_id - Get my Telegram ID
 premium - Premium
 """
 
-from os import getenv
-import asyncio
-from datetime import datetime, UTC
-from dotenv import load_dotenv
+from sys import path as sys_path
+from asyncio import run as asyncio_run
+from os import getenv, path
 from secrets import compare_digest
-import telebot
+from dotenv import load_dotenv
+from datetime import datetime, UTC
+from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-import sys
-from os import path
-sys.path.append('../')
+sys_path.append('../')
 # pylint: disable=import-outside-toplevel
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db  # noqa: E402
 from budget_graph.encryption import getting_hash, get_salt, logging_hash  # noqa: E402
@@ -43,7 +42,7 @@ from budget_graph.user_cache_structure import UserLanguageCache, UserRegistratio
 load_dotenv()  # Load environment variables from .env file
 
 bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
-bot = telebot.TeleBot(bot_token, skip_pending=True)  # type: ignore
+bot = TeleBot(bot_token, skip_pending=True)  # type: ignore
 
 logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
 
@@ -330,7 +329,7 @@ def process_add_category_for_transfer(message, value: int, user_language: str) -
     markup_1.add(*buttons)
 
     record_date: str = message.text
-    record_date_is_valid: bool = asyncio.run(date_validation(record_date))  # DD/MM/YYYY
+    record_date_is_valid: bool = asyncio_run(date_validation(record_date))  # DD/MM/YYYY
 
     if record_date_is_valid:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "select_category")}:",
@@ -422,7 +421,7 @@ def registration(message, user_language: str, res: bool) -> None:
 
 def process_username(message, user_language: str):
     username: str = message.text
-    if asyncio.run(username_validation(username)):
+    if asyncio_run(username_validation(username)):
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "enter_password")}:")
         bot.register_next_step_handler(message, process_psw, username, user_language)
     else:
@@ -435,13 +434,13 @@ def process_psw(message, username: str, user_language: str):
     markup_1.add(btn1)
 
     psw: str = message.text
-    if asyncio.run(password_validation(psw)):
+    if asyncio_run(password_validation(psw)):
         psw_salt: str = get_salt()
-        psw: str = getting_hash(psw, psw_salt)
+        psw_hash: str = getting_hash(psw, psw_salt)
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "enter_token")}\n"
                                           f"{get_phrase_by_language(user_language, "none_token")}",
                          reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_token, username, psw, psw_salt, user_language)
+        bot.register_next_step_handler(message, process_token, username, psw_hash, psw_salt, user_language)
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_password_format")}")
         reply_buttons(message)

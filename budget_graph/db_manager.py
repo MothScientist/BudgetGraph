@@ -27,6 +27,7 @@ def connect_db():
         return conn
     except (DatabaseError, UnicodeDecodeError) as err:
         logger_database.critical(f"connecting to database: {str(err)}")
+        return None
 
 
 def close_db(conn):
@@ -45,6 +46,7 @@ def connect_db_flask_g():
     return g.link_db
 
 
+# # pylint: disable=unused-argument
 def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
     """
     Closing a database connection using a Flask application object.
@@ -55,10 +57,11 @@ def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
 
 def read_sql_file(request_name):
     filename: str = path.join(path.dirname(__file__), f'sql/{request_name}.sql')
-    with open(filename, 'r') as sql_file:
+    with open(filename, 'r', encoding='utf-8') as sql_file:
         return sql_file.read()
 
 
+# pylint: disable=too-many-public-methods
 class DatabaseQueries:
     """
     The class is used to query the database.

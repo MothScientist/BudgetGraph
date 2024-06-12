@@ -99,7 +99,7 @@ def create_tables_in_db() -> None:
     try:
         with conn.cursor() as cur:
             for filename in sql_filenames:
-                with open(path.join(path.dirname(__file__), f'sql/{filename}.sql'), 'r') as sql_file:
+                with open(path.join(path.dirname(__file__), f'sql/{filename}.sql'), 'r', encoding='utf-8') as sql_file:
                     cur.execute(sql_file.read())
             conn.commit()
     except Exception as err:
