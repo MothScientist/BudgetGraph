@@ -547,6 +547,27 @@ class TestDbQueries(unittest.TestCase):
         res: int = self.test_db.get_group_owner_telegram_id_by_group_id(group_id)
         self.assertEqual(res, 0)
 
+    def test_018_check_user_is_group_owner_by_telegram_id_1(self):
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data_1(1, 'telegram_id'), TestDbQueries._data.get_user_data_1(1, 'group_id'))
+        self.assertEqual(res, True)
+
+    def test_018_check_user_is_group_owner_by_telegram_id_2(self):
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data_2(1, 'telegram_id'), TestDbQueries._data.get_user_data_2(1, 'group_id'))
+        self.assertEqual(res, True)
+
+    def test_018_check_user_is_group_owner_by_telegram_id_3(self):
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data_1(2, 'telegram_id'), TestDbQueries._data.get_user_data_1(2, 'group_id'))
+        self.assertEqual(res, False)
+
+    def test_018_check_user_is_group_owner_by_telegram_id_4(self):
+        # data from different users
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data_1(1, 'telegram_id'), TestDbQueries._data.get_user_data_2(1, 'group_id'))
+        self.assertEqual(res, False)
+
 
 if __name__ == '__main__':
     unittest.main()
