@@ -21,10 +21,17 @@ WORKDIR /main/budget_graph
 RUN python build_project.py
 
 # Removing unnecessary files after building the project
-RUN rm build_project.py create_db.sql webapp.py
+RUN rm build_project.py \
+       webapp.py \
+       sql/create_db.sql \
+       sql/indexes.sql \
+       sql/func_auto_count_users_of_group.sql \
+       sql/func_transaction_number.sql
 
 # Removing some unnecessary directories
-RUN rm -rf /static /templates /logs
+RUN rm -rf /static \
+           /templates \
+           /logs
 
 # Return to the root directory /main
 WORKDIR /main
