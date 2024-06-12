@@ -445,10 +445,6 @@ def process_psw(message, username: str, user_language: str):
 
 def process_token(message, username: str, psw_hash: str, psw_salt: str, user_language: str):
     telegram_id: int = message.from_user.id
-    markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton("None")
-    markup_1.add(btn1)
-
     token: str = message.text
     connection = connect_db()
     bot_db = DatabaseQueries(connection)

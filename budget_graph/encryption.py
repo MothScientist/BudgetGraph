@@ -1,8 +1,7 @@
-from os import urandom
+from os import getenv, urandom
 from hashlib import pbkdf2_hmac
 from secrets import choice
 from dotenv import load_dotenv
-from os import getenv
 from budget_graph.logger import setup_logger
 
 load_dotenv()  # Load environment variables from .env file
@@ -54,10 +53,11 @@ def getting_hash(secure_key: str, salt: str,
 def logging_hash(log: str | int, salt=salt_hash_log, iterations=16, key_length=7) -> str:
     """
     This function should be very fast, since the logging load should not affect the result for the end user.
+
+    key_length=7 -> 14 characters
     """
-    if log:
-        log: str = log if type(log) is str else str(log)
-        return pbkdf2_hmac('sha256', log.encode('utf-8'), salt.encode('utf-8'), iterations, key_length).hex()
-    else:
-        logger_encrypt.error(f'Log hashing. Received value: log={log}')
+    if not log:
+        logger_encrypt.error(f'Received value: log={log}')
         return ''
+    result_log: str = log if isinstance(log, str) else str(log)
+    return pbkdf2_hmac('sha256', result_log.encode('utf-8'), salt.encode('utf-8'), iterations, key_length).hex()

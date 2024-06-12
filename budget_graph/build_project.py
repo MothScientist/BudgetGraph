@@ -103,14 +103,14 @@ def create_tables_in_db() -> None:
                                                              f'sql/func_transaction_number.sql')
             func_auto_count_users_of_group_path: str = path.join(path.dirname(__file__),
                                                                     f'sql/func_auto_count_users_of_group.sql')
-            with open(create_db_path, 'r') as file_1:
-                cur.execute(file_1.read())
-            with open(indexes_path, 'r') as file_2:
-                cur.execute(file_2.read())
-            with open(func_transaction_number_path, 'r') as file_3:
-                cur.execute(file_3.read())
-            with open(func_auto_count_users_of_group_path, 'r') as file_4:
-                cur.execute(file_4.read())
+            with open(create_db_path, 'r') as sql_file_1:
+                cur.execute(sql_file_1.read())
+            with open(indexes_path, 'r') as sql_file_2:
+                cur.execute(sql_file_2.read())
+            with open(func_transaction_number_path, 'r') as sql_file_3:
+                cur.execute(sql_file_3.read())
+            with open(func_auto_count_users_of_group_path, 'r') as sql_file_4:
+                cur.execute(sql_file_4.read())
             conn.commit()
     except Exception as err:
         print(f'Critical error when creating tables in the database: {err}')

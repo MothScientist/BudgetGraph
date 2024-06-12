@@ -1,11 +1,9 @@
+import sys
 import asyncio
 import re
-from flask import flash
 from datetime import datetime, timezone
-
-import sys
+from flask import flash
 sys.path.append('../')
-
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
 from budget_graph.dictionary import receive_translation
 from budget_graph.time_checking import timeit
@@ -30,8 +28,7 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
         if password_is_valid:
             if telegram_id_is_valid:
                 return True
-            else:
-                flash("Error - invalid telegram ID.", category="error")
+            flash("Error - invalid telegram ID.", category="error")
         else:  # each error has its own flash message so that the user knows where he made a mistake
             flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
                   category="error")
@@ -47,7 +44,7 @@ async def username_validation(username: str) -> bool:
     username_is_exist: bool = dbase.check_username_is_exist(username)
     close_db(connection)
 
-    if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and not username_is_exist:
+    if 3 <= len(username) <= 20 and re.match(r'^[a-zA-Z0-9]+$', username) and not username_is_exist:
         return True
     return False
 
@@ -59,7 +56,7 @@ async def password_validation(psw: str) -> bool:
 
 
 async def telegram_id_validation(telegram_id: str) -> bool:
-    if re.match(r'^[1-9]\d{2,11}$', telegram_id):  # 3-12 digits  # TODO - можно заменить на \d{3,12}?
+    if re.match(r'^[1-9]\d{2,11}$', telegram_id):  # 3-12 digits
         telegram_id: int = int(telegram_id)
     else:
         return False
@@ -114,7 +111,7 @@ async def comparison_dates_unix_format(entered_date: str) -> bool:
 
 
 async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
-    reg_exp = rf'^(0[1-9]|[1-2]\d|3[0-1])/(0[1-9]|1[0-2])/20[1-3]\d$'
+    reg_exp = r'^(0[1-9]|[1-2]\d|3[0-1])/(0[1-9]|1[0-2])/20[1-3]\d$'
     # month validation is not needed, inside the regular expression it is checked that the month is in the range 01-12.
     if re.match(reg_exp, entered_date):
         return True
@@ -129,11 +126,10 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
         if await check_year_is_leap(entered_year):
             return entered_day <= 29
         return entered_day <= 28
-    elif entered_month in [1, 3, 5, 7, 8, 10, 12]:
+    if entered_month in [1, 3, 5, 7, 8, 10, 12]:
         return entered_day <= 31
-    elif entered_month in [4, 6, 9, 11]:
+    if entered_month in [4, 6, 9, 11]:
         return entered_day <= 30
-
     return False
 
 

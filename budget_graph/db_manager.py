@@ -1,18 +1,18 @@
-import os
-from psycopg2 import connect, DatabaseError
-from dotenv import load_dotenv
+from os import getenv, path
 from flask import g
+from dotenv import load_dotenv
+from psycopg2 import connect, DatabaseError
 
 from budget_graph.logger import setup_logger
-from budget_graph.encryption import get_token, logging_hash
 from budget_graph.time_checking import timeit
+from budget_graph.encryption import get_token, logging_hash
 
 load_dotenv()  # Load environment variables from .env file
-db_host = os.getenv("POSTGRES_HOST")
-db_port = os.getenv("POSTGRES_PORT")
-db_name = os.getenv("POSTGRES_NAME")
-db_user = os.getenv("POSTGRES_USERNAME")
-db_psw = os.getenv("POSTGRES_PASSWORD")
+db_host = getenv("POSTGRES_HOST")
+db_port = getenv("POSTGRES_PORT")
+db_name = getenv("POSTGRES_NAME")
+db_user = getenv("POSTGRES_USERNAME")
+db_psw = getenv("POSTGRES_PASSWORD")
 
 DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}"
 
@@ -53,6 +53,12 @@ def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
         g.link_db.close()
 
 
+def read_sql_file(request_name):
+    filename: str = path.join(path.dirname(__file__), f'sql/{request_name}.sql')
+    with open(filename, 'r') as sql_file:
+        return sql_file.read()
+
+
 class DatabaseQueries:
     """
     The class is used to query the database.
@@ -85,7 +91,7 @@ class DatabaseQueries:
                                    FROM 
                                      "budget_graph"."users" 
                                    WHERE 
-                                     "telegram_id" = %s""", (telegram_id,))  # DO NOT REMOVE commas
+                                     "telegram_id" = %s::bigint""", (telegram_id,))  # DO NOT REMOVE commas
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -112,7 +118,7 @@ class DatabaseQueries:
                                    FROM 
                                      "budget_graph"."users"
                                    WHERE 
-                                     "username" = %s""", (username,))
+                                     "username" = %s::text""", (username,))
                     res = cur.fetchone()
 
                     if res:
@@ -135,7 +141,7 @@ class DatabaseQueries:
                                    FROM 
                                      "budget_graph"."groups"
                                    WHERE 
-                                     "token" = %s""", (token,))
+                                     "token" = %s::text""", (token,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -155,9 +161,9 @@ class DatabaseQueries:
                     cur.execute("""SELECT 
                                      "group_id"
                                    FROM 
-                                     "budget_graph"."users"
+                                     "budget_graph"."users_groups"
                                    WHERE 
-                                     "telegram_id" = %s""", (telegram_id,))
+                                     "telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
 
                     if res:
@@ -168,29 +174,32 @@ class DatabaseQueries:
                                   f"telegram_id: {logging_hash(telegram_id)}")
             return 0
 
-    def get_token_by_username(self, username: str) -> str:
-        """
-        :return: token | empty string
-        """
+    def get_group_id_token_by_username(self, username: str) -> tuple[str, int]:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT 
-                                     g."token"
-                                   FROM 
+                    cur.execute("""SELECT
+                                     g."token", g."id"
+                                   FROM
                                      "budget_graph"."groups" g
-                                     INNER JOIN "budget_graph"."users" u
-                                     ON g.id = u."group_id"
-                                   WHERE 
-                                     u."username" = %s""", (username,))
-                    res = cur.fetchone()
+                                   INNER JOIN
+                                     "budget_graph"."users_groups" u_g
+                                   ON
+                                     g."id" = u_g."group_id"
+                                   INNER JOIN
+                                     "budget_graph"."users" u
+                                   ON
+                                     u."telegram_id" = u_g."telegram_id"
+                                   WHERE
+                                     u."username" = %s::text""", (username,))
+                    res = cur.fetchall()
                     if res:
                         return res[0]
-                    return ''
+                    return '', 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
-            return ''
+            return '', 0
 
     def get_token_by_telegram_id(self, telegram_id: int) -> str:
         """
@@ -203,11 +212,12 @@ class DatabaseQueries:
                                      g."token"
                                    FROM 
                                      "budget_graph"."groups" g
-                                     INNER JOIN 
-                                     "budget_graph"."users" u
-                                     ON g."id" = u."group_id"
+                                   INNER JOIN 
+                                     "budget_graph"."users_groups" u_g
+                                   ON
+                                     g."id" = u_g."group_id"
                                    WHERE
-                                     u."telegram_id" = %s""", (telegram_id,))
+                                     u_g."telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -229,7 +239,7 @@ class DatabaseQueries:
                                    FROM 
                                      "budget_graph"."users"
                                    WHERE
-                                     "username" = %s""", (username,))
+                                     "username" = %s::text""", (username,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
@@ -250,12 +260,10 @@ class DatabaseQueries:
                                      1
                                    FROM 
                                      "budget_graph"."users" u
-                                     INNER JOIN "budget_graph"."groups" g
-                                     ON g."id" = u."group_id"
                                    WHERE 
-                                     u."username" = %s
+                                     u."username" = %s::text
                                      AND 
-                                     u."psw_hash" = %s""", (username, psw_hash))
+                                     u."psw_hash" = %s::text""", (username, psw_hash,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -265,7 +273,7 @@ class DatabaseQueries:
                                   f"username: {logging_hash(username)}")
             return False
 
-    def select_data_for_household_table(self, group_id: int, number_of_last_records: int) -> tuple:
+    def select_data_for_household_table(self, group_id: int, number_of_last_records: int) -> tuple[tuple, ...]:
         """
         Returns the specified number of rows (starting with the most recent)
         from monetary_transactions table.
@@ -293,11 +301,11 @@ class DatabaseQueries:
                                        FROM 
                                          "budget_graph"."monetary_transactions"
                                        WHERE 
-                                         "group_id" = %s
+                                         "group_id" = %s::smallint
                                        ORDER BY 
                                          "transaction_id" ASC
                                        LIMIT
-                                         %s""",
+                                         %s::smallint""",
                                     (group_id, number_of_last_records,))
                         res = cur.fetchall()
                     else:
@@ -313,14 +321,13 @@ class DatabaseQueries:
                                         FROM
                                           "budget_graph"."monetary_transactions"
                                         WHERE
-                                          "group_id" = %s
+                                          "group_id" = %s::smallint
                                         ORDER BY
                                           "transaction_id" DESC
                                         LIMIT
-                                          %s""",
+                                          %s::smallint""",
                                     (group_id, number_of_last_records,))
                         res = cur.fetchall()
-
                     res_list: tuple[tuple, ...] = tuple(tuple(row) for row in res)
                     return res_list
         except (DatabaseError, TypeError) as err:
@@ -337,11 +344,15 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     "username"
+                                     u."username"
                                    FROM
-                                     "budget_graph"."users"
+                                     "budget_graph"."users" u
+                                   INNER JOIN
+                                     "budget_graph"."users_groups" u_g
+                                   ON
+                                     u."telegram_id" = u_g."telegram_id"
                                    WHERE
-                                     "group_id" = %s""", (group_id,))
+                                     u_g."group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchall()
                     res_list = tuple(str(row[0]) for row in res)
                     return res_list
@@ -360,9 +371,9 @@ class DatabaseQueries:
                     cur.execute("""SELECT
                                      "telegram_id"
                                    FROM
-                                     "budget_graph"."users"
+                                     "budget_graph"."users_groups"
                                    WHERE
-                                     "group_id" = %s""", (group_id,))
+                                     "group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchall()
                     res_list = tuple(row[0] for row in res)
                     return res_list
@@ -379,12 +390,16 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     "username",
-                                     "last_login"
+                                     u."username",
+                                     u."last_login"
                                    FROM
-                                     "budget_graph"."users"
+                                     "budget_graph"."users" u
+                                   INNER JOIN
+                                     "budget_graph"."users_groups" u_g
+                                   ON
+                                     u."telegram_id" = u_g."telegram_id"
                                    WHERE
-                                     "group_id" = %s""", (group_id,))
+                                     u_g."group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchall()
                     res_list = [list(row) for row in res]
                     return res_list
@@ -402,7 +417,7 @@ class DatabaseQueries:
                                    FROM
                                      "budget_graph"."groups"
                                    WHERE
-                                     "id" = %s""", (group_id,))
+                                     "id" = %s::smallint""", (group_id,))
                     res = cur.fetchone()
                     if res:
                         return res[0]
@@ -416,7 +431,7 @@ class DatabaseQueries:
         owner_telegram_id: int = self.get_group_owner_telegram_id_by_group_id(group_id)
         if not owner_telegram_id or not telegram_id:  # check that we did not receive empty lines as input
             return False
-        if owner_telegram_id == telegram_id:  # TODO security
+        if owner_telegram_id == telegram_id:
             return True
         return False
 
@@ -428,10 +443,12 @@ class DatabaseQueries:
                                      u."username"
                                    FROM
                                      "budget_graph"."users" u
-                                     INNER JOIN "budget_graph"."groups" g
-                                     ON u."telegram_id" = g."owner"
+                                   INNER JOIN
+                                     "budget_graph"."groups" g
+                                   ON
+                                     u."telegram_id" = g."owner"
                                    WHERE
-                                     g."id" = %s""", (group_id,))
+                                     g."id" = %s::smallint""", (group_id,))
                     res = cur.fetchone()
                     if res:
                         return str(res[0])
@@ -450,9 +467,9 @@ class DatabaseQueries:
                                     FROM
                                       "budget_graph"."monetary_transactions"
                                     WHERE
-                                      "group_id" = %s
+                                      "group_id" = %s::smallint
                                       AND
-                                      "transaction_id" = %s""", (group_id, transaction_id,))
+                                      "transaction_id" = %s::integer""", (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -475,7 +492,7 @@ class DatabaseQueries:
                                    FROM
                                      "budget_graph"."users"
                                    WHERE
-                                     LOWER("username") = LOWER(%s)""", (username,))  # username is case-insensitive
+                                     LOWER("username") = LOWER(%s::text)""", (username,))  # username is case-insensitive
                     res = cur.fetchone()
                     if res:
                         return True
@@ -495,7 +512,7 @@ class DatabaseQueries:
                                    FROM
                                      "budget_graph"."users"
                                    WHERE
-                                     "telegram_id" = %s""", (telegram_id,))
+                                     "telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -513,16 +530,15 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     1
+                                     TRUE
                                    FROM
                                      "budget_graph"."groups"
                                    WHERE
-                                     "token" = %s""", (token,))
+                                     "token" = %s::text""", (token,))
                     res = cur.fetchone()
                     if res:
                         return False
                     return True
-
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"new token: {token}")
@@ -539,13 +555,22 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     COUNT(*)
+                                     CASE
+                                        WHEN 
+                                          "users_number" IS NOT NULL
+                                          AND
+                                          "users_number" <> 20
+                                        THEN
+                                          TRUE
+                                        ELSE
+                                          FALSE
+                                     END
                                    FROM
-                                     "budget_graph"."users"
+                                     "budget_graph"."groups"
                                    WHERE
-                                     "group_id" = %s""", (group_id,))
+                                     "group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchone()
-                    if 0 < int(res[0]) < 20:  # condition > 0 is used for secondary checking for group existence
+                    if res:
                         return True
                     return False
         except (DatabaseError, TypeError) as err:
@@ -568,10 +593,11 @@ class DatabaseQueries:
                                    FROM
                                      "budget_graph"."user_languages_telegram"
                                    WHERE
-                                     "telegram_id" = %s""", (telegram_id,))
+                                     "telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
                     if res:
-                        return str(res[0])
+                        language: str = str(res[0])
+                        return language
                     return "en"  # if the user did not change the default language
 
         except (DatabaseError, TypeError) as err:
@@ -591,7 +617,7 @@ class DatabaseQueries:
                                    ON CONFLICT 
                                      ("telegram_id")
                                    DO UPDATE SET
-                                     "language" = %s""", (telegram_id, language, language))
+                                     "language" = %s::text""", (telegram_id, language, language))
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -601,7 +627,7 @@ class DatabaseQueries:
         else:
             return True
 
-    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, group_id: int, telegram_id: int) -> bool:
+    def add_user_to_db(self, username: str, psw_salt: str, psw_hash: str, telegram_id: int) -> bool:
         """
         Insert a new user to the Users table
         """
@@ -610,18 +636,15 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     cur.execute("""INSERT INTO 
                                      "budget_graph"."users"
-                                     ("telegram_id", "username", "psw_salt", "psw_hash", "group_id", "last_login")
-                                   VALUES
-                                     (%s, %s, %s, %s, %s, 
-                                     to_char(current_timestamp AT TIME ZONE 'UTC', 'DD/MM/YYYY HH24:MI:SS')
-                                     )""", (telegram_id, username, psw_salt, psw_hash, group_id,))
+                                     ("telegram_id", "username", "psw_salt", "psw_hash", "last_login")
+                                   VALUES(%s, %s, %s, %s, current_timestamp AT TIME ZONE 'UTC')
+                                """, (telegram_id, username, psw_salt, psw_hash,))
                     # to_char is required to change the date-time format
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username: {logging_hash(username)}, "
-                                  f"group_id: {group_id}, "
-                                  f"telegram_id: {logging_hash(telegram_id)}")
+                                  f"username (hash): {logging_hash(username)}, "
+                                  f"telegram_id (hash): {logging_hash(telegram_id)}")
             return False
         else:
             return True
@@ -664,7 +687,7 @@ class DatabaseQueries:
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
-                                  f"username: {logging_hash(username)}, "
+                                  f"username (hash): {logging_hash(username)}, "
                                   f"total_sum: {total_sum}, "
                                   f"transaction_amount: {transaction_amount},"
                                   f"record_date: {record_date},"
@@ -689,7 +712,7 @@ class DatabaseQueries:
                                         FROM 
                                           "budget_graph"."monetary_transactions" 
                                         WHERE 
-                                          "group_id" = %s 
+                                          "group_id" = %s::smallint
                                         ORDER BY 
                                           "transaction_id" DESC 
                                         LIMIT 
@@ -711,9 +734,9 @@ class DatabaseQueries:
                                    FROM
                                      "budget_graph"."monetary_transactions"
                                    WHERE
-                                     "group_id" = %s
+                                     "group_id" = %s::smallint
                                      AND
-                                     "transaction_id" = %s""", (group_id, transaction_id,))
+                                     "transaction_id" = %s::integer""", (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return int(res[0])
@@ -741,18 +764,18 @@ class DatabaseQueries:
                     cur.execute("""UPDATE 
                                      "budget_graph"."monetary_transactions"
                                    SET 
-                                     "total" = "total" - %s
+                                     "total" = "total" - %s::integer
                                    WHERE 
-                                     "group_id" = %s 
+                                     "group_id" = %s::smallint
                                      AND 
-                                     "transaction_id" > %s""", (difference_transfer, group_id, transaction_id,))
+                                     "transaction_id" > %s::integer""", (difference_transfer, group_id, transaction_id,))
                     # Delete transaction record
                     cur.execute("""DELETE FROM
                                      "budget_graph"."monetary_transactions"
                                    WHERE
-                                     "group_id" = %s
+                                     "group_id" = %s::smallint
                                      AND
-                                     "transaction_id" = %s""", (group_id, transaction_id,))
+                                     "transaction_id" = %s::integer""", (group_id, transaction_id,))
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -762,36 +785,100 @@ class DatabaseQueries:
         else:
             return True
 
-    def create_new_group(self, owner: int) -> str:  # TODO do something with token verification - make it a function
+    def create_new_group(self, owner: int, token: str) -> int:
         """
         creating a new group in the Groups table and generate a new token for this group.
-        :param owner: link to the telegram of the user who initiates the creation of the group.
-        :return: token | empty string
+        :param owner: link to the telegram of the user who initiates the creation of the group
+        :param token:
+        :return: group_id
         """
-        token = get_token()
-
-        # TODO - оно часто ломается - ПЕРЕСМОТРЕТЬ СРОЧНО
-        # token_is_unique: bool = self.check_token_is_unique(token)
-        #
-        # while not token_is_unique:  # checking the token for uniqueness
-        #     token = get_token()
-        #     token_is_unique = self.check_token_is_unique(token)
-
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""INSERT INTO 
-                                     "budget_graph"."groups"
-                                     ("owner", "token")
-                                   VALUES
-                                     (%s, %s)""", (owner, token,))
+                    cur.execute("""
+                                INSERT INTO 
+                                  "budget_graph"."groups"
+                                  ("owner", "token")
+                                VALUES
+                                  (%s, %s)
+                                RETURNING "id"
+                                """, (owner, token,))
+                    res = cur.fetchone()
+                    if res:
+                        return res[0]
+                    return 0
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"owner (telegram id) (hash): {logging_hash(owner)}")
+            return 0
+
+    def create_new_link_user_group(self, telegram_id: int, group_id: int) -> bool:
+        """
+        Creates a new user-group association in the "users_groups" table
+        """
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                                INSERT INTO
+                                  "budget_graph"."users_groups"
+                                  ("telegram_id", "group_id")
+                                VALUES
+                                  (%s, %s)
+                                """, (telegram_id, group_id,))
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"owner (telegram id): {logging_hash(owner)}")
-            return ""
+                                  f"telegram_id (hash): {logging_hash(telegram_id)},"
+                                  f"group_id: {group_id}")
+            return False
         else:
-            return token
+            return True
+
+    def registration_new_user(self,
+                              telegram_id: int,
+                              username: str,
+                              psw_salt: str,
+                              psw_hash: str,
+                              group_id: int | None = None) -> bool | str:
+        """
+        This function is needed to be able to rollback a transaction when an error occurs in any request:
+        in fact, there are 2-3 requests inside using the INSERT operator,
+        which it is important for us to keep within one transaction.
+
+        group_id = None - a sign if we are creating a new group and owner, and not an individual user
+
+        :return:
+        1. If owner registration is successful, it returns the group token (otherwise an empty string).
+        2. If the user is successfully registered into an existing group, returns True (otherwise False)
+        """
+        group_token: str | None = get_token() if not group_id else None
+        sql_filename: str = 'new_user_in_group' if group_id else 'new_user_with_group'
+        params = {
+            'telegram_id': telegram_id,
+            'username': username,
+            'psw_salt': psw_salt,
+            'psw_hash': psw_hash,
+            'group_id': group_id,
+            'token': group_token
+        }
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    sql_query = read_sql_file(sql_filename)
+                    cur.execute(sql_query, params)
+                    conn.commit()
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"{str(err)}, "
+                                  f"telegram_id (hash): {logging_hash(telegram_id)},"
+                                  f"username (hash): {logging_hash(username)},"
+                                  f"group_id: {group_id}"
+                                  f"psw_salt - OK: {bool(psw_salt)},"
+                                  f"psw_hash - OK: {bool(psw_hash)},"
+                                  f"token = {group_token}")
+            return False if group_token is None else ""
+        else:
+            return True if group_token is None else group_token
 
     def update_user_last_login_by_telegram_id(self, telegram_id: int) -> None:
         """
@@ -809,7 +896,7 @@ class DatabaseQueries:
                                        'DD/MM/YYYY HH24:MI:SS'
                                      )
                                    WHERE 
-                                     "telegram_id" = %s""", (telegram_id,))
+                                     "telegram_id" = %s::bigint""", (telegram_id,))
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -825,9 +912,9 @@ class DatabaseQueries:
                     cur.execute("""UPDATE 
                                      "budget_graph"."groups"
                                    SET 
-                                     "owner" = %s
+                                     "owner" = %s::bigint
                                    WHERE 
-                                     "id" = %s""", (telegram_id, group_id,))
+                                     "id" = %s::smallint""", (telegram_id, group_id,))
                     conn.commit()
                     return True
         except (DatabaseError, TypeError) as err:
@@ -840,10 +927,17 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""DELETE FROM 
+                    cur.execute("""
+                                   DELETE FROM
+                                     "budget_graph"."users_groups"
+                                   WHERE
+                                     "telegram_id" = %s::bigint;
+
+                                   DELETE FROM 
                                      "budget_graph"."users"
                                    WHERE
-                                     "telegram_id" = %s""", (telegram_id,))
+                                     "telegram_id" = %s::bigint
+                                """, (telegram_id, telegram_id,))
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -862,18 +956,35 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     cur.execute("""DELETE FROM 
                                      "budget_graph"."users"
-                                   WHERE 
-                                     "group_id" = %s;
+                                   WHERE
+                                     "telegram_id" IN 
+                                      (
+                                       SELECT
+                                         u."telegram_id"
+                                       FROM
+                                         "budget_graph"."users" u
+                                       INNER JOIN
+                                         "budget_graph"."users_groups" u_g
+                                       ON
+                                         u."telegram_id" = u_g."telegram_id"
+                                       WHERE
+                                         u_g."group_id" = %s::smallint
+                                      );
+                                    
+                                   DELETE FROM
+                                     "budget_graph"."users_groups"
+                                   WHERE
+                                     "group_id" = %s::smallint;
 
                                    DELETE FROM 
                                      "budget_graph"."groups"
                                    WHERE
-                                     "id" = %s;
+                                     "id" = %s::smallint;
                                      
                                    DELETE FROM
                                      "budget_graph"."monetary_transactions"
                                    WHERE
-                                     "group_id" = %s""", (group_id, group_id, group_id))
+                                     "group_id" = %s::smallint""", (group_id, group_id, group_id, group_id,))
 
                     conn.commit()
         except (DatabaseError, TypeError) as err:
