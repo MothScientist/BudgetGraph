@@ -333,7 +333,8 @@ def process_add_category_for_transfer(message, value: int, user_language: str) -
     record_date_is_valid: bool = asyncio.run(date_validation(record_date))  # DD/MM/YYYY
 
     if record_date_is_valid:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "select_category")}:", reply_markup=markup_1)  # noqa (E501)
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "select_category")}:",
+                         reply_markup=markup_1)
         bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, user_language)
     else:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_date")}")
@@ -348,10 +349,11 @@ def process_add_description_for_transfer(message, value: int, record_date: str, 
     category_is_valid: bool = category_validation(user_language, category)
 
     if category_is_valid:
-        bot.send_message(message.chat.id, get_phrase_by_language(user_language, "add_description"), reply_markup=markup_1)  # noqa (E501)
+        bot.send_message(message.chat.id, get_phrase_by_language(user_language, "add_description"),
+                         reply_markup=markup_1)
         bot.register_next_step_handler(message, process_transfer_final, value, record_date, category, user_language)
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_category")}")  # noqa (E501)
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_category")}")
         reply_buttons(message)
         logger_bot.info(f"User entered an incorrect category. Category: {category}")
 
@@ -401,10 +403,12 @@ def process_delete_record(message, user_language: str):
             bot_db.process_delete_transaction_record(group_id, transaction_id)
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "success")}!")
         else:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "enry_record_id_error")}", reply_markup=markup_1)  # noqa (E501)
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "enry_record_id_error")}",
+                             reply_markup=markup_1)
         close_db(connection)
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_value")}", reply_markup=markup_1)  # noqa (E501)
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_value")}",
+                         reply_markup=markup_1)
 
 
 def registration(message, user_language: str, res: bool) -> None:
@@ -637,7 +641,8 @@ def process_change_owner(message, group_id: int, user_language: str) -> None:
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
     telegram_id_new_owner: int = bot_db.get_telegram_id_by_username(new_owner_username)
-    user_from_current_group: bool = True if bot_db.get_group_id_by_telegram_id(telegram_id_new_owner) == group_id else False  # noqa
+    user_from_current_group: bool = True if bot_db.get_group_id_by_telegram_id(telegram_id_new_owner) == group_id \
+                                    else False
     user_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id_new_owner, group_id)
 
     if user_is_owner:
@@ -726,7 +731,8 @@ def delete_user(message, user_language: str):
                              f"{get_phrase_by_language(user_language, "select_to_delete")}")
         else:
             # List of users as a string without group owner
-            group_users_str_without_owner: str = '\n'.join(f"{user}" for user in group_users_list if user != group_owner)  # noqa
+            group_users_str_without_owner: str = '\n'.join(f"{user}" for user in group_users_list
+                                                           if user != group_owner)
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "select_new_owner")}\n"
                                               f"{group_users_str_without_owner}")
             bot.register_next_step_handler(message, process_delete_user, group_id, group_users_list, user_language)
@@ -740,7 +746,8 @@ def process_delete_user(message, group_id: int, group_users_list: tuple, user_la
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
     telegram_id_user_to_delete: int = bot_db.get_telegram_id_by_username(username_user_to_delete)
-    user_to_delete_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id_user_to_delete, group_id)  # noqa(E501) # pylint: disable=C0301
+    user_to_delete_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id_user_to_delete,
+                                                                                    group_id)
 
     if user_to_delete_is_owner:
         bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "current_owner_exception")}")

@@ -68,10 +68,8 @@ class UserLanguageCache:
             logger_cache.info(f"<Language> [No data] (trigger): telegram_id={logging_hash(telegram_id)}")
 
 
-"""
-When deleting a group or user, a bulk cache deletion is not triggered, 
-since there is no system at all for deleting data from the table that stores user languages.
-"""
+# When deleting a group or user, a bulk cache deletion is not triggered,
+# since there is no system at all for deleting data from the table that stores user languages.
 
 
 class UserRegistrationStatusCache:
