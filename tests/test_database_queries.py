@@ -105,20 +105,22 @@ class SmokeTestDbQueries(unittest.TestCase):
             transaction_amount: int = random_integer*(-1) if randint(1, 2) == 1 else random_integer
             if i % 2 == 0:
                 res.append(self.test_db.add_transaction_to_db(
-                    SmokeTestDbQueries._data.get_user_data(1, 'username'),
                     transaction_amount,
                     f'{randint(10, 28)}/{randint(4, 12)}/{randint(current_year - 6,
                                                                   current_year - 1)}',
                     'Other',
-                    ''))
+                    '',
+                    # use telegram_id to enter data into the table
+                    telegram_id=SmokeTestDbQueries._data.get_user_data(1, 'telegram_id')))
             else:
                 res.append(self.test_db.add_transaction_to_db(
-                    SmokeTestDbQueries._data.get_user_data(2, 'username'),
                     transaction_amount,
                     f'{randint(1, 20)}/{randint(1, 8)}/{randint(current_year - 9,
                                                                 current_year - 4)}',
                     '',
-                    'OK'))
+                    'OK',
+                    # use username to enter data into the table
+                    username=SmokeTestDbQueries._data.get_user_data(2, 'username')))
         self.assertEqual(len(res), number_of_transactions, f'Number of transactions: {res}')
         self.assertEqual(all(res), True, f'Number of transactions with errors: {res.count(False)}')
 
