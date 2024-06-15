@@ -313,22 +313,22 @@ class DatabaseQueries:
                         res = cur.fetchall()
                     else:
                         # use DESC to make it easier for the user to read
-                        cur.execute(f"""SELECT
-                                          "transaction_id",
-                                          "username",
-                                          "transfer",
-                                          "total",
-                                          "to_char"("record_date", 'DD/MM/YYYY') as record_date,
-                                          "category",
-                                          "description"
-                                        FROM
-                                          "budget_graph"."monetary_transactions"
-                                        WHERE
-                                          "group_id" = %s::smallint
-                                        ORDER BY
-                                          "transaction_id" DESC
-                                        LIMIT
-                                          %s::smallint""",
+                        cur.execute("""SELECT
+                                         "transaction_id",
+                                         "username",
+                                         "transfer",
+                                         "total",
+                                         "to_char"("record_date", 'DD/MM/YYYY') as record_date,
+                                         "category",
+                                         "description"
+                                       FROM
+                                         "budget_graph"."monetary_transactions"
+                                       WHERE
+                                         "group_id" = %s::smallint
+                                       ORDER BY
+                                         "transaction_id" DESC
+                                       LIMIT
+                                         %s::smallint""",
                                     (group_id, number_of_last_records,))
                         res = cur.fetchall()
                     res_list: tuple[tuple, ...] = tuple(tuple(row) for row in res)
@@ -465,14 +465,14 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute(f"""SELECT
-                                      1
-                                    FROM
-                                      "budget_graph"."monetary_transactions"
-                                    WHERE
-                                      "group_id" = %s::smallint
-                                      AND
-                                      "transaction_id" = %s::integer""", (group_id, transaction_id,))
+                    cur.execute("""SELECT
+                                     TRUE
+                                   FROM
+                                     "budget_graph"."monetary_transactions"
+                                   WHERE
+                                     "group_id" = %s::smallint
+                                   AND
+                                     "transaction_id" = %s::integer""", (group_id, transaction_id,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -490,12 +490,13 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
+                    # LOWER() -> username is case-insensitive
                     cur.execute("""SELECT
                                      1
                                    FROM
                                      "budget_graph"."users"
                                    WHERE
-                                     LOWER("username") = LOWER(%s::text)""", (username,))  # username is case-insensitive
+                                     LOWER("username") = LOWER(%s::text)""", (username,))
                     res = cur.fetchone()
                     if res:
                         return True
@@ -652,44 +653,44 @@ class DatabaseQueries:
 
     @timeit
     def add_transaction_to_db(self,
-                              # TODO -> можно передавать group_id -> экономим 1 запрос
-                              username: str,
-                              # TODO - username -> telegram_id
                               transaction_amount: int,
                               record_date: str,
                               category: str,
-                              description: str) -> bool:
+                              description: str,
+                              telegram_id: int | None = None,
+                              username: str | None = None) -> bool:
         """
         The function records user transactions in the database.
 
-        :param username: username of the user is making the transaction.
+        :param username:
+        :param telegram_id:
         :param transaction_amount: value of the deposited amount (can be both negative and positive)
         :param category:
         :param description:
         :param record_date:
         """
-        telegram_id: int = self.get_telegram_id_by_username(username)
-        group_id: int = self.get_group_id_by_telegram_id(telegram_id)
-        # get the previous balance of the group and take into account the new transaction
-        total_sum: int = self.get_last_sum_in_group(group_id) + transaction_amount
+        if not telegram_id and not username:
+            logger_database.error("telegram_id and username are None")
+            return False
+        params = {
+            'transaction_amount': transaction_amount,
+            'record_date': record_date,
+            'category': category,
+            'description': description,
+            'telegram_id': telegram_id,
+            'username': username
+        }
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute(f"""INSERT INTO
-                                      "budget_graph"."monetary_transactions"
-                                      ("group_id", "username", "total",
-                                       "transfer", "record_date", "category", "description")
-                                    VALUES
-                                      (%s, %s, %s, %s, %s, %s, %s)""",
-                                (group_id, username,
-                                 total_sum, transaction_amount,
-                                 record_date, category, description)
-                                )
+                    sql_query = read_sql_file('add_transaction_to_db')
+                    cur.execute(sql_query, params)
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"group id: {group_id}, "
-                                  f"username (hash): {logging_hash(username)}, "
-                                  f"total_sum: {total_sum}, "
+                                  f"username (hash): {logging_hash(username) 
+                                                      if username is not None else None}, "
+                                  f"telegram_id (hash): {logging_hash(telegram_id) 
+                                                         if telegram_id is not None else None}, "
                                   f"transaction_amount: {transaction_amount},"
                                   f"record_date: {record_date},"
                                   f"category: {category},"
@@ -852,7 +853,6 @@ class DatabaseQueries:
         2. If the user is successfully registered into an existing group, returns True (otherwise False)
         """
         group_token: str | None = get_token() if not group_id else None
-        sql_filename: str = 'new_user_in_group' if group_id else 'new_user_with_group'
         params = {
             'telegram_id': telegram_id,
             'username': username,
@@ -864,7 +864,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    sql_query = read_sql_file(sql_filename)
+                    sql_query = read_sql_file('new_user_in_group' if group_id else 'new_user_with_group')
                     cur.execute(sql_query, params)
                     conn.commit()
         except (DatabaseError, TypeError) as err:
