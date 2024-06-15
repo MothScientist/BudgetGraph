@@ -41,14 +41,18 @@ jobs:
         env:
           HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
         run: |
-          cd budget_graph
+          cd budget_graph || exit 1
           echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
           cd ..
 
       - name: Run UnitTests
         run: |
           cd tests || exit 1
-          python -m pytest test_sources.py test_validators.py
+          python -m pytest test_sources.py \ 
+                           test_validators.py \
+                           test_csv_tables.py \
+                           test_localization.py \
+                           test_user_cache.py
 
   # database-queries-unit-tests:
   #   runs-on: ${{ matrix.os }}
