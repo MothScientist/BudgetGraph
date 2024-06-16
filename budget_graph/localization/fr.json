@@ -118,5 +118,7 @@
     "invalid_category": "Mauvaise catégorie sélectionnée.",
     "entry_add_error": "Erreur lors de l'ajout d'une nouvelle transaction.",
     "start_after_change_language": "Pour changer correctement la langue, veuillez redémarrer le bot en cliquant sur le bouton /start.",
-    "data_is_safe": "Vos données ne seront pas endommagées!"
+    "data_is_safe": "Vos données ne seront pas endommagées!",
+    "invalid_data_table_for_csv": "Erreur de données lors du remplissage du tableau - contacter le support technique",
+    "group_not_exist": "Vérifiez le jeton: aucun groupe ne possède ce jeton."
 }
