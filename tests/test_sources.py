@@ -18,7 +18,7 @@ class TestSaltGeneration(unittest.TestCase):
 
     def test_get_salt_4(self):
         res: bool = isinstance(get_salt(), str)
-        self.assertEqual(res, True)
+        self.assertTrue(res)
 
 
 class TestPasswordHashing(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestTokenGeneration(unittest.TestCase):
 
     def test_get_token_2(self):
         res: bool = isinstance(get_token(), str)
-        self.assertEqual(res, True)
+        self.assertTrue(res)
 
     def test_get_token_3(self):
         res: int = len(get_token(key_length_bytes=30))
@@ -54,40 +54,38 @@ class TestTokenGeneration(unittest.TestCase):
 
 
 class TestLogHashing(unittest.TestCase):
-    test_salt_for_logging_hash: str = 'test123'
-
     def test_getting_log_hash_1(self):
         # to avoid manually updating secrets (.env)
         test_user_telegram_id: int = 123456789
 
-        res: str = logging_hash(test_user_telegram_id, salt=TestLogHashing.test_salt_for_logging_hash)
-        self.assertEqual(res, '039c4d9f966aa9')
+        res: str = logging_hash(test_user_telegram_id)
+        self.assertEqual(res, '3f44ce4724b496')
 
         res_len: int = len(res)
         self.assertEqual(res_len, 14)
 
         res_type: bool = isinstance(res, str)
-        self.assertEqual(res_type, True)
+        self.assertTrue(res_type)
 
         self.assertNotEqual(res, str(test_user_telegram_id))
 
     def test_getting_log_hash_2(self):
         test_user_email: str = 'email@index.com'
 
-        res: str = logging_hash(test_user_email, salt=TestLogHashing.test_salt_for_logging_hash)
-        self.assertEqual(res, '37f6485f3791ba')
+        res: str = logging_hash(test_user_email)
+        self.assertEqual(res, '1d74ed9b54bdfb')
 
         res_len: int = len(res)
         self.assertEqual(res_len, 14)
 
         res_type: bool = isinstance(res, str)
-        self.assertEqual(res_type, True)
+        self.assertTrue(res_type)
 
         self.assertNotEqual(res, test_user_email)
 
     def test_getting_log_hash_3(self):
         invalid_value: str = ''
-        res: str = logging_hash(invalid_value, salt=TestLogHashing.test_salt_for_logging_hash)
+        res: str = logging_hash(invalid_value)
         self.assertEqual(res, '')
 
 

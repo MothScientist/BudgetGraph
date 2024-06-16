@@ -19,15 +19,15 @@ class TestLanguages(unittest.TestCase):
                  "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table",
                  "category", "set_date", "YES", "get_csv", "language_changed", "misunderstanding", "my")
         res: bool = all(receive_translation(lang, _key) for _key in _keys for lang in TestLanguages.languages)
-        self.assertEqual(res, True, f'Missing keys: {[(_key, lang) for _key in _keys for lang in TestLanguages.languages 
-                                                      if receive_translation(lang, _key) is None]}')
+        self.assertTrue(res, f'Missing keys: {[(_key, lang) for _key in _keys for lang in TestLanguages.languages 
+                                              if receive_translation(lang, _key) is None]}')
 
     def test_languages_2(self):  # Checking for equality of number of keys in each language
         dict_len: int = len(TestLanguages.all_keys_for_each_language[0])
         number_of_languages: int = len(TestLanguages.languages)
         res: bool = all(dict_len == len(TestLanguages.all_keys_for_each_language[i])
                         for i in range(1, number_of_languages))
-        self.assertEqual(res, True)
+        self.assertTrue(res)
 
     def test_languages_3(self):  # Checking the loading time of dictionaries
         test_list: list = []  # here we will add information about the dictionary for load simulation
@@ -38,25 +38,25 @@ class TestLanguages(unittest.TestCase):
             test_list += keys_data
         finish = time()
         res: bool = True if finish - start < 0.0035 else False
-        self.assertEqual(res, True, f'Actual time: {finish - start}')
+        self.assertTrue(res, f'Actual time: {finish - start}')
 
     def test_languages_4(self):  # Checking for empty keys
         # algorithm collects all the keys within the language keys ("en", "es", etc.) into a single tuple
         _keys = sum((tuple(i) for i in TestLanguages.all_keys_for_each_language), ())
         # exclude all spaces from the values of this tuple and check that they are not equal to the empty string
         res = all(_key.replace(" ", "") != "" for _key in _keys)
-        self.assertEqual(res, True)
+        self.assertTrue(res)
 
     def test_languages_5(self):  # Checking for empty values
         _values = tuple(receive_translation(lang, key) for key in TestLanguages.all_keys_for_each_language[0]
                         for lang in TestLanguages.languages)
         res = all(_value.replace(" ", "") != "" for _value in _values)
-        self.assertEqual(res, True)
+        self.assertTrue(res)
 
     def test_languages_6(self):
         unknown_key: str = '123123'
         res: str = receive_translation("es", unknown_key)
-        self.assertEqual(res, None)
+        self.assertIsNone(res)
 
     def test_languages_7(self):
         res: str = receive_translation("es", "invalid_value")
@@ -77,7 +77,7 @@ class TestLanguages(unittest.TestCase):
     def test_languages_11(self):
         unknown_key: str = 'unknown_key_unknown_key'
         res: str = receive_translation("en", unknown_key)
-        self.assertEqual(res, None)
+        self.assertIsNone(res)
 
     def test_languages_12(self):
         res: str = receive_translation("de", "change_owner")
@@ -99,7 +99,7 @@ class TestLanguages(unittest.TestCase):
     def test_languages_16(self):
         unknown_lang: str = 'gb'
         res: str = receive_translation(unknown_lang, "data_is_safe")
-        self.assertEqual(res, None)
+        self.assertIsNone(res)
 
     def test_get_list_languages_1(self):
         res: tuple = get_list_languages()

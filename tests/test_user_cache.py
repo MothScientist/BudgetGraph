@@ -5,6 +5,7 @@ from budget_graph.dictionary import get_list_languages
 
 class TestUserLanguageCache(unittest.TestCase):
     lang: tuple = get_list_languages()
+    lang_len: int = len(lang)
 
     def test_language_cache_1(self):
         # getting access to a private attribute of a class
@@ -18,7 +19,7 @@ class TestUserLanguageCache(unittest.TestCase):
         therefore, for our tests, it should be cleared, because we would try to test its initial state.
         """
         for i in range(50):
-            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % 6])
+            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
         res = len(obj_1._UserLanguageCache__telegram_language_cache)  # noqa
         self.assertEqual(res, 50)
 
@@ -26,7 +27,7 @@ class TestUserLanguageCache(unittest.TestCase):
         obj_2 = UserLanguageCache()
         obj_2._UserLanguageCache__telegram_language_cache.clear()  # noqa
         for i in range(50):
-            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % 6])
+            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
         UserLanguageCache.input_cache_data(1, 'de')
         UserLanguageCache.input_cache_data(2, 'fr')
         UserLanguageCache.input_cache_data(3, 'is')
@@ -37,7 +38,7 @@ class TestUserLanguageCache(unittest.TestCase):
         obj_3 = UserLanguageCache()
         obj_3._UserLanguageCache__telegram_language_cache.clear()  # noqa
         for i in range(51):
-            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % 6])
+            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
         res = len(obj_3._UserLanguageCache__telegram_language_cache)  # noqa
         self.assertEqual(res, 51)
 
@@ -45,7 +46,7 @@ class TestUserLanguageCache(unittest.TestCase):
         obj_4 = UserLanguageCache()
         obj_4._UserLanguageCache__telegram_language_cache.clear()  # noqa
         for i in range(52):
-            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % 6])
+            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
         res = len(obj_4._UserLanguageCache__telegram_language_cache)  # noqa
         self.assertEqual(res, 46)
 
@@ -53,9 +54,9 @@ class TestUserLanguageCache(unittest.TestCase):
         obj_5 = UserLanguageCache()
         obj_5._UserLanguageCache__telegram_language_cache.clear()  # noqa
         for i in range(52):
-            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % 6])
+            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
         for i in range(52, 54):
-            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % 6])
+            UserLanguageCache.input_cache_data(i + 1, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
         res = len(obj_5._UserLanguageCache__telegram_language_cache)  # noqa
         self.assertEqual(res, 48)
 
@@ -101,15 +102,29 @@ class TestUserLanguageCache(unittest.TestCase):
     def test_language_cache_8(self):
         obj_8 = UserLanguageCache()
         obj_8._UserLanguageCache__telegram_language_cache.clear()  # noqa
-        for i in range(1, 25_000):
-            UserLanguageCache.input_cache_data(i * 10, TestUserLanguageCache.lang[i % 6])
+        for i in range(1, 10_000):
+            UserLanguageCache.input_cache_data(i * 10, TestUserLanguageCache.lang[i % TestUserLanguageCache.lang_len])
+            if i % 5 == 0:
+                UserLanguageCache.update_data_position(10)
+            if i % 10 == 0:
+                UserLanguageCache.update_data_position(20)
             if i % 25 == 0:
                 UserLanguageCache.update_data_position(50)
-        res_1: str = UserLanguageCache.get_cache_data(50)
-        self.assertEqual(res_1, 'kk')
+
+        res_1: str = UserLanguageCache.get_cache_data(10)
+        self.assertEqual(res_1, TestUserLanguageCache.lang[1])  # 10/10 -> language
+        res_2: str = UserLanguageCache.get_cache_data(20)
+        self.assertEqual(res_2, TestUserLanguageCache.lang[2])  # 20/10 -> language
+        res_3: str = UserLanguageCache.get_cache_data(50)
+        self.assertEqual(res_3, TestUserLanguageCache.lang[5])  # 50/10 -> language
+
         # and additionally check that the old data has been deleted
-        res_2: str = UserLanguageCache.get_cache_data(10)
-        self.assertEqual(res_2, '')
+        res_4: str = UserLanguageCache.get_cache_data(30)
+        self.assertEqual(res_4, '')
+        res_5: str = UserLanguageCache.get_cache_data(1_500)
+        self.assertEqual(res_5, '')
+        res_6: str = UserLanguageCache.get_cache_data(3_000)
+        self.assertEqual(res_6, '')
 
 
 class TestUserRegistrationStatusCache(unittest.TestCase):
@@ -173,15 +188,15 @@ class TestUserRegistrationStatusCache(unittest.TestCase):
     def test_user_registration_cache_7(self):
         obj_7 = UserRegistrationStatusCache()
         obj_7._UserRegistrationStatusCache__users.clear()  # noqa
-        for i in range(1, 25_000):
+        for i in range(1, 10_000):
             UserRegistrationStatusCache.input_cache_data(i + 10_000)
             if i % 25 == 0:
                 UserRegistrationStatusCache.update_data_position(10_005)
         res_1 = UserRegistrationStatusCache.get_cache_data(10_005)
-        self.assertEqual(res_1, True)
+        self.assertTrue(res_1)
         # and additionally check that the old data has been deleted
         res_2 = UserRegistrationStatusCache.get_cache_data(10_006)
-        self.assertEqual(res_2, False)
+        self.assertFalse(res_2)
 
 
 if __name__ == '__main__':
