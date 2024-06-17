@@ -47,5 +47,5 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."premium_users" (
     "paid_until"     date    NOT NULL,
     "premium_status" boolean NOT NULL DEFAULT False, -- автоматическое заполнение в зависимости от "paid_until"
     PRIMARY KEY      ("telegram_id"),
-    FOREIGN KEY      ("telegram_id")  REFERENCES "budget_graph"."users"("telegram_id")
+    -- FOREIGN KEY      ("telegram_id")  REFERENCES "budget_graph"."users"("telegram_id")
 );
