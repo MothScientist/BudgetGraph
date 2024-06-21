@@ -698,34 +698,6 @@ class DatabaseQueries:
             return False
         return True
 
-    def get_last_sum_in_group(self, group_id: int) -> int:
-        """
-        Gets the last 'total' amount in table by group ID.
-        Returns 0 if there are no records.
-        """
-        try:
-            with self.__conn as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     COALESCE(
-                                       (SELECT
-                                          "total"
-                                        FROM
-                                          "budget_graph"."monetary_transactions"
-                                        WHERE
-                                          "group_id" = %s::smallint
-                                        ORDER BY
-                                          "transaction_id" DESC
-                                        LIMIT
-                                          1),
-                                       0)""", (group_id,))
-                    res = cur.fetchone()
-                    return int(res[0])
-        except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
-                                  f"group id: {group_id}")
-            return 0
-
     def get_group_transfer_by_transaction_id(self, group_id: int, transaction_id: int) -> int:
         try:
             with self.__conn as conn:
