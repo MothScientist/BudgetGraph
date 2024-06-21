@@ -750,35 +750,18 @@ class DatabaseQueries:
 
     def process_delete_transaction_record(self, group_id: int, transaction_id: int) -> bool:
         """
-        Calls 3 functions in sequence, which:
-        1. Receive the amount of this transaction - Gets the value of the 'transfer' field
-        based on the group's transaction ID.
-        2. Adjust subsequent transactions - Recalculation of 'total' fields that come after the deleted field.
-        3. Delete the required entry - Removes a record from a group transaction.
+        Removes a record from the "monetary_transactions" table and then adjusts all later values in the "total" column
+        so that the deleted record does not introduce artifacts for subsequent calculations
         """
-        # Getting the value 'transfer' in the field being deleted
-        difference_transfer: int = self.get_group_transfer_by_transaction_id(group_id, transaction_id)
+        params = {
+            'group_id': group_id,
+            'transaction_id': transaction_id
+        }
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    # Correction of the 'total' field in all records following the one being deleted
-                    cur.execute("""UPDATE
-                                     "budget_graph"."monetary_transactions"
-                                   SET
-                                     "total" = "total" - %s::integer
-                                   WHERE
-                                     "group_id" = %s::smallint
-                                     AND
-                                     "transaction_id" > %s::integer""", (difference_transfer, group_id,
-                                                                         transaction_id,))
-                    # Delete transaction record
-                    cur.execute("""DELETE FROM
-                                     "budget_graph"."monetary_transactions"
-                                   WHERE
-                                     "group_id" = %s::smallint
-                                     AND
-                                     "transaction_id" = %s::integer""", (group_id, transaction_id,))
-                    conn.commit()
+                    sql_query = read_sql_file('delete_transaction_record')
+                    cur.execute(sql_query, params)
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}, "
