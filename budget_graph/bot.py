@@ -536,8 +536,7 @@ def get_csv(message, user_language: str) -> None:
     bot_db = DatabaseQueries(connection)
     group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
     # to be able to call a function from any file
-    file_path: str = path.join(path.dirname(__file__), f"csv_tables/table_{group_id}.csv")
-    table_headers: tuple = ("ID", "USERNAME", "TRANSFER", "TOTAL", "DATE", "CATEGORY", "DESCRIPTION")
+    file_path: str = path.join(path.dirname(__file__), f'csv_tables/table_{group_id}.csv')
     # 10_000 row limit
     table_data: tuple[tuple, ...] = bot_db.select_data_for_household_table(group_id, 0)
     close_db(connection)
@@ -552,18 +551,18 @@ def get_csv(message, user_language: str) -> None:
                                       f"{get_phrase_by_language(user_language, "hashsum")} "
                                       f"(sha-256): {file_checksum}")
         except FileNotFoundError as err:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "csv_not_found_error")}.")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'csv_not_found_error')}.")
             logger_bot.error(f"CSV FileNotFoundError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         # when trying to run an operation without access rights
         except PermissionError as err:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "csv_not_found_error")}.")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'csv_not_found_error')}.")
             logger_bot.error(f"CSV PermissionError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         except ValueError as err:
-            bot.send_message(message.chat.id, f"Ошибка в данных при заполнении таблицы - обратитесь в тп")  # TODO lang
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'invalid_data_table_for_csv')}")
             logger_bot.error(f"CSV ValueError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
@@ -574,7 +573,7 @@ def get_csv(message, user_language: str) -> None:
                             f"File size: {"{:.3f}".format(file_size)} kB, "
                             f"hashsum: {file_checksum}")
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "table_is_empty")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'table_is_empty')}")
 
 
 @timeit
@@ -597,7 +596,7 @@ def get_group_users(message, user_language: str):
     group_users_list: tuple = bot_db.get_group_usernames(group_id)
     close_db(connection)
     group_users_str: str = '\n'.join(
-        f"{user} ({get_phrase_by_language(user_language, "owner")})"
+        f"{user} ({get_phrase_by_language(user_language, 'owner')})"
         if user == group_owner_username
         else f"{user}"
         for user in group_users_list
@@ -616,7 +615,7 @@ def change_owner(message, user_language: str):
         group_users_list: tuple = bot_db.get_group_usernames(group_id)
         # if there are no users in the group except the owner
         if len(group_users_list) == 1:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "small_group_exception")}")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'small_group_exception')}")
         else:
             # List of users as a string without group owner
             group_users_str_without_owner: str = '\n'.join(
@@ -626,11 +625,11 @@ def change_owner(message, user_language: str):
                 if user != group_owner_username
             )
             bot.send_message(message.chat.id,
-                             f"{get_phrase_by_language(user_language, "username_new_owner")}:\n"
+                             f"{get_phrase_by_language(user_language, 'username_new_owner')}:\n"
                              f"{group_users_str_without_owner}")
             bot.register_next_step_handler(message, process_change_owner, group_id, user_language)
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "not_owner_exception")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'not_owner_exception')}")
     close_db(connection)
 
 
@@ -645,20 +644,20 @@ def process_change_owner(message, group_id: int, user_language: str) -> None:
     user_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id_new_owner, group_id)
 
     if user_is_owner:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "current_owner_exception")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'current_owner_exception')}")
     elif user_from_current_group:
         if bot_db.update_group_owner(telegram_id_new_owner, group_id):
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "owner_has_been_changed")}")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'owner_has_been_changed')}")
             logger_bot.info(f"Group owner changed: group #{group_id},"
                             f" new owner username: {logging_hash(new_owner_username)}")
         else:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "error_change_owner")}")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'error_change_owner')}")
             logger_bot.error(f"Owner change error. group #{group_id}, current owner: {logging_hash(telegram_id)},"
                              f" desired owner: {logging_hash(telegram_id_new_owner)} "
                              f"- this user is a member of the group.")
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "check_correct_username")}\n"
-                                          f"{get_phrase_by_language(user_language, "unknown_user_in_group")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'check_correct_username')}\n"
+                                          f"{get_phrase_by_language(user_language, 'unknown_user_in_group')}")
         logger_bot.error(f"Owner change error. group #{group_id}, current owner: {logging_hash(telegram_id)},"
                          f" desired owner: {logging_hash(new_owner_username)} "
                          f"- this user is not a member of the group.")
@@ -669,8 +668,8 @@ def process_change_owner(message, group_id: int, user_language: str) -> None:
 def delete_account(message, user_language: str):
     telegram_id: int = message.from_user.id
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"👍 {get_phrase_by_language(user_language, "YES")}")
-    btn2 = KeyboardButton(f"👎 {get_phrase_by_language(user_language, "NO")}")
+    btn1 = KeyboardButton(f"👍 {get_phrase_by_language(user_language, 'YES')}")
+    btn2 = KeyboardButton(f"👎 {get_phrase_by_language(user_language, 'NO')}")
     markup_1.add(btn1, btn2)
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
@@ -678,9 +677,9 @@ def delete_account(message, user_language: str):
     user_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id, group_id)
     close_db(connection)
     if user_is_owner:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "owner_try_delete_account")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'owner_try_delete_account')}")
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "confirmation_delete")}",
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'confirmation_delete')}",
                          reply_markup=markup_1)
         bot.register_next_step_handler(message, process_delete_account, user_language)
 
@@ -698,18 +697,18 @@ def process_delete_account(message, user_language: str):
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id)
         bot_db.delete_username_from_group_by_telegram_id(telegram_id)
         close_db(connection)
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "account_is_deleted")}",
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'parting')}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'account_is_deleted')}",
                          reply_markup=markup_1)
         logger_bot.info(f"User deleted the account. TelegramID: {logging_hash(telegram_id)}")
         start(message)
 
-    elif user_choice == f"👎 {get_phrase_by_language(user_language, "NO")}":
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "stay_with_us")}")
+    elif user_choice == f"👎 {get_phrase_by_language(user_language, 'NO')}":
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'stay_with_us')}")
         group_settings_get_buttons(message)
 
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "unknown_message")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'unknown_message')}")
         logger_bot.info(f"Unrecognized message when deleting an account. "
                         f"TelegramID: {logging_hash(telegram_id)}, message: {user_choice}")
         group_settings_get_buttons(message)
@@ -726,17 +725,17 @@ def delete_user(message, user_language: str):
         group_users_list: tuple = bot_db.get_group_usernames(group_id)
         if len(group_users_list) == 1:  # If there are no users in the group except the owner
             bot.send_message(message.chat.id,
-                             f"{get_phrase_by_language(user_language, "exception_one_user_in_group")}\n"
-                             f"{get_phrase_by_language(user_language, "select_to_delete")}")
+                             f"{get_phrase_by_language(user_language, 'exception_one_user_in_group')}\n"
+                             f"{get_phrase_by_language(user_language, 'select_to_delete')}")
         else:
             # List of users as a string without group owner
             group_users_str_without_owner: str = '\n'.join(f"{user}" for user in group_users_list
                                                            if user != group_owner)
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "select_new_owner")}\n"
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'select_new_owner')}\n"
                                               f"{group_users_str_without_owner}")
             bot.register_next_step_handler(message, process_delete_user, group_id, group_users_list, user_language)
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "owner_privileges")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'owner_privileges')}")
     close_db(connection)
 
 
@@ -749,21 +748,21 @@ def process_delete_user(message, group_id: int, group_users_list: tuple, user_la
                                                                                     group_id)
 
     if user_to_delete_is_owner:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "current_owner_exception")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'current_owner_exception')}")
 
     elif username_user_to_delete not in group_users_list:
         bot.send_message(message.chat.id,
-                         f"{get_phrase_by_language(user_language, "check_correct_username")}\n"
-                         f"{get_phrase_by_language(user_language, "unknown_user_in_group")}")
+                         f"{get_phrase_by_language(user_language, 'check_correct_username')}\n"
+                         f"{get_phrase_by_language(user_language, 'unknown_user_in_group')}")
     else:
         # removing a user from the cache
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id_user_to_delete)
         if bot_db.delete_username_from_group_by_telegram_id(telegram_id_user_to_delete):
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "user_removed")}")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'user_removed')}")
             logger_bot.info(f"'User {logging_hash(username_user_to_delete)}' "
                             f"deleted by group owner from group #{group_id}")
         else:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "error_user_delete")}")
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'error_user_delete')}")
             logger_bot.warning(f"Error removing user "
                                f"'{logging_hash(username_user_to_delete)}' "
                                f"from group #{group_id}")
@@ -776,8 +775,8 @@ def process_delete_user(message, group_id: int, group_users_list: tuple, user_la
 def delete_group(message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"🌧️ {get_phrase_by_language(user_language, "YES")}")
-    btn2 = KeyboardButton(f"🌤️ {get_phrase_by_language(user_language, "NO")}")
+    btn1 = KeyboardButton(f"🌧️ {get_phrase_by_language(user_language, 'YES')}")
+    btn2 = KeyboardButton(f"🌤️ {get_phrase_by_language(user_language, 'NO')}")
     markup_1.add(btn1, btn2)
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
@@ -786,12 +785,12 @@ def delete_group(message, user_language: str) -> None:
 
     if user_is_owner:
         bot.send_message(message.chat.id,
-                         f"{get_phrase_by_language(user_language, "are_you_sure")}\n"
-                         f"{get_phrase_by_language(user_language, "delete_table")}",
+                         f"{get_phrase_by_language(user_language, 'are_you_sure')}\n"
+                         f"{get_phrase_by_language(user_language, 'delete_table')}",
                          reply_markup=markup_1)
         bot.register_next_step_handler(message, process_delete_group, group_id, user_language)
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "not_deleted_by_owner")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'not_deleted_by_owner')}")
 
     close_db(connection)
 
@@ -800,7 +799,7 @@ def process_delete_group(message, group_id: int, user_language: str) -> None:
     telegram_id: int = message.from_user.id
     user_choice: str = message.text
     # the user confirmed the deletion of the group
-    if user_choice == f"🌧️ {get_phrase_by_language(user_language, "YES")}":
+    if user_choice == f"🌧️ {get_phrase_by_language(user_language, 'YES')}":
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
         # get a list of telegram_id for each user of the group:
@@ -809,19 +808,19 @@ def process_delete_group(message, group_id: int, user_language: str) -> None:
         UserRegistrationStatusCache.delete_group_trigger(telegram_ids_of_group_users)
         bot_db.delete_group_with_users(group_id)
         close_db(connection)
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "parting")}")
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "remove_completed")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'parting')}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'remove_completed')}")
         logger_bot.info(f"User deleted the group. "
                         f"TelegramID: {logging_hash(telegram_id)}, "
                         f"group #{group_id}")
         start(message)
     # the user changed his mind about deleting the group
-    elif user_choice == f"🌤️ {get_phrase_by_language(user_language, "NO")}":
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "stay_with_us")}")
+    elif user_choice == f"🌤️ {get_phrase_by_language(user_language, 'NO')}":
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'stay_with_us')}")
         group_settings_get_buttons(message)
     # the user entered an unexpected message
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "unknown_message")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'unknown_message')}")
         logger_bot.info(f"Unrecognized message when deleting group. "
                         f"TelegramID: {logging_hash(telegram_id)}, "
                         f"message: {user_choice}, "
@@ -840,7 +839,7 @@ def get_str_with_group_users(telegram_id: int, with_owner: bool) -> str:
 
     if with_owner:
         res: str = '\n'.join(
-            f"{user} ({get_phrase_by_language(user_language, "owner")})"
+            f"{user} ({get_phrase_by_language(user_language, 'owner')})"
             if user == group_owner_username
             else
             f"{user}"
@@ -907,51 +906,51 @@ def text(message) -> None:
 
     if message.text == "🤡 I want to register":
         registration(message, user_language, res)
-    elif message.text == f"⭐ {get_phrase_by_language(user_language, "premium")}":
+    elif message.text == f"⭐ {get_phrase_by_language(user_language, 'premium')}":
         premium(message, user_language)
-    elif message.text == f"🔐 {get_phrase_by_language(user_language, "get_my_token")}":
+    elif message.text == f"🔐 {get_phrase_by_language(user_language, 'get_my_token')}":
         get_my_token(message, user_language)
-    elif message.text == f"💵 {get_phrase_by_language(user_language, "table_manage")}":
+    elif message.text == f"💵 {get_phrase_by_language(user_language, 'table_manage')}":
         if res:
             table_manage_get_buttons(message)
         else:
             reply_menu_buttons_not_register(message)
-    elif message.text == f"💻 {get_phrase_by_language(user_language, "group_settings")}":
+    elif message.text == f"💻 {get_phrase_by_language(user_language, 'group_settings')}":
         if res:
             group_settings_get_buttons(message)
         else:
             reply_menu_buttons_not_register(message)
-    elif message.text in (f"↩️ {get_phrase_by_language(user_language, "back")}",
-                          f"↩️ {get_phrase_by_language(user_language, "back_to_menu")}"):
+    elif message.text in (f"↩️ {get_phrase_by_language(user_language, 'back')}",
+                          f"↩️ {get_phrase_by_language(user_language, 'back_to_menu')}"):
         reply_buttons(message)
     # if an unauthorized user tries to perform an action that is only available after authorization
     elif not res:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "not_register")}")
-        bot.send_sticker(message.chat.id, f"{Stickers.get_sticker_by_id("id_5")}")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'not_register')}")
+        bot.send_sticker(message.chat.id, f"{Stickers.get_sticker_by_id('id_5')}")
         logger_bot.info(f"Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}")
     elif res:
-        if message.text == f"📖 {get_phrase_by_language(user_language, "view_table")}":
+        if message.text == f"📖 {get_phrase_by_language(user_language, 'view_table')}":
             view_table(message, res, user_language)
-        elif message.text == f"📈 {get_phrase_by_language(user_language, "add_income")}":
+        elif message.text == f"📈 {get_phrase_by_language(user_language, 'add_income')}":
             add_income(message, user_language)
-        elif message.text == f"📉 {get_phrase_by_language(user_language, "add_expense")}":
+        elif message.text == f"📉 {get_phrase_by_language(user_language, 'add_expense')}":
             add_expense(message, user_language)
-        elif message.text == f"❌ {get_phrase_by_language(user_language, "del_record")}":
+        elif message.text == f"❌ {get_phrase_by_language(user_language, 'del_record')}":
             delete_record(message, user_language)
-        elif message.text == f"🗃️ {get_phrase_by_language(user_language, "get_csv")}":
+        elif message.text == f"🗃️ {get_phrase_by_language(user_language, 'get_csv')}":
             get_csv(message, user_language)
-        elif message.text == f"🌍 {get_phrase_by_language(user_language, "group_users")}":
+        elif message.text == f"🌍 {get_phrase_by_language(user_language, 'group_users')}":
             get_group_users(message, user_language)
-        elif message.text == f"🗑️ {get_phrase_by_language(user_language, "delete_account")}":
+        elif message.text == f"🗑️ {get_phrase_by_language(user_language, 'delete_account')}":
             delete_account(message, user_language)
-        elif message.text == f"🚫 {get_phrase_by_language(user_language, "delete_group")}":
+        elif message.text == f"🚫 {get_phrase_by_language(user_language, 'delete_group')}":
             delete_group(message, user_language)
-        elif message.text == f"🔑 {get_phrase_by_language(user_language, "change_owner")}":
+        elif message.text == f"🔑 {get_phrase_by_language(user_language, 'change_owner')}":
             change_owner(message, user_language)
-        elif message.text == f"🤖 {get_phrase_by_language(user_language, "delete_user")}":
+        elif message.text == f"🤖 {get_phrase_by_language(user_language, 'delete_user')}":
             delete_user(message, user_language)
     else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "misunderstanding")} :(")
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'misunderstanding')} :(")
 
 
 bot.polling(none_stop=True)
