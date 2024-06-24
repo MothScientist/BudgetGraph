@@ -3,7 +3,9 @@ This package is used to switch localization in the chatbot.
 Also stores emoji and sticker codes for use inside the bot.
 """
 from json import loads
+from functools import cache
 from os import path, listdir
+
 from budget_graph.logger import setup_logger
 
 logger_dict = setup_logger("logs/DictLog.log", "dict_loger")
@@ -49,6 +51,7 @@ class Stickers:
         return Stickers.__stickers.get(sticker_id)
 
 
+@cache
 def receive_translation(language: str, phrase: str) -> str:
     """
     The function takes as input a phrase that the chatbot responds to the user in the selected language
@@ -63,6 +66,7 @@ def receive_translation(language: str, phrase: str) -> str:
     return dict_language_obj.get(phrase)
 
 
+@cache
 def get_translate_from_json(language: str) -> dict:
     """
     This function works with reading JSON files
@@ -76,6 +80,7 @@ def get_translate_from_json(language: str) -> dict:
         return {}
 
 
+@cache
 def get_list_languages() -> tuple:
     """
     Returns a list of available languages
