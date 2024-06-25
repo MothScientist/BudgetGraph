@@ -1,12 +1,15 @@
 from sys import path as sys_path
 import asyncio
 import re
+from functools import cache
 from datetime import datetime, timezone
 from flask import flash
+
 sys_path.append('../')
-from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
-from budget_graph.dictionary import receive_translation
-from budget_graph.time_checking import timeit
+
+from budget_graph.db_manager import DatabaseQueries, connect_db, close_db  # noqa
+from budget_graph.dictionary import receive_translation  # noqa
+from budget_graph.time_checking import timeit  # noqa
 
 
 @timeit
@@ -134,15 +137,11 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
 
 
 async def check_year_is_leap(year: int) -> bool:
-    if (year % 4 == 0 and year % 100 != 0) or (year % 100 == 0 and year % 400 == 0):
-        return True
-    return False
+    return (year % 4 == 0 and year % 100 != 0) or year % 400 == 0
 
 
 def description_validation(description: str) -> bool:  # TODO
-    if len(description) <= 50:
-        return True
-    return False
+    return len(description) <= 50
 
 
 def value_validation(value: str) -> int:
@@ -161,27 +160,14 @@ def value_validation(value: str) -> int:
 
 @timeit
 def category_validation(lang: str, category: str) -> bool:
-    categories: tuple = (
-        f"{receive_translation(lang, "supermarkets")}",
-        f"{receive_translation(lang, "restaurants")}",
-        f"{receive_translation(lang, "clothes")}",
-        f"{receive_translation(lang, "medicine")}",
-        f"{receive_translation(lang, "transport")}",
-        f"{receive_translation(lang, "devices")}",
-        f"{receive_translation(lang, "education")}",
-        f"{receive_translation(lang, "services")}",
-        f"{receive_translation(lang, "travel")}",
-        f"{receive_translation(lang, "housing")}",
-        f"{receive_translation(lang, "transfer")}",
-        f"{receive_translation(lang, "investments")}",
-        f"{receive_translation(lang, "hobby")}",
-        f"{receive_translation(lang, "jewelry")}",
-        f"{receive_translation(lang, "salary")}",
-        f"{receive_translation(lang, "charity")}",
-        f"{receive_translation(lang, "other")}"
-    )  # TODO: make a faster algorithm, although this one works within 0.00001 sec. -> map или lambda
-    if category in categories:
-        return True
-    return False
+    categories: tuple = get_translations_for_categories(lang)
+    return category in categories
 
-# TODO - logging -> выводить только отклоненные варианты валидации (без хэширования) - кроме паролей
+
+@cache
+def get_translations_for_categories(lang: str) -> tuple:
+    categories: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport", "devices", "education",
+                         "services", "travel", "housing", "transfer", "investments", "hobby", "jewelry", "salary",
+                         "charity", "other")
+    categories_translate = tuple(receive_translation(lang, category) for category in categories)
+    return categories_translate

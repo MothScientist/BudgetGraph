@@ -95,36 +95,22 @@ class TestDateValidation(unittest.TestCase):
             self.assertFalse(res)
 
     def test_leap_year_1(self):
-        res = asyncio.run(check_year_is_leap(2020))
-        self.assertTrue(res)
+        """
+        Leap years
+        """
+        leap_years: tuple = (1600, 1992, 2000, 2020, 2024, 2028, 2032, 2156, 2400)
+        for leap_year in leap_years:
+            res = asyncio.run(check_year_is_leap(leap_year))
+            self.assertTrue(res, leap_year)
 
     def test_leap_year_2(self):
-        res = asyncio.run(check_year_is_leap(2000))
-        self.assertTrue(res)
-
-    def test_leap_year_3(self):
-        res = asyncio.run(check_year_is_leap(2100))
-        self.assertFalse(res)
-
-    def test_leap_year_4(self):
-        res = asyncio.run(check_year_is_leap(2025))
-        self.assertFalse(res)
-
-    def test_leap_year_5(self):
-        res = asyncio.run(check_year_is_leap(2024))
-        self.assertTrue(res)
-
-    def test_leap_year_6(self):
-        res = asyncio.run(check_year_is_leap(2028))
-        self.assertTrue(res)
-
-    def test_leap_year_7(self):
-        res = asyncio.run(check_year_is_leap(2030))
-        self.assertFalse(res)
-
-    def test_leap_year_8(self):
-        res = asyncio.run(check_year_is_leap(2032))
-        self.assertTrue(res)
+        """
+        Non-leap years
+        """
+        non_leap_years: tuple = (1700, 1800, 1900, 2025, 2030, 2100, 2100, 2200, 2300, 2500, 2600)
+        for non_leap_year in non_leap_years:
+            res = asyncio.run(check_year_is_leap(non_leap_year))
+            self.assertFalse(res, non_leap_year)
 
     def test_check_date_in_correct_format_1(self):
         res = asyncio.run(check_date_in_correct_format("01/01/2020"))
