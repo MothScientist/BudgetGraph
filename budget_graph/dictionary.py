@@ -32,6 +32,7 @@ class Emoji:
         }
 
     @staticmethod
+    @cache
     def get_emoji(emoji):
         return Emoji.__emoji_codes.get(emoji)
 
@@ -47,6 +48,7 @@ class Stickers:
         }
 
     @staticmethod
+    @cache
     def get_sticker_by_id(sticker_id):
         return Stickers.__stickers.get(sticker_id)
 
@@ -63,7 +65,7 @@ def receive_translation(language: str, phrase: str) -> str:
     :return: value in the json-dictionary in the selected language.
     """
     dict_language_obj: dict = get_translate_from_json(language)
-    return dict_language_obj.get(phrase)
+    return dict_language_obj.get(phrase, 'None')
 
 
 @cache
