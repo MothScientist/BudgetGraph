@@ -707,6 +707,10 @@ class DatabaseQueries:
 
         group_id = None - a sign if we are creating a new group and owner, and not an individual user
 
+        IMPORTANT: when registering a new user, if the group is full, the transaction will be rejected
+        (since the trigger to check the field value will be triggered),
+        so an additional check of the number of participants in the group will be unnecessary
+
         :return:
         1. If owner registration is successful, it returns the group token (otherwise an empty string).
         2. If the user is successfully registered into an existing group, returns True (otherwise False)
@@ -734,8 +738,8 @@ class DatabaseQueries:
                                   f"psw_salt - OK: {bool(psw_salt)},"
                                   f"psw_hash - OK: {bool(psw_hash)},"
                                   f"token = {group_token}")
-            return False if group_token is None else ''
-        return True if group_token is None else group_token
+            return False if not group_token else ''
+        return True if not group_token else group_token
 
     def update_user_last_login_by_telegram_id(self, telegram_id: int) -> None:
         """
@@ -748,10 +752,7 @@ class DatabaseQueries:
                     cur.execute("""UPDATE
                                      "budget_graph"."users"
                                    SET
-                                     "last_login" = to_char(
-                                       current_timestamp AT TIME ZONE 'UTC',
-                                       'DD/MM/YYYY HH24:MI:SS'
-                                     )
+                                     "last_login" = current_timestamp AT TIME ZONE 'UTC'
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
                     conn.commit()

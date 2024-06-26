@@ -27,22 +27,23 @@ from datetime import datetime, UTC
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 sys_path.append('../')
-# pylint: disable=import-outside-toplevel
-from budget_graph.db_manager import DatabaseQueries, connect_db, close_db  # noqa: E402
-from budget_graph.encryption import getting_hash, get_salt, logging_hash  # noqa: E402
-from budget_graph.validation import (date_validation, value_validation, description_validation,
-                                     username_validation, password_validation, category_validation)  # noqa: E402
-from budget_graph.create_csv import create_csv_file, get_file_size_kb, get_file_checksum  # noqa: E402
-from budget_graph.dictionary import Stickers, receive_translation  # noqa: E402
-from budget_graph.time_checking import timeit  # noqa: E402
-from budget_graph.logger import setup_logger  # noqa: E402
-from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache  # noqa: E402
+
+from budget_graph.logger import setup_logger
+from budget_graph.time_checking import timeit
+from budget_graph.create_csv import CsvFileWithTable
+from budget_graph.registration_service import user_registration
+from budget_graph.dictionary import Stickers, receive_translation
+from budget_graph.encryption import getting_hash, get_salt, logging_hash
+from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
+from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
+from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
+    password_validation, category_validation
 
 
 load_dotenv()  # Load environment variables from .env file
 
 bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variable
-bot = TeleBot(bot_token, skip_pending=True)  # type: ignore
+bot = TeleBot(bot_token, skip_pending=True)
 
 logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
 
@@ -368,8 +369,7 @@ def process_transfer_final(message, value: int, record_date: str, category: str,
     if description_is_valid:
         connection = connect_db()
         bot_db = DatabaseQueries(connection)
-        username: str = bot_db.get_username_by_telegram_id(telegram_id)
-        if bot_db.add_transaction_to_db(username, value, record_date, category, description):
+        if bot_db.add_transaction_to_db(value, record_date, category, description, telegram_id=telegram_id):
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "entry_add_success")}!")
         else:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "entry_add_error")}\n"
@@ -450,59 +450,33 @@ def process_token(message, username: str, psw_hash: str, psw_salt: str, user_lan
     telegram_id: int = message.from_user.id
     token: str = message.text
     connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-
-    if compare_digest(token, "None"):  # noqa (PW100) - I don’t think there is any need for time attack protection here
-        new_group_token: str = bot_db.create_new_group(telegram_id)
-        # There is a chance to return False if an error occurred while working with the database
-        if new_group_token:
-            group_id: int = bot_db.get_group_id_by_token(new_group_token)
-            if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
-                bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "congratulations")}")
-                bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_4")}")
-                bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "your")} token:")
-                bot.send_message(message.chat.id, new_group_token)
-                logger_bot.info(f"New user (new group): TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
-                reply_menu_buttons_register(message)
-            else:
-                bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
-                                                  f"{get_phrase_by_language(user_language, "contact_support")}")
-                logger_bot.error(f"Error adding new user to database: TelegramID: {logging_hash(telegram_id)}, "
-                                 f"username: {logging_hash(username)}, group id #{group_id}")
-                reply_menu_buttons_not_register(message)
-        else:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
-                                              f"{get_phrase_by_language(user_language, "contact_support")}")
-            logger_bot.error(f"Error adding new user to database: TelegramID: {logging_hash(telegram_id)}, "
-                             f"username: {logging_hash(username)}")
-            reply_menu_buttons_not_register(message)
-
-    elif len(token) == 32 and token.isalnum() and token.islower():
-        group_id: int = bot_db.get_group_id_by_token(token)
-        group_not_full: bool = bot_db.check_limit_users_in_group(group_id)
-        if group_not_full:  # if the group doesn't exist, group_not_full will be set to False in the try/except
-            if bot_db.add_user_to_db(username, psw_salt, psw_hash, group_id, telegram_id):
-                bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "congratulations")}")
-                bot.send_sticker(message.chat.id,f"{Stickers.get_sticker_by_id("id_4")}")
-                logger_bot.info(f"New user: TelegramID: {logging_hash(telegram_id)}, group #{group_id}")
-                reply_menu_buttons_register(message)
-            else:
-                bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
-                                                  f"{get_phrase_by_language(user_language, "contact_support")}")
-                logger_bot.error(f"Error adding new user to database: TelegramID: {logging_hash(telegram_id)}, "
-                                 f"username: {logging_hash(username)}, group id #{group_id}")
-        else:
-            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "group_is_full")}")
-            logger_bot.info(f"Trying to add to a full group: TelegramID: {logging_hash(telegram_id)},"
-                            f" group id #{group_id}")
-
-    else:
-        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "invalid_token_format")}")
-        logger_bot.info(f"Authorization attempt with incorrect token format. Token: {token}, "
-                        f"TelegramID: {logging_hash(telegram_id)}")
-        reply_buttons(message)
-
+    res, status = user_registration(DatabaseQueries(connection), token, telegram_id, username, psw_salt, psw_hash)
     close_db(connection)
+    res: bool
+    status: str  # if the group is successfully created, this is a token
+    return_msg: str = ''
+
+    if res:
+        bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "congratulations")}")
+        bot.send_sticker(message.chat.id, f"{Stickers.get_sticker_by_id("id_4")}")
+        if status:
+            bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, "your")} token:\n{status}")
+        reply_menu_buttons_register(message)
+        return
+
+    if status == 'create_new_user_or_group_error':
+        return_msg += (f"{get_phrase_by_language(user_language, "create_new_user_error")}. "
+                       f"{get_phrase_by_language(user_language, "contact_support")}")
+    elif status == 'group_not_exist':
+        return_msg += f"{get_phrase_by_language(user_language, "group_not_exist")}"
+    elif status == 'group_is_full':
+        return_msg += f"{get_phrase_by_language(user_language, "group_is_full")}"
+    elif status == 'invalid_token_format':
+        return_msg += f"{get_phrase_by_language(user_language, "invalid_token_format")}"
+
+    bot.send_message(message.chat.id, return_msg)
+    reply_menu_buttons_not_register(message)
+    return
 
 
 @timeit
@@ -894,8 +868,7 @@ def check_user_language(telegram_id: int) -> str:
 
 
 def get_phrase_by_language(language: str, phrase: str) -> str:
-    res = receive_translation(language, phrase)
-    return res if res else "ERROR"
+    return receive_translation(language, phrase)
 
 
 @bot.message_handler(content_types=['text'])
