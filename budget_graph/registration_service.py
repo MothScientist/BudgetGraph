@@ -3,15 +3,16 @@ from secrets import compare_digest
 
 sys.path.append('../')
 
-from budget_graph.logger import setup_logger  # noqa: E402
-from budget_graph.encryption import logging_hash  # noqa: E402
+from budget_graph.logger import setup_logger
+from budget_graph.encryption import logging_hash
 
 logger_registration = setup_logger("logs/RegistrationLog.log", "registration_logger")
 
 
-def user_registration(db_connection, token, telegram_id, username, psw_salt, psw_hash) -> tuple[bool, str]:
+def user_registration(db_connection, token: str, telegram_id: int, username: str, psw_salt: str, psw_hash: str) \
+        -> tuple[bool, str]:
     """
-    Возвращает статус и строку (либо с токеном, либо с сообщением об ошибке)
+    Returns the status and a string (either with a token or an error message)
     """
     if compare_digest(token, "None"):
         res: str = db_connection.registration_new_user(telegram_id, username, psw_salt, psw_hash)
