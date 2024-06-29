@@ -6,9 +6,9 @@
 ![Static Badge](https://img.shields.io/badge/First_commit-August_20%2C_2023-blue)
 
 
-![GIF](presentation/budget_donuts.gif)
+![GIF](media/budget_donuts.gif)
 
-<image src="presentation/homepage.png" alt="homepage">
+<image src="media/homepage.png" alt="homepage">
 
 ## <font color="cyan">Project objectives:</font>
 - ### <font color="lime">Creating temporary groups (for example, to track travel expenses)</font>
