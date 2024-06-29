@@ -1,13 +1,17 @@
 import unittest
-from random import randint
+from random import randint, randrange
 from functools import cache
 from datetime import datetime, timedelta, timezone
 
 from budget_graph.db_manager import DatabaseQueries
-from budget_graph.encryption import getting_hash, get_salt, get_token
 from budget_graph.dictionary import get_list_languages
+from budget_graph.registration_service import user_registration
+from budget_graph.encryption import getting_hash, get_salt, get_token
 
 from tests.build_test_infrastructure import connect_test_db, close_test_db
+
+LANGUAGES: tuple = get_list_languages()
+LANG_LEN: int = len(LANGUAGES)
 
 SMOKE_NUMBER_OF_TRANSACTIONS: int = 10  # TODO -> 1_500
 NUMBER_OF_TRANSACTION_CYCLE: int = 10  # TODO -> 750
@@ -19,46 +23,43 @@ class DbSmokeTestData:
     Data class, interaction only through methods to avoid data modification
     """
     def __init__(self):
-        self.__languages: tuple = get_list_languages()
-        self.__lang_len: int = len(self.__languages)
         self.__users_data: dict = {
-                                      1:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      1:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10] + str(randint(10, 1000)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 1,  # owner
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      2:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      2:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:3],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(1, 10)]),
                                            'group_id': 2,  # owner
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      3:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      3:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:4],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 100)]),
                                            'group_id': randint(1,2),
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      4:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      4:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(1, 50)]),
                                            'group_id': randint(1,2),
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      5:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      5:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': str(randint(100, 1000000000)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(5, 25)]),
                                            'group_id': randint(1,2),
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            }
                                   }
-        self.__groups_tokens: tuple = tuple(get_token() for _ in range(3))
 
     @cache
     def get_user_data(self, attribute_1: int, attribute_2: str) -> int | str:
@@ -67,10 +68,6 @@ class DbSmokeTestData:
     @cache
     def get_number_of_users(self) -> int:
         return len(self.__users_data)
-
-    @cache
-    def get_group_token(self, group_id: int) -> str:
-        return self.__groups_tokens[group_id - 1]
 
 
 class SmokeTestDbQueries(unittest.TestCase):
@@ -192,194 +189,192 @@ class DatabaseTestData:
     Data class, interaction only through methods to avoid data modification
     """
     def __init__(self):
-        self.__languages: tuple = get_list_languages()
-        self.__lang_len: int = len(self.__languages)
         self.__users_data_1: dict = {
-                                      1:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      1:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10] + str(randint(10, 1000)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,  # owner
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      2:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      2:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:3],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      3:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      3:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:4],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      4:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      4:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      5:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      5:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': str(randint(100, 1000000000)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      6:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      6:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10] + str(randint(1, 100)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      7:  {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      7:  {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:3],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      8: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      8: {'language': LANGUAGES[randrange(LANG_LEN)],
                                           'username': get_token()[:2] + str(randint(1, 9)),
                                           'psw_salt': get_salt(),
                                           'psw_hash': getting_hash(get_salt(), get_salt()),
                                           'group_id': 3,
-                                          'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                          'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                           },
-                                      9: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      9: {'language': LANGUAGES[randrange(LANG_LEN)],
                                           'username': get_token()[:7],
                                           'psw_salt': get_salt(),
                                           'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                           'group_id': 3,
-                                          'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                          'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                           },
-                                      10: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      10: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:7],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      11: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      11: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': str(randint(5000, 50000000)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      12: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      12: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:3],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      13: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      13: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:4],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      14: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      14: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      15: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      15: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': str(randint(100, 1000000000)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      16: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      16: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:10] + str(randint(1, 100)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      17: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      17: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:3],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      18: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      18: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:2] + str(randint(1, 9)),
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      19: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      19: {'language': LANGUAGES[randrange(LANG_LEN)],
                                            'username': get_token()[:7],
                                            'psw_salt': get_salt(),
                                            'psw_hash': getting_hash(get_salt(), get_salt()),
                                            'group_id': 3,
-                                           'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
-                                      20: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      20: {'language': LANGUAGES[randrange(LANG_LEN)],
                                             'username': get_token()[:7],
                                             'psw_salt': get_salt(),
                                             'psw_hash': getting_hash(get_salt(), get_salt()),
                                             'group_id': 3,
-                                            'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                            'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            },
                                       # this user should be rejected for inclusion in the group
-                                      21: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                      21: {'language': LANGUAGES[randrange(LANG_LEN)],
                                             'username': str(randint(3000, 300000)),
                                             'psw_salt': get_salt(),
                                             'psw_hash': getting_hash(get_salt(), get_salt()),
                                             'group_id': 3,
-                                            'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                            'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                            }
                                      }
 
         self.__users_data_2: dict = {
-                                    1: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                    1: {'language': LANGUAGES[randrange(LANG_LEN)],
                                         'username': get_token()[:5] + str(randint(10, 1000)),
                                         'psw_salt': get_salt(),
                                         'psw_hash': getting_hash(get_salt(), get_salt()),
                                         'group_id': 4,  # owner
-                                        'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                        'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                         },
-                                    2: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                    2: {'language': LANGUAGES[randrange(LANG_LEN)],
                                         'username': get_token()[:3],
                                         'psw_salt': get_salt(),
                                         'psw_hash': getting_hash(get_salt(), get_salt()),
                                         'group_id': 4,
-                                        'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                        'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                         },
-                                    3: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                    3: {'language': LANGUAGES[randrange(LANG_LEN)],
                                         'username': get_token()[:5] + str(randint(10, 1000)),
                                         'psw_salt': get_salt(),
                                         'psw_hash': getting_hash(get_salt(), get_salt()),
                                         'group_id': 4,
-                                        'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                        'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                         },
-                                    4: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                    4: {'language': LANGUAGES[randrange(LANG_LEN)],
                                         'username': get_token()[:5] + str(randint(10, 1000)),
                                         'psw_salt': get_salt(),
                                         'psw_hash': getting_hash(get_salt(), get_salt()),
                                         'group_id': 4,
-                                        'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                        'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                         },
-                                    5: {'language': self.__languages[randint(0, self.__lang_len - 1)],
+                                    5: {'language': LANGUAGES[randrange(LANG_LEN)],
                                         'username': get_token()[:5] + str(randint(10, 1000)),
                                         'psw_salt': get_salt(),
                                         'psw_hash': getting_hash(get_salt(), get_salt()),
                                         'group_id': 4,
-                                        'telegram_id': randint(1, 100000000000) * randint(1, 9)
+                                        'telegram_id': randint(100, 100000000000) * randint(1, 9)
                                         }
                                 }
 
