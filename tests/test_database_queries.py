@@ -1000,5 +1000,167 @@ class TestDbQueries(unittest.TestCase):
     # TODO -> delete_group_with_users
 
 
+class  TestRegistrationServiceData:
+    def __init__(self):
+        self.__users_data: dict = {
+                                      1:  {'language': LANGUAGES[randrange(LANG_LEN)],
+                                           'username': get_token()[:10] + str(randint(10, 1000)),
+                                           'psw_salt': get_salt(),
+                                           'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 30)]),
+                                           'group_id': 5,  # owner
+                                           'telegram_id': randint(10, 100000000000) * randint(1, 9)
+                                           },
+                                      2:  {'language': LANGUAGES[randrange(LANG_LEN)],
+                                           'username': get_token()[:3],
+                                           'psw_salt': get_salt(),
+                                           'psw_hash': getting_hash(get_salt(), get_salt()[:randint(1, 10)]),
+                                           'group_id': 5,
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
+                                           },
+                                      3:  {'language': LANGUAGES[randrange(LANG_LEN)],
+                                           'username': get_token()[:4],
+                                           'psw_salt': get_salt(),
+                                           'psw_hash': getting_hash(get_salt(), get_salt()[:randint(10, 100)]),
+                                           'group_id': 5,
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
+                                           },
+                                      4:  {'language': LANGUAGES[randrange(LANG_LEN)],
+                                           'username': get_token()[:10],
+                                           'psw_salt': get_salt(),
+                                           'psw_hash': getting_hash(get_salt(), get_salt()[:randint(1, 50)]),
+                                           'group_id': 5,
+                                           'telegram_id': randint(100, 100000000000) * randint(1, 9)
+                                           },
+                                      5: {'language': LANGUAGES[randrange(LANG_LEN)],
+                                          'username': str(randint(100, 1000000000)),
+                                          'psw_salt': get_salt(),
+                                          'psw_hash': getting_hash(get_salt(), get_salt()[:randint(5, 25)]),
+                                          'group_id': 5,
+                                          'telegram_id': randint(100, 100000000000) * randint(1, 9)
+                                          }
+
+                                  }
+
+    @cache
+    def get_user_data(self, attribute_1: int, attribute_2: str) -> int | str:
+        return self.__users_data[attribute_1][attribute_2]
+
+    @cache
+    def get_number_of_users(self) -> int:
+        return len(self.__users_data)
+
+
+class TestRegistrationService(unittest.TestCase):
+    _data = TestRegistrationServiceData()
+    token_5_group: str = ''
+
+    def test_050_user_registration_1(self):
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db,
+                                     'None',
+                                     TestRegistrationService._data.get_user_data(1, 'telegram_id'),
+                                     TestRegistrationService._data.get_user_data(1, 'username'),
+                                     TestRegistrationService._data.get_user_data(1, 'psw_salt'),
+                                     TestRegistrationService._data.get_user_data(1, 'psw_hash'))
+        self.assertTrue(res)
+        self.assertEqual(len(msg), 32)
+        TestRegistrationService.token_5_group = self.test_db.get_token_by_telegram_id(
+            TestRegistrationService._data.get_user_data(1, 'telegram_id')
+        )
+        self.assertEqual(TestRegistrationService.token_5_group, msg)
+        close_test_db(self.connection)
+
+    def test_050_user_registration_2(self):
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        for i in range(2, TestRegistrationService._data.get_number_of_users() + 1):
+            res, msg = user_registration(self.test_db,
+                                         TestRegistrationService.token_5_group,
+                                         TestRegistrationService._data.get_user_data(i, 'telegram_id'),
+                                         TestRegistrationService._data.get_user_data(i, 'username'),
+                                         TestRegistrationService._data.get_user_data(i, 'psw_salt'),
+                                         TestRegistrationService._data.get_user_data(i, 'psw_hash'))
+            self.assertTrue(res, f'i = {i}')
+            self.assertEqual(msg, '', f'i = {i}')
+        close_test_db(self.connection)
+
+    def test_050_user_registration_3(self):
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db,
+                                     'None',
+                                     TestRegistrationService._data.get_user_data(1, 'telegram_id'),
+                                     TestRegistrationService._data.get_user_data(1, 'username'),
+                                     TestRegistrationService._data.get_user_data(1, 'psw_salt'),
+                                     TestRegistrationService._data.get_user_data(1, 'psw_hash'))
+        close_test_db(self.connection)
+        self.assertFalse(res)
+        self.assertEqual(msg, 'create_new_user_or_group_error', f'msg = {msg}')
+
+    def test_050_user_registration_4(self):
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db,
+                                     TestRegistrationService.token_5_group,
+                                     TestRegistrationService._data.get_user_data(3, 'telegram_id'),
+                                     TestRegistrationService._data.get_user_data(3, 'username'),
+                                     TestRegistrationService._data.get_user_data(3, 'psw_salt'),
+                                     TestRegistrationService._data.get_user_data(3, 'psw_hash'))
+        close_test_db(self.connection)
+        self.assertFalse(res)
+        self.assertEqual(msg, 'group_is_full', f'msg = {msg}')
+
+    def test_050_user_registration_5(self):
+        invalid_username: str = TestRegistrationService._data.get_user_data(1, 'username').swapcase()
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db,
+                                     'None',
+                                     TestRegistrationService._data.get_user_data(1, 'telegram_id'),
+                                     invalid_username,
+                                     TestRegistrationService._data.get_user_data(1, 'psw_salt'),
+                                     TestRegistrationService._data.get_user_data(1, 'psw_hash'))
+        close_test_db(self.connection)
+        self.assertFalse(res)
+        self.assertEqual(msg, 'create_new_user_or_group_error', f'msg = {msg}')
+
+    def test_050_user_registration_6(self):
+        invalid_token: str = TestRegistrationService.token_5_group.swapcase()
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db,
+                                     invalid_token,
+                                     TestRegistrationService._data.get_user_data(2, 'telegram_id'),
+                                     TestRegistrationService._data.get_user_data(2, 'username'),
+                                     TestRegistrationService._data.get_user_data(2, 'psw_salt'),
+                                     TestRegistrationService._data.get_user_data(2, 'psw_hash'))
+        close_test_db(self.connection)
+        self.assertFalse(res)
+        self.assertEqual(msg, 'invalid_token_format', f'msg = {msg}\nlen(invalid_token) = {len(invalid_token)}')
+
+    def test_050_user_registration_7(self):
+        invalid_token: str = TestRegistrationService.token_5_group[::-1]
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db,
+                                     invalid_token,
+                                     TestRegistrationService._data.get_user_data(3, 'telegram_id'),
+                                     TestRegistrationService._data.get_user_data(3, 'username'),
+                                     TestRegistrationService._data.get_user_data(3, 'psw_salt'),
+                                     TestRegistrationService._data.get_user_data(3, 'psw_hash'))
+        close_test_db(self.connection)
+        self.assertFalse(res)
+        self.assertEqual(msg, 'group_not_exist', f'msg = {msg}\nlen(invalid_token) = {len(invalid_token)}')
+
+    def test_050_user_registration_8(self):
+        self.connection = connect_test_db()
+        self.test_db = DatabaseQueries(self.connection)
+        res, msg = user_registration(self.test_db, '', 0, '', '', '')
+        close_test_db(self.connection)
+        self.assertFalse(res)
+        self.assertEqual(msg, 'invalid_token_format', f'msg = {msg}')
+
+
 if __name__ == '__main__':
     unittest.main()
