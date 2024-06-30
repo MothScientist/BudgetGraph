@@ -54,34 +54,51 @@ jobs:
                            test_localization.py \
                            test_user_cache.py
 
-  # database-queries-unit-tests:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ ubuntu-latest ]
-  #       python-version: [ '3.12' ]
+  database-queries-unit-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12' ]
+        architecture: [ 'x64' ]
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+    services:
+      postgres:
+        image: postgres:16.2-alpine3.18
+        env:
+          POSTGRES_DB: "budget_graph"
+          POSTGRES_USER: "postgres"
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6432:5432
 
-  #     - name: Install PostgreSQL 16
-  #       uses:
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Setup python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #         architecture: x64
+      - name: Set up Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
+          check-latest: true
 
-  #     - name: Install dependencies
-  #       run: |
-  #         pip install --upgrade pip
-  #         pip install -r requirements.txt
-  #         pip install pytest
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
 
-  #     - name: Run UnitTests
-  #       run: |
-  #         cd tests || exit 1
-  #         python manage_test_db.py
-  #         python -m pytest test_database_queries.py
+      - name: Build infrastructure
+        run: |
+          cd tests || exit 1
+          python -m build_test_infrastructure.py
+
+      - name: Run UnitTests
+        run: |
+          python -m pytest test_database_queries.py
