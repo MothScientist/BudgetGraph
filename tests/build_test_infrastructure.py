@@ -39,4 +39,3 @@ def close_test_db(conn) -> None:
 
 if __name__ == '__main__':
     prepare_db_tables_for_tests()
-    build()

@@ -1000,7 +1000,7 @@ class TestDbQueries(unittest.TestCase):
     # TODO -> delete_group_with_users
 
 
-class  TestRegistrationServiceData:
+class TestRegistrationServiceData:
     def __init__(self):
         self.__users_data: dict = {
                                       1:  {'language': LANGUAGES[randrange(LANG_LEN)],
