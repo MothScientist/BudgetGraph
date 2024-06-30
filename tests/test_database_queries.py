@@ -114,8 +114,7 @@ class SmokeTestDbQueries(unittest.TestCase):
             if i % 2 == 0:
                 res.append(self.test_db.add_transaction_to_db(
                     transaction_amount,
-                    f'{randint(10, 28)}/{randint(4, 12)}/{randint(current_year - 6,
-                                                                  current_year - 1)}',
+                    f'{randint(current_year - 6, current_year - 1)}-{randint(4, 12)}-{randint(10, 28)}',
                     'Other',
                     '',
                     # use telegram_id to enter data into the table

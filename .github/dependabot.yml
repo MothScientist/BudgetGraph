@@ -10,7 +10,7 @@ updates:
 
   # Python
   - package-ecosystem: "pip"
-    directory: "../"
+    directory: "/"
     schedule:
       interval: "daily"
     commit-message:

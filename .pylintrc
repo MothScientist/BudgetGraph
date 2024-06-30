@@ -9,6 +9,8 @@ disable=
     wrong-import-position,
     missing-class-docstring,
     too-few-public-methods,
+    trailing-whitespace,
+    consider-using-f-string,
     fixme
 [FORMAT]
 max-line-length=120

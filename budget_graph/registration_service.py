@@ -9,6 +9,7 @@ from budget_graph.encryption import logging_hash
 logger_registration = setup_logger("logs/RegistrationLog.log", "registration_logger")
 
 
+# pylint: disable=too-many-arguments
 def user_registration(db_connection, token: str, telegram_id: int, username: str, psw_salt: str, psw_hash: str) \
         -> tuple[bool, str]:
     """
@@ -22,7 +23,7 @@ def user_registration(db_connection, token: str, telegram_id: int, username: str
                                   f"username: {logging_hash(username)}")
         return False, 'create_new_user_or_group_error'
 
-    elif len(token) == 32 and token.isalnum() and token.islower():
+    if len(token) == 32 and token.isalnum() and token.islower():
         group_id: int = db_connection.get_group_id_by_token(token)
         if not group_id:
             return False, 'group_not_exist'

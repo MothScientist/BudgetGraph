@@ -37,17 +37,16 @@ jobs:
           echo "FLASK_SECRET_KEY=${FLASK_SECRET_KEY_TEST}" >> .env
           echo "BOT_TOKEN=${BOT_TOKEN_TEST}" >> .env
           echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
-          echo "POSTGRES_HOST=${POSTGRES_HOST_TEST}" >> .env
-          echo "POSTGRES_PORT=${POSTGRES_PORT_TEST}" >> .env
-          echo "POSTGRES_NAME=${POSTGRES_NAME_TEST}" >> .env
-          echo "POSTGRES_USERNAME=${POSTGRES_USERNAME_TEST}" >> .env
-          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}" >> .env
+          echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
+          echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
+          echo "POSTGRES_NAME=${POSTGRES_NAME}" >> .env
+          echo "POSTGRES_USERNAME=${POSTGRES_USERNAME}" >> .env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
           cd ..
           cd db_auth
           echo "${PG_ADMIN_EMAIL}" >> pg_admin_email.env
           echo "${PG_ADMIN_PSW}" >> pg_admin_psw.env
           echo "${POSTGRES_PASSWORD_TEST}" >> psq_psw.env
-          cd ..
 
       - name: Run scripts test
         run: bash scripts/run_build_test.sh

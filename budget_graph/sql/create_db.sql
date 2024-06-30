@@ -1,3 +1,6 @@
+-- Setting up the date format to eliminate errors when converting ::date
+ALTER DATABASE postgres SET datestyle TO 'iso, dmy';
+
 -- Create a schema:
 CREATE SCHEMA IF NOT EXISTS "budget_graph";
 

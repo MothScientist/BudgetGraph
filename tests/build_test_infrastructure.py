@@ -1,15 +1,16 @@
 from os import getenv, makedirs
 from psycopg2 import connect
 from dotenv import load_dotenv
-
+from sys import path as sys_path
+sys_path.append('../')
 from budget_graph.build_project import create_tables_in_db, drop_tables_in_db
 
 load_dotenv()  # Load environment variables from .env file
-db_host = getenv("POSTGRES_HOST_TEST")
-db_port = getenv("POSTGRES_PORT_TEST")
-db_name = getenv("POSTGRES_NAME_TEST")
-db_user = getenv("POSTGRES_USERNAME_TEST")
-db_psw = getenv("POSTGRES_PASSWORD_TEST")
+db_host = getenv("POSTGRES_HOST")
+db_port = getenv("POSTGRES_PORT")
+db_name = getenv("POSTGRES_NAME")
+db_user = getenv("POSTGRES_USERNAME")
+db_psw = getenv("POSTGRES_PASSWORD")
 
 DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}"
 

@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
+import sys
+import asyncio
 from datetime import timedelta
 from dotenv import load_dotenv
-import asyncio
-import sys
+from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
+
 
 sys.path.append('../')
 
@@ -90,11 +91,10 @@ def login():
         if user_is_exist:
             logger_app.info(f"Successful authorization (cookies) -> username: {logging_hash(username)}")
             return redirect(url_for("household", username=username))
-        else:
-            session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
-            flash("Your account was not found in the database. It may have been deleted.", category="error")
-            logger_app.warning(f"Failed registration attempt from browser cookies -> "
-                               f"username: {logging_hash(username)}")
+        session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
+        flash("Your account was not found in the database. It may have been deleted.", category="error")
+        logger_app.warning(f"Failed registration attempt from browser cookies -> "
+                           f"username: {logging_hash(username)}")
 
     # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
@@ -109,14 +109,15 @@ def login():
             dbase.update_user_last_login_by_telegram_id(telegram_id)
             logger_app.info(f"Successful authorization: username: {logging_hash(username)}.")
             return redirect(url_for("household", username=session["userLogged"]))
-        else:
-            flash("This user doesn't exist.", category="error")
-            logger_app.warning(f"Failed authorization attempt: username: {logging_hash(username)}, "
-                               f"user salt is exist: {len(psw_salt) != 0}")
+        flash("This user doesn't exist.", category="error")
+        logger_app.warning(f"Failed authorization attempt: username: {logging_hash(username)}, "
+                           f"user salt is exist: {len(psw_salt) != 0}")
 
     return render_template("login.html", title="Budget Graph - Login")
 
 
+# TODO - too-many-branches
+# pylint: disable=too-many-branches
 @app.route('/household/<username>', methods=["GET", "POST"])  # user's personal account
 def household(username):
     """
@@ -236,13 +237,15 @@ def logout():
     return redirect(url_for('login'))  # redirecting the user to another page, such as the homepage
 
 
+# pylint: disable=unused-argument
 @app.errorhandler(401)
-def page_not_found(error):  # DO NOT REMOVE the parameter  # noqa
+def page_not_found_401(error):  # DO NOT REMOVE the parameter  # noqa
     return render_template("error401.html", title="UNAUTHORIZED"), 401
 
 
+# pylint: disable=unused-argument
 @app.errorhandler(404)
-def page_not_found(error):  # DO NOT REMOVE the parameter  # noqa
+def page_not_found_404(error):  # DO NOT REMOVE the parameter  # noqa
     return render_template("error404.html", title="PAGE NOT FOUND"), 404
 
 

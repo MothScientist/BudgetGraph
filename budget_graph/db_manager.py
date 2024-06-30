@@ -46,7 +46,7 @@ def connect_db_flask_g():
     return g.link_db
 
 
-# # pylint: disable=unused-argument
+# pylint: disable=unused-argument
 def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
     """
     Closing a database connection using a Flask application object.
@@ -626,6 +626,7 @@ class DatabaseQueries:
             return False
         return True
 
+    # pylint: disable=too-many-arguments
     @timeit
     def add_transaction_to_db(self,
                               transaction_amount: int,
@@ -662,9 +663,9 @@ class DatabaseQueries:
                     cur.execute(sql_query, params)
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"username (hash): {logging_hash(username) 
+                                  f"username (hash): {logging_hash(username)
                                                       if username is not None else None}, "
-                                  f"telegram_id (hash): {logging_hash(telegram_id) 
+                                  f"telegram_id (hash): {logging_hash(telegram_id)
                                                          if telegram_id is not None else None}, "
                                   f"transaction_amount: {transaction_amount},"
                                   f"record_date: {record_date},"
@@ -694,6 +695,8 @@ class DatabaseQueries:
             return False
         return True
 
+    # pylint: disable=too-many-arguments
+    @timeit
     def registration_new_user(self,
                               telegram_id: int,
                               username: str,
@@ -732,11 +735,11 @@ class DatabaseQueries:
                     conn.commit()
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
-                                  f"telegram_id (hash): {logging_hash(telegram_id)},"
-                                  f"username (hash): {logging_hash(username)},"
-                                  f"group_id: {group_id}"
-                                  f"psw_salt - OK: {bool(psw_salt)},"
-                                  f"psw_hash - OK: {bool(psw_hash)},"
+                                  f"telegram_id (hash): {logging_hash(telegram_id)}; "
+                                  f"username (hash): {logging_hash(username)}; "
+                                  f"group_id: {group_id}; "
+                                  f"psw_salt - {bool(psw_salt)}; "
+                                  f"psw_hash - {bool(psw_hash)}; "
                                   f"token = {group_token}")
             return False if not group_token else ''
         return True if not group_token else group_token

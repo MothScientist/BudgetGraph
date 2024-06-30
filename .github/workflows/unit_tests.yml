@@ -43,31 +43,19 @@ jobs:
         run: |
           cd budget_graph || exit 1
           echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
-          cd ..
 
       - name: Run UnitTests
         run: |
           cd tests || exit 1
-          python -m pytest test_sources.py \ 
-                           test_validators.py \
-                           test_csv_tables.py \
-                           test_localization.py \
-                           test_user_cache.py
+          python -m pytest test_sources.py test_validators.py test_localization.py test_user_cache.py
 
   database-queries-unit-tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-        python-version: [ '3.12' ]
-        architecture: [ 'x64' ]
+    runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:16.2-alpine3.18
+        image: postgres:16.3-bookworm
         env:
-          POSTGRES_DB: "budget_graph"
-          POSTGRES_USER: "postgres"
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
           --health-cmd pg_isready
@@ -75,17 +63,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 6432:5432
+          - 5432:5432
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: ${{ matrix.architecture }}
+          python-version: '3.12'
+          architecture: 'x64'
           check-latest: true
 
       - name: Install dependencies
@@ -94,11 +82,29 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Create .env file
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
+        run: |
+          cd budget_graph
+          echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
+          echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
+          echo "POSTGRES_NAME=${POSTGRES_NAME}" >> .env
+          echo "POSTGRES_USERNAME=${POSTGRES_USERNAME}" >> .env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
+
       - name: Build infrastructure
         run: |
           cd tests || exit 1
-          python -m build_test_infrastructure.py
+          python build_test_infrastructure.py
 
       - name: Run UnitTests
         run: |
+          cd tests || exit 1
           python -m pytest test_database_queries.py

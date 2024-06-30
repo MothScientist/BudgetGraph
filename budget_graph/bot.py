@@ -22,8 +22,8 @@ from sys import path as sys_path
 from asyncio import run as asyncio_run
 from os import getenv, path
 from secrets import compare_digest
-from dotenv import load_dotenv
 from datetime import datetime, UTC
+from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 sys_path.append('../')
@@ -182,7 +182,7 @@ def project_github(message) -> None:
 
 
 @bot.message_handler(commands=['premium'])
-def premium(message, user_language: str):
+def premium(message):
     bot.send_message(message.chat.id, "soon")
 
 
@@ -516,14 +516,16 @@ def get_csv(message, user_language: str) -> None:
     close_db(connection)
     if table_data:
         try:
-            create_csv_file(file_path, table_headers, table_data)
-            file_size: float = get_file_size_kb(file_path)
-            file_checksum: str = get_file_checksum(file_path)
-            bot.send_document(message.chat.id, open(f"csv_tables/table_{group_id}.csv", 'rb'),
-                              caption=f"{get_phrase_by_language(user_language, "file_size")}: "
-                                      f"{"{:.3f}".format(file_size)} kB\n\n"
-                                      f"{get_phrase_by_language(user_language, "hashsum")} "
-                                      f"(sha-256): {file_checksum}")
+            csv_obj = CsvFileWithTable(file_path, table_data)
+            csv_obj.create_csv_file()
+            file_size: float = csv_obj.get_file_size_kb()
+            file_checksum: str = csv_obj.get_file_checksum()
+            with open(f"csv_tables/table_{group_id}.csv", 'rb') as csv_table_file:
+                caption: str = (f"{get_phrase_by_language(user_language, 'file_size')}: "
+                                f"{'{:.3f}'.format(file_size)} kB\n\n"
+                                f"{get_phrase_by_language(user_language, 'hashsum')} "
+                                f"(sha-256): {file_checksum}")
+                bot.send_document(message.chat.id, csv_table_file, caption=caption)
         except FileNotFoundError as err:
             bot.send_message(message.chat.id, f"{get_phrase_by_language(user_language, 'csv_not_found_error')}.")
             logger_bot.error(f"CSV FileNotFoundError => {err}. "
@@ -593,10 +595,7 @@ def change_owner(message, user_language: str):
         else:
             # List of users as a string without group owner
             group_users_str_without_owner: str = '\n'.join(
-                f"{user}"
-                for user
-                in group_users_list
-                if user != group_owner_username
+                f"{user}" for user in group_users_list if user != group_owner_username
             )
             bot.send_message(message.chat.id,
                              f"{get_phrase_by_language(user_language, 'username_new_owner')}:\n"
@@ -613,8 +612,7 @@ def process_change_owner(message, group_id: int, user_language: str) -> None:
     connection = connect_db()
     bot_db = DatabaseQueries(connection)
     telegram_id_new_owner: int = bot_db.get_telegram_id_by_username(new_owner_username)
-    user_from_current_group: bool = True if bot_db.get_group_id_by_telegram_id(telegram_id_new_owner) == group_id \
-                                    else False
+    user_from_current_group: bool = bot_db.get_group_id_by_telegram_id(telegram_id_new_owner) == group_id
     user_is_owner: bool = bot_db.check_user_is_group_owner_by_telegram_id(telegram_id_new_owner, group_id)
 
     if user_is_owner:
@@ -871,6 +869,7 @@ def get_phrase_by_language(language: str, phrase: str) -> str:
     return receive_translation(language, phrase)
 
 
+# pylint: disable=too-many-branches, too-many-function-args
 @bot.message_handler(content_types=['text'])
 def text(message) -> None:
     telegram_id: int = message.from_user.id

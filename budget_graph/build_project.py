@@ -1,7 +1,7 @@
 from os import makedirs, path
 from sys import path as sys_path
 sys_path.append('../')
-from budget_graph.db_manager import connect_db, close_db  # noqa
+from budget_graph.db_manager import connect_db, close_db
 
 
 def drop_tables_in_db() -> None:
@@ -11,6 +11,7 @@ def drop_tables_in_db() -> None:
             with open(path.join(path.dirname(__file__), 'sql/db_cleanup.sql'), 'r', encoding='utf-8') as sql_file:
                 cur.execute(sql_file.read())
             conn.commit()
+    # pylint: disable=broad-exception-caught
     except Exception as err:
         print(f'Critical error when deleting tables in the database: {err}')
     finally:
@@ -21,6 +22,7 @@ def create_directories() -> None:
     try:
         makedirs('csv_tables', exist_ok=True)
         makedirs('logs', exist_ok=True)
+    # pylint: disable=broad-exception-caught
     except Exception as err:
         print(f'Error creating additional directories: {err}')
 
@@ -37,6 +39,7 @@ def create_tables_in_db() -> None:
                 with open(path.join(path.dirname(__file__), f'sql/{filename}.sql'), 'r', encoding='utf-8') as sql_file:
                     cur.execute(sql_file.read())
             conn.commit()
+    # pylint: disable=broad-exception-caught
     except Exception as err:
         print(f'Critical error when creating tables in the database: {err}')
     finally:
