@@ -5,20 +5,18 @@ on:
   schedule:
     - cron: '0 0 * * 1'  # https://crontab.cronhub.io/
   push:
-    branches: [ master, postgresql ]
   pull_request:
 
 jobs:
-
   unit-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         # The job will be executed for every possible combination of variables.
         # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.12']
-        architecture: ['x64']
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12' ]
+        architecture: [ 'x64' ]
 
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
@@ -39,39 +37,74 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Create .env file
+        env:
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
+        run: |
+          cd budget_graph || exit 1
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
+
       - name: Run UnitTests
         run: |
           cd tests || exit 1
-          python -m pytest test_sources.py test_validators.py
+          python -m pytest test_sources.py test_validators.py test_localization.py test_user_cache.py
 
-  # database-queries-unit-tests:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [ ubuntu-latest, macos-latest, windows-latest ]
-  #       python-version: [ '3.11', '3.12' ]
+  database-queries-unit-tests:
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+    services:
+      postgres:
+        image: postgres:16.2-alpine3.18
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
-  #     - name: Install PostgreSQL 16
-  #       uses:
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Setup python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #         architecture: x64
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+          check-latest: true
 
-  #     - name: Install dependencies
-  #       run: |
-  #         pip install --upgrade pip
-  #         pip install -r requirements.txt
-  #         pip install pytest
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
 
-  #     - name: Run UnitTests
-  #       run: |
-  #         cd tests || exit 1
-  #         python manage_test_db.py
-  #         python -m pytest test_database_queries.py
+      - name: Create .env file
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
+        run: |
+          cd budget_graph
+          echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
+          echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
+          echo "POSTGRES_NAME=${POSTGRES_NAME}" >> .env
+          echo "POSTGRES_USERNAME=${POSTGRES_USERNAME}" >> .env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
+
+      - name: Build infrastructure
+        run: |
+          cd tests || exit 1
+          python build_test_infrastructure.py
+
+      - name: Run UnitTests
+        run: |
+          cd tests || exit 1
+          python -m pytest test_database_queries.py

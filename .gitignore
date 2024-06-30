@@ -25,9 +25,6 @@ db.sqlite3-journal
 *.pdb
 *.db-shm
 *.db-wal
-*.sql
-!create_db.sql
-!create_test_db.sql
 
 # Environments
 *.env

@@ -118,5 +118,7 @@
     "invalid_category": "Rangur flokkur valinn.",
     "entry_add_error": "Villa við að bæta við nýrri færslu.",
     "start_after_change_language": "Til að breyta tungumálinu rétt skaltu endurræsa vélina með því að smella á /start hnappinn.",
-    "data_is_safe": "Gögnin þín verða ekki fyrir skaða!"
+    "data_is_safe": "Gögnin þín verða ekki fyrir skaða!",
+    "invalid_data_table_for_csv": "Gagnavilla við útfyllingu töflunnar - hafðu samband við tækniaðstoð",
+    "group_not_exist": "Athugaðu táknið - það er enginn hópur með þetta tákn."
 }

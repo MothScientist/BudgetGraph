@@ -118,5 +118,7 @@
     "invalid_category": "Categoría incorrecta seleccionada.",
     "entry_add_error": "Error al agregar una nueva transacción.",
     "start_after_change_language": "Para cambiar el idioma correctamente, reinicie el bot haciendo clic en el botón /start.",
-    "data_is_safe": "¡Tus datos no se verán perjudicados!"
+    "data_is_safe": "¡Tus datos no se verán perjudicados!",
+    "invalid_data_table_for_csv": "Error de datos al completar la tabla - contacte al soporte técnico",
+    "group_not_exist": "Verifique el token: no hay ningún grupo con este token."
 }

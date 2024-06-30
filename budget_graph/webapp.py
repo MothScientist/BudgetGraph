@@ -1,16 +1,18 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import os
+import sys
+import asyncio
 from datetime import timedelta
 from dotenv import load_dotenv
-import asyncio
-import sys
+from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
+
 
 sys.path.append('../')
 
-from budget_graph.db_manager import connect_db_flask_g, close_db_flask_g, DatabaseQueries  # noqa
-from budget_graph.encryption import getting_hash, get_salt, logging_hash  # noqa
-from budget_graph.validation import value_validation, description_validation, date_validation, registration_validation  # noqa
-from budget_graph.logger import setup_logger  # noqa
+from budget_graph.logger import setup_logger
+from budget_graph.registration_service import user_registration
+from budget_graph.encryption import getting_hash, get_salt, logging_hash
+from budget_graph.db_manager import connect_db_flask_g, close_db_flask_g, DatabaseQueries
+from budget_graph.validation import value_validation, description_validation, date_validation, registration_validation
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -18,7 +20,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 # Get the secret key to encrypt the Flask session from an environment variable
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
 app.teardown_appcontext(close_db_flask_g)  # Disconnects the database connection after a query
 
@@ -40,64 +42,42 @@ def registration():
         psw: str = request.form["password"]
         telegram_id: str = request.form["telegram-id"]
         token: str = request.form["token"]
-
-        # If the token field is empty
-        if len(token) == 0:  # user creates a new group
-            if asyncio.run(registration_validation(username, psw, telegram_id)):
-                telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
-                psw_salt: str = get_salt()  # generating salt for a new user
-                dbase = DatabaseQueries(connect_db_flask_g())
-                user_token: str = dbase.create_new_group(telegram_id)  # we get token of the newly created group
-                group_id: int = dbase.get_group_id_by_token(user_token)
-
-                """
-                if an error occurred while defining the variables above, 
-                then no further actions will be performed, 
-                since add_user_to_db() will return False
-                """
-                if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
-                    session.pop("userLogged", None)  # reset old cookies when registering a new user
-                    logger_app.info(f"Successful registration: {logging_hash(username)}, new group #{group_id}.")
-                    flash("Registration completed successfully!", category="success")
-                    flash(f"{username}, your token: {user_token}", category="success_token")
-                else:
-                    logger_app.error(f"Error registering user with new group, group #{group_id}, "
-                                     f"username: {logging_hash(username)}, TelegramID: {logging_hash(telegram_id)}")
-                    flash("Unknown error while creating account. Please contact technical support!", category="error")
-
-        # User is added to an existing group
-        elif len(token) == 32 and token.isalnum():  # token consists only of letters and numbers
-            if asyncio.run(registration_validation(username, psw, telegram_id)):
-                dbase = DatabaseQueries(connect_db_flask_g())
-                group_id: int = dbase.get_group_id_by_token(token)
-                group_not_full: bool = dbase.check_limit_users_in_group(group_id)  # checking places in the group
-
-                if group_not_full:  # if the group doesn't exist, group_not_full will be set to False in the try/except
-                    telegram_id: int = int(telegram_id)  # if registration_validator is passed, then it is int
-                    psw_salt: str = get_salt()  # generating salt for a new user
-
-                    if dbase.add_user_to_db(username, psw_salt, getting_hash(psw, psw_salt), group_id, telegram_id):
-                        flash("Registration completed successfully!", category="success")
-                        logger_app.info(f"Successful registration: {logging_hash(username)}, group #{group_id}.")
-                    else:
-                        logger_app.info(f"Failed authorization  attempt: username = {logging_hash(username)}, "
-                                        f"token = {token}.")
-                        flash("Error creating user. Please try again and if the problem persists, "
-                              "contact technical support.", category="error")
-                else:
-                    logger_app.info(f"The user entered an incorrect token or group is full: "
-                                    f"username = {logging_hash(username)}, token = {token}.")
-
-                    flash("There is no group with this token or it is full. "
-                          "Contact the group members for more information, or create your own group!",
-                          category="error")
-
-        # User made a mistake when entering the token
-        elif len(token) > 0 and len(token) != 32:
-            logger_app.info(f"The user entered a token of incorrect length: {token}.")
-            flash("Error - token length must be 32 characters", category="error")
-
+        if asyncio.run(registration_validation(username, psw, telegram_id)):
+            registration_process(int(telegram_id), username, psw, token if token else 'None')
     return render_template("registration.html", title="Budget Graph - Registration")
+
+
+def registration_process(telegram_id: int, username: str, psw: str, token: str) -> None:
+    psw_salt: str = get_salt()
+    psw_hash: str = getting_hash(psw, psw_salt)
+    connection = connect_db_flask_g()
+    res, status = user_registration(DatabaseQueries(connection), token, telegram_id, username, psw_salt, psw_hash)
+
+    if res:
+        flash("Registration completed successfully!", category="success")
+        if status:
+            flash(f"{username}, your token: {status}", category="success_token")
+        return
+
+    if status == 'create_new_user_or_group_error':
+        logger_app.info(f"Failed authorization  attempt: username = {logging_hash(username)}, "
+                        f"token = {token}.")
+        flash("Error creating user. Please try again and if the problem persists, "
+              "contact technical support.", category="error")
+    elif status == 'group_not_exist':
+        logger_app.info(f"The user entered an incorrect token or group is full: "
+                        f"username = {logging_hash(username)}, token = {token}.")
+        flash("This group has a maximum number of users. Contact the group owner for a solution!",
+              category="error")
+    elif status == 'group_is_full':
+        logger_app.info(f"The user entered an incorrect token: "
+                        f"username = {logging_hash(username)}, token = {token}.")
+        flash("There is no group with this token. Please check your details or contact the group owner!",
+              category="error")
+    elif status == 'invalid_token_format':
+        logger_app.info(f"The user entered a token of incorrect length: {token}.")
+        flash("Error - token length must be 32 characters", category="error")
+    return
 
 
 @app.route('/login', methods=["GET", "POST"])  # send password in POST request and in hash
@@ -111,11 +91,10 @@ def login():
         if user_is_exist:
             logger_app.info(f"Successful authorization (cookies) -> username: {logging_hash(username)}")
             return redirect(url_for("household", username=username))
-        else:
-            session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
-            flash("Your account was not found in the database. It may have been deleted.", category="error")
-            logger_app.warning(f"Failed registration attempt from browser cookies -> "
-                               f"username: {logging_hash(username)}")
+        session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
+        flash("Your account was not found in the database. It may have been deleted.", category="error")
+        logger_app.warning(f"Failed registration attempt from browser cookies -> "
+                           f"username: {logging_hash(username)}")
 
     # here the POST request is checked, and the presence of the user in the database is checked
     if request.method == "POST":
@@ -130,14 +109,15 @@ def login():
             dbase.update_user_last_login_by_telegram_id(telegram_id)
             logger_app.info(f"Successful authorization: username: {logging_hash(username)}.")
             return redirect(url_for("household", username=session["userLogged"]))
-        else:
-            flash("This user doesn't exist.", category="error")
-            logger_app.warning(f"Failed authorization attempt: username: {logging_hash(username)}, "
-                               f"user salt is exist: {len(psw_salt) != 0}")
+        flash("This user doesn't exist.", category="error")
+        logger_app.warning(f"Failed authorization attempt: username: {logging_hash(username)}, "
+                           f"user salt is exist: {len(psw_salt) != 0}")
 
     return render_template("login.html", title="Budget Graph - Login")
 
 
+# TODO - too-many-branches
+# pylint: disable=too-many-branches
 @app.route('/household/<username>', methods=["GET", "POST"])  # user's personal account
 def household(username):
     """
@@ -147,9 +127,7 @@ def household(username):
         abort(401)
 
     dbase = DatabaseQueries(connect_db_flask_g())
-    token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)  # if token = "" -> group_id = 0
-
+    token, group_id = dbase.get_group_id_token_by_username(username)
     if request.method == "POST":
         if "submit-button-1" in request.form or "submit-button-2" in request.form:  # Processing "Add to table" button
             value: str = request.form.get("transfer")
@@ -223,8 +201,7 @@ def settings(username):
         abort(401)
 
     dbase = DatabaseQueries(connect_db_flask_g())
-    token: str = dbase.get_token_by_username(username)
-    group_id: int = dbase.get_group_id_by_token(token)
+    token, group_id = dbase.get_group_id_token_by_username(username)
     group_owner: str = dbase.get_group_owner_username_by_group_id(group_id)
     group_users_data: list = dbase.get_group_users_data(group_id)
 
@@ -260,13 +237,15 @@ def logout():
     return redirect(url_for('login'))  # redirecting the user to another page, such as the homepage
 
 
+# pylint: disable=unused-argument
 @app.errorhandler(401)
-def page_not_found(error):  # DO NOT REMOVE the parameter  # noqa
+def page_not_found_401(error):  # DO NOT REMOVE the parameter  # noqa
     return render_template("error401.html", title="UNAUTHORIZED"), 401
 
 
+# pylint: disable=unused-argument
 @app.errorhandler(404)
-def page_not_found(error):  # DO NOT REMOVE the parameter  # noqa
+def page_not_found_404(error):  # DO NOT REMOVE the parameter  # noqa
     return render_template("error404.html", title="PAGE NOT FOUND"), 404
 
 

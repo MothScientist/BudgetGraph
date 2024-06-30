@@ -1,14 +1,15 @@
+from sys import path as sys_path
 import asyncio
 import re
-from flask import flash
+from functools import cache
 from datetime import datetime, timezone
+from flask import flash
 
-import sys
-sys.path.append('../')
+sys_path.append('../')
 
-from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
-from budget_graph.dictionary import receive_translation
-from budget_graph.time_checking import timeit
+from budget_graph.db_manager import DatabaseQueries, connect_db, close_db  # noqa
+from budget_graph.dictionary import receive_translation  # noqa
+from budget_graph.time_checking import timeit  # noqa
 
 
 @timeit
@@ -30,8 +31,7 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
         if password_is_valid:
             if telegram_id_is_valid:
                 return True
-            else:
-                flash("Error - invalid telegram ID.", category="error")
+            flash("Error - invalid telegram ID.", category="error")
         else:  # each error has its own flash message so that the user knows where he made a mistake
             flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
                   category="error")
@@ -47,7 +47,7 @@ async def username_validation(username: str) -> bool:
     username_is_exist: bool = dbase.check_username_is_exist(username)
     close_db(connection)
 
-    if 3 <= len(username) <= 20 and re.match(r"^[a-zA-Z0-9]+$", username) and not username_is_exist:
+    if 3 <= len(username) <= 20 and re.match(r'^[a-zA-Z0-9]+$', username) and not username_is_exist:
         return True
     return False
 
@@ -58,7 +58,7 @@ async def password_validation(psw: str) -> bool:
     return False
 
 
-async def telegram_id_validation(telegram_id: str) -> bool:  # type: ignore
+async def telegram_id_validation(telegram_id: str) -> bool:
     if re.match(r'^[1-9]\d{2,11}$', telegram_id):  # 3-12 digits
         telegram_id: int = int(telegram_id)
     else:
@@ -114,7 +114,7 @@ async def comparison_dates_unix_format(entered_date: str) -> bool:
 
 
 async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
-    reg_exp = rf'^(0[1-9]|[1-2]\d|3[0-1])/(0[1-9]|1[0-2])/20[1-3]\d$'
+    reg_exp = r'^(0[1-9]|[1-2]\d|3[0-1])/(0[1-9]|1[0-2])/20[1-3]\d$'
     # month validation is not needed, inside the regular expression it is checked that the month is in the range 01-12.
     if re.match(reg_exp, entered_date):
         return True
@@ -126,29 +126,22 @@ async def check_day_is_correct(entered_year: int, entered_month: int, entered_da
         return False
 
     if entered_month == 2:
-        if await check_year_is_leap(entered_year) and entered_day <= 29:
-            return True
-        elif entered_day <= 28:
-            return True
-        return False
-    elif entered_month in [1, 3, 5, 7, 8, 10, 12] and entered_day <= 31:
-        return True
-    elif entered_month in [4, 6, 9, 11] and entered_day <= 30:
-        return True
-
+        if await check_year_is_leap(entered_year):
+            return entered_day <= 29
+        return entered_day <= 28
+    if entered_month in [1, 3, 5, 7, 8, 10, 12]:
+        return entered_day <= 31
+    if entered_month in [4, 6, 9, 11]:
+        return entered_day <= 30
     return False
 
 
 async def check_year_is_leap(year: int) -> bool:
-    if (year % 4 == 0 and year % 100 != 0) or (year % 100 == 0 and year % 400 == 0):
-        return True
-    return False
+    return (year % 4 == 0 and year % 100 != 0) or year % 400 == 0
 
 
 def description_validation(description: str) -> bool:  # TODO
-    if len(description) <= 50:
-        return True
-    return False
+    return len(description) <= 50
 
 
 def value_validation(value: str) -> int:
@@ -160,35 +153,21 @@ def value_validation(value: str) -> int:
     """
     if re.match(r"^(?!0$)(?=.*\d)(?!0\d)\d{0,10}$", value):
         value: int = int(value)
-
-        if value < 1000000000:
+        if value < 100_000_000:
             return value
-        return 0
-
     return 0
 
 
 @timeit
 def category_validation(lang: str, category: str) -> bool:
-    categories: tuple = (
-        f"{receive_translation(lang, "supermarkets")}",
-        f"{receive_translation(lang, "restaurants")}",
-        f"{receive_translation(lang, "clothes")}",
-        f"{receive_translation(lang, "medicine")}",
-        f"{receive_translation(lang, "transport")}",
-        f"{receive_translation(lang, "devices")}",
-        f"{receive_translation(lang, "education")}",
-        f"{receive_translation(lang, "services")}",
-        f"{receive_translation(lang, "travel")}",
-        f"{receive_translation(lang, "housing")}",
-        f"{receive_translation(lang, "transfer")}",
-        f"{receive_translation(lang, "investments")}",
-        f"{receive_translation(lang, "hobby")}",
-        f"{receive_translation(lang, "jewelry")}",
-        f"{receive_translation(lang, "salary")}",
-        f"{receive_translation(lang, "charity")}",
-        f"{receive_translation(lang, "other")}"
-    )  # TODO: make a faster algorithm, although this one works within 0.00001 sec.
-    if category in categories:
-        return True
-    return False
+    categories: tuple = get_translations_for_categories(lang)
+    return category in categories
+
+
+@cache
+def get_translations_for_categories(lang: str) -> tuple:
+    categories: tuple = ("supermarkets", "restaurants", "clothes", "medicine", "transport", "devices", "education",
+                         "services", "travel", "housing", "transfer", "investments", "hobby", "jewelry", "salary",
+                         "charity", "other")
+    categories_translate = tuple(receive_translation(lang, category) for category in categories)
+    return categories_translate
