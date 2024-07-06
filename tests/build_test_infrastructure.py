@@ -21,7 +21,6 @@ def prepare_db_tables_for_tests() -> None:
 
 
 def build() -> None:
-    makedirs('test_csv_tables', exist_ok=True)
     makedirs('logs', exist_ok=True)
 
 
