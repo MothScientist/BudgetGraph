@@ -44,20 +44,31 @@ class CsvFileWithTable:
         """
         Returns the file size in kilobytes (float), if an error occurs, return value 0 (int)
         """
-        file_size: int = os_path.getsize(self.file_path)
+        try:
+            file_size: int = os_path.getsize(self.file_path)
+        except FileNotFoundError:
+            return 0
         return file_size / 1024
 
     def get_file_checksum(self) -> str:
         hash_sha256 = sha256()
-        with open(self.file_path, 'rb') as csv_file:
-            for chunk in iter(lambda: csv_file.read(1024), b""):
-                hash_sha256.update(chunk)
+        try:
+            with open(self.file_path, 'rb') as csv_file:
+                for chunk in iter(lambda: csv_file.read(1024), b''):
+                    hash_sha256.update(chunk)
+        except FileNotFoundError:
+            return ''
         return hash_sha256.hexdigest()
 
     def validate_incoming_data(self):
         """
         Checking the input data so that the application does not crash due to a *.csv generation error
         """
+        # we get the path to the directory in which we are going to save the file
+        path_lst: list = self.file_path.split('/')[:-1]
+        path_to_directory: str = '/'.join(path_lst)
+        if not os_path.exists(path_to_directory):
+            raise FileNotFoundError('The path specified to save the CSV file is incorrect')
         # table_data is never empty when calling a function
         if not self.table_headers or not all(bool(header) for header in self.table_headers):
             raise ValueError('Table headers values cannot be empty')
