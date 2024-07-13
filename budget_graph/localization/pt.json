@@ -120,5 +120,12 @@
     "start_after_change_language": "Para alterar o idioma corretamente, reinicie o bot clicando no botão /start.",
     "data_is_safe": "Seus dados não serão prejudicados!",
     "invalid_data_table_for_csv": "Erro de dados no preenchimento da tabela - entre em contato com o suporte técnico",
-    "group_not_exist": "Verifique o token – não há grupo com este token."
+    "group_not_exist": "Verifique o token – não há grupo com este token.",
+    "ID": "EU IA",
+    "USERNAME": "NOME DE UTILIZADOR",
+    "TRANSFER": "TRANSFERIR",
+    "TOTAL": "TOTAL",
+    "DATE": "DATA",
+    "CATEGORY": "CATEGORIA",
+    "DESCRIPTION": "DESCRIÇÃO"
 }
