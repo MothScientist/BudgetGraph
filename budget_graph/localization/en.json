@@ -120,5 +120,12 @@
     "start_after_change_language": "To change the language correctly, please restart the bot by clicking on the /start button.",
     "data_is_safe": "Your data will not be harmed!",
     "invalid_data_table_for_csv": "Data error when filling out the table - contact technical support",
-    "group_not_exist": "Check the token - there is no group with this token."
+    "group_not_exist": "Check the token - there is no group with this token.",
+    "ID": "ID",
+    "USERNAME": "USERNAME",
+    "TRANSFER": "TRANSFER",
+    "TOTAL": "TOTAL",
+    "DATE": "DATE",
+    "CATEGORY": "CATEGORY",
+    "DESCRIPTION": "DESCRIPTION"
 }

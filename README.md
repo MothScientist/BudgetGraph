@@ -14,16 +14,16 @@
 - ### <font color="lime">Creating temporary groups (for example, to track travel expenses)</font>
 - ### <font color="lime">Full details of your income and expenses (website and bot)</font>
 - ### <font color="lime">Maximum reliability and fault tolerance</font>
-- ### <font color="lime">Analytics in text and graphic format</font>
+- ### <font color="lime">Analytics in text and graphic formats</font>
 - ### <font color="lime">Flexible group management</font>
 - ### <font color="lime">High priority testing</font>
 
 
 | Technology            | Version                                            |
 |-----------------------|----------------------------------------------------|
-| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)        | <center><font color="white">3.12.3</font></center> |
+| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)        | <center><font color="white">3.12.4</font></center> |
 | ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)         | <center><font color="white">3.0.3</font></center>  |
-| **pyTelegramBotAPI**  | <center><font color="white">4.17.0</font></center> |
+| **pyTelegramBotAPI**  | <center><font color="white">4.20.0</font></center> |
 | ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)      | <center><font color="white">16.2</font></center>   |
 
 ### Testing:

@@ -13,9 +13,9 @@ from tests.build_test_infrastructure import connect_test_db, close_test_db
 LANGUAGES: tuple = get_list_languages()
 LANG_LEN: int = len(LANGUAGES)
 
-SMOKE_NUMBER_OF_TRANSACTIONS: int = 10  # TODO -> 1_500
-NUMBER_OF_TRANSACTION_CYCLE: int = 10  # TODO -> 750
-NUMBER_OF_TRANSACTION_CYCLE_FOR_ONE_DAY: int = 10  # TODO -> 250
+SMOKE_NUMBER_OF_TRANSACTIONS: int = 1_500
+NUMBER_OF_TRANSACTION_CYCLE: int = 750
+NUMBER_OF_TRANSACTION_CYCLE_FOR_ONE_DAY: int = 250
 
 
 class DbSmokeTestData:

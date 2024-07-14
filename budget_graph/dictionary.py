@@ -65,7 +65,7 @@ def receive_translation(language: str, phrase: str) -> str:
     :return: value in the json-dictionary in the selected language.
     """
     dict_language_obj: dict = get_translate_from_json(language)
-    return dict_language_obj.get(phrase)
+    return dict_language_obj.get(phrase, 'Error')
 
 
 @cache
@@ -79,6 +79,7 @@ def get_translate_from_json(language: str) -> dict:
             json_dict: str = json_file.read()
         return loads(json_dict)
     except FileNotFoundError:
+        logger_dict.error(f'Dictionary not found: {language}')
         return {}
 
 
@@ -94,6 +95,3 @@ def get_list_languages() -> tuple:
                        if file.endswith('.json') and file[:2] not in list_of_excluded_languages]
     lang_json.sort()
     return tuple(lang_json)
-
-
-# TODO - logging
