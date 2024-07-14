@@ -18,20 +18,22 @@ class CsvFileWithTable:
         self.table_data: tuple[tuple, ...] = table_data
         self.table_headers: tuple[str, ...] = table_headers
         self.language: str = lang
-        # translate if it matches the standard set of headers
-        if table_data == ('ID', 'USERNAME', 'TRANSFER', 'TOTAL', 'DATE', 'CATEGORY', 'DESCRIPTION') and lang != 'en':
-            self.table_data = (receive_translation(lang, 'ID'),
-                               receive_translation(lang, 'USERNAME'),
-                               receive_translation(lang, 'TRANSFER'),
-                               receive_translation(lang, 'TOTAL'),
-                               receive_translation(lang, 'DATE'),
-                               receive_translation(lang, 'CATEGORY'),
-                               receive_translation(lang, 'DESCRIPTION'))
 
     def create_csv_file(self):
         """
         The function is responsible for creating *.csv file
         """
+        # translate if it matches the standard set of headers
+        if (self.table_headers == ('ID', 'USERNAME', 'TRANSFER', 'TOTAL', 'DATE', 'CATEGORY', 'DESCRIPTION')
+                and self.language != 'en'):
+            self.table_headers = (receive_translation(self.language, 'ID'),
+                                  receive_translation(self.language, 'USERNAME'),
+                                  receive_translation(self.language, 'TRANSFER'),
+                                  receive_translation(self.language, 'TOTAL'),
+                                  receive_translation(self.language, 'DATE'),
+                                  receive_translation(self.language, 'CATEGORY'),
+                                  receive_translation(self.language, 'DESCRIPTION'))
+
         # data validation to fill the table
         self.validate_incoming_data()
         with open(self.file_path, 'w', newline='', encoding='utf-8') as csvfile:

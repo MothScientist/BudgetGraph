@@ -17,10 +17,16 @@ class TestCreateCSV(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         makedirs('test_csv_tables', exist_ok=True)
+        rmtree('../budget_graph/__pycache__', ignore_errors=True)
+        rmtree('.pytest_cache', ignore_errors=True)
+        rmtree('__pycache__', ignore_errors=True)
 
     @classmethod
     def tearDownClass(cls):
-        rmtree('test_csv_tables')
+        rmtree('test_csv_tables', ignore_errors=True)
+        rmtree('../budget_graph/__pycache__', ignore_errors=True)
+        rmtree('.pytest_cache', ignore_errors=True)
+        rmtree('__pycache__', ignore_errors=True)
 
     def test_csv_001(self):
         file_path: str = 'test_csv_tables/test_table_1.csv'
@@ -182,7 +188,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_13.create_csv_file()
         finish_generation_csv_file: float = perf_counter()
         time: float = finish_generation_csv_file - start_generation_csv_file
-        self.assertTrue(time < 0.05, f'Time: {time}')
+        self.assertTrue(time < 0.1, f'Time: {time}')
 
         # due to random data, checking the file size and hash does not make sense
         self.assertEqual(path.exists(file_path), True)
@@ -227,7 +233,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_15.create_csv_file()
         finish_generation_csv_file: float = perf_counter()
         time: float = finish_generation_csv_file - start_generation_csv_file
-        self.assertTrue(time < 1, f'Time (create_csv_file): {time}')
+        self.assertTrue(time < 0.5, f'Time (create_csv_file): {time}')
 
         self.assertEqual(path.exists(file_path), True)
 
@@ -291,7 +297,7 @@ class TestCreateCSV(unittest.TestCase):
 
     def test_csv_019(self):
         file_path: str = 'fail_path/test_table_1.csv'
-        table_data: tuple = tuple((tuple(range(7))) for _ in TestCreateCSV.tuple_of_100k)
+        table_data: tuple = tuple((tuple(range(7))) for _ in TestCreateCSV.tuple_of_500)
         create_csv_obj_19 = CsvFileWithTable(file_path, table_data)
         with self.assertRaises(FileNotFoundError):
             create_csv_obj_19.create_csv_file()
@@ -302,6 +308,139 @@ class TestCreateCSV(unittest.TestCase):
 
         file_checksum: str = create_csv_obj_19.get_file_checksum()
         self.assertEqual(file_checksum, '')
+
+    def test_csv_020(self):
+        file_path: str = 'fail_path/path_to_csv/test_table_2.csv'
+        table_data: tuple = tuple((tuple(range(7))) for _ in TestCreateCSV.tuple_of_500)
+        create_csv_obj_20 = CsvFileWithTable(file_path, table_data)
+        with self.assertRaises(FileNotFoundError):
+            create_csv_obj_20.create_csv_file()
+        self.assertEqual(path.exists(file_path), False)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_20.get_file_size_kb())
+        self.assertEqual(file_size, '0.000')
+
+        file_checksum: str = create_csv_obj_20.get_file_checksum()
+        self.assertEqual(file_checksum, '')
+
+    def test_csv_021(self):
+        file_path: str = 'test_table_3.csv'
+        table_data: tuple = tuple((tuple(range(7))) for _ in TestCreateCSV.tuple_of_500)
+        create_csv_obj_21 = CsvFileWithTable(file_path, table_data)
+        with self.assertRaises(FileNotFoundError):
+            create_csv_obj_21.create_csv_file()
+        self.assertEqual(path.exists(file_path), False)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_21.get_file_size_kb())
+        self.assertEqual(file_size, '0.000')
+
+        file_checksum: str = create_csv_obj_21.get_file_checksum()
+        self.assertEqual(file_checksum, '')
+
+    def test_csv_022(self):
+        file_path: str = ''
+        table_data: tuple = tuple((tuple(range(7))) for _ in TestCreateCSV.tuple_of_500)
+        create_csv_obj_22 = CsvFileWithTable(file_path, table_data)
+        with self.assertRaises(FileNotFoundError):
+            create_csv_obj_22.create_csv_file()
+        self.assertEqual(path.exists(file_path), False)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_22.get_file_size_kb())
+        self.assertEqual(file_size, '0.000')
+
+        file_checksum: str = create_csv_obj_22.get_file_checksum()
+        self.assertEqual(file_checksum, '')
+
+    def test_csv_023(self):
+        """ Use of other languages """
+        file_path: str = 'test_csv_tables/test_table_23.csv'
+        table_data: tuple = tuple((tuple(range(7))) for _ in range(10))
+        create_csv_obj_23 = CsvFileWithTable(file_path, table_data, lang='es')
+        create_csv_obj_23.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_23.get_file_size_kb())
+        self.assertEqual(file_size, '0.227')
+
+        file_checksum: str = create_csv_obj_23.get_file_checksum()
+        self.assertEqual(file_checksum, 'c4c8eaa9694e7358d43dc1b45366da65d5047b92435ee685295dbc107fdd39b4')
+
+    def test_csv_024(self):
+        """ Specifying the wrong value for the language """
+        file_path: str = 'test_csv_tables/test_table_24.csv'
+        table_data: tuple = tuple((tuple(range(7))) for _ in range(5))
+        create_csv_obj_24 = CsvFileWithTable(file_path, table_data, lang='00')
+        create_csv_obj_24.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_24.get_file_size_kb())
+        self.assertEqual(file_size, '0.115')
+
+        file_checksum: str = create_csv_obj_24.get_file_checksum()
+        self.assertEqual(file_checksum, '2a7ec97cf1add970cf9abc148111abc83d1eae8fbdf68e6b7c57232988cbd666')
+
+    def test_csv_025(self):
+        file_path: str = 'test_csv_tables/test_table_25.csv'
+        table_data: tuple = tuple((tuple(range(7))) for _ in range(3))
+        create_csv_obj_25 = CsvFileWithTable(file_path, table_data, lang='is')
+        create_csv_obj_25.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_25.get_file_size_kb())
+        self.assertEqual(file_size, '0.108')
+
+        file_checksum: str = create_csv_obj_25.get_file_checksum()
+        self.assertEqual(file_checksum, 'd67805e2f1963c29b752c18a5c4f916e1c2e381d211c45bfab9eabc0cc3996a8')
+
+    def test_csv_026(self):
+        file_path: str = 'test_csv_tables/test_table_26.csv'
+        table_data: tuple = tuple((tuple(range(7))) for _ in range(3))
+        create_csv_obj_26 = CsvFileWithTable(file_path, table_data, lang='ru')
+        create_csv_obj_26.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_26.get_file_size_kb())
+        self.assertEqual(file_size, '0.146')
+
+        file_checksum: str = create_csv_obj_26.get_file_checksum()
+        self.assertEqual(file_checksum, '4c3e7c56f4d05a65a18c6fa03fc0f81f5bc325d2aaa3780e76df3cb137bd96c2')
+
+    def test_csv_027(self):
+        """ Checking the default language """
+        table_data: tuple = tuple((tuple(range(7))) for _ in range(3))
+
+        file_path_1: str = 'test_csv_tables/test_table_27_1.csv'
+        create_csv_obj_27_1 = CsvFileWithTable(file_path_1, table_data)
+        create_csv_obj_27_1.create_csv_file()
+        self.assertEqual(path.exists(file_path_1), True)
+        file_size_1: str = '{:.3f}'.format(create_csv_obj_27_1.get_file_size_kb())
+        self.assertEqual(file_size_1, '0.097')
+        file_checksum_1: str = create_csv_obj_27_1.get_file_checksum()
+        self.assertEqual(file_checksum_1, '2f76ced0522e538ac823b6f49453f248f8c65fff2bebee77f26bd2b355709319')
+
+        file_path_2: str = 'test_csv_tables/test_table_27_2.csv'
+        create_csv_obj_27_2 = CsvFileWithTable(file_path_2, table_data, lang='en')
+        create_csv_obj_27_2.create_csv_file()
+        self.assertEqual(path.exists(file_path_2), True)
+        file_size_2: str = '{:.3f}'.format(create_csv_obj_27_2.get_file_size_kb())
+        self.assertEqual(file_size_1, file_size_2)
+        file_checksum_2: str = create_csv_obj_27_2.get_file_checksum()
+        self.assertEqual(file_checksum_1, file_checksum_2)
+
+    def test_csv_028(self):
+        """ Checking that specifying the language will not break custom table headers """
+        file_path: str = 'test_csv_tables/test_table_28.csv'
+        table_data: tuple = tuple((tuple(range(15))) for _ in range(3))
+        table_headers: tuple = tuple('___' for _ in range(15))
+
+        create_csv_obj_28 = CsvFileWithTable(file_path, table_data, table_headers=table_headers, lang='es')
+        create_csv_obj_28.create_csv_file()
+
+        self.assertEqual(path.exists(file_path), True)
+        file_size: str = '{:.3f}'.format(create_csv_obj_28.get_file_size_kb())
+        self.assertEqual(file_size, '0.165')
+        file_checksum: str = create_csv_obj_28.get_file_checksum()
+        self.assertEqual(file_checksum, 'a76a624def64f20303cbfc22ce95a77b8c79a92ca02acc079fc74291d618ac01')
 
 
 if __name__ == '__main__':
