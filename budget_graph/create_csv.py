@@ -2,7 +2,10 @@ from os import path as os_path
 from csv import writer as csv_writer, QUOTE_MINIMAL
 from hashlib import sha256
 
+from budget_graph.logger import setup_logger
 from budget_graph.dictionary import receive_translation
+
+logger_csv_builder = setup_logger("logs/CsvLog.log", "csv_builder_logger")
 
 
 class CsvFileWithTable:
@@ -48,9 +51,12 @@ class CsvFileWithTable:
         """
         try:
             file_size: int = os_path.getsize(self.file_path)
-        except FileNotFoundError:
+            kb_size: float = file_size / 1024
+        except (FileNotFoundError, ZeroDivisionError) as err:
+            logger_csv_builder.warning(f'Error calculating CSV file size: {err}')
             return 0
-        return file_size / 1024
+        logger_csv_builder.info(f'CSV file successfully created with size: {kb_size} kB')
+        return kb_size
 
     def get_file_checksum(self) -> str:
         hash_sha256 = sha256()
