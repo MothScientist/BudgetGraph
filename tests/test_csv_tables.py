@@ -403,7 +403,7 @@ class TestCreateCSV(unittest.TestCase):
         self.assertEqual(file_size, '0.146')
 
         file_checksum: str = create_csv_obj_26.get_file_checksum()
-        self.assertEqual(file_checksum, '4c3e7c56f4d05a65a18c6fa03fc0f81f5bc325d2aaa3780e76df3cb137bd96c2')
+        self.assertEqual(file_checksum, '46cafb0c19521581e1a3edac0f921dc57e88a9e89389a7fd1e7e1b17f918b8a6')
 
     def test_csv_027(self):
         """ Checking the default language """
