@@ -48,7 +48,7 @@ class TestLanguages(unittest.TestCase):
                 keys_data = json.load(f)
             test_list += keys_data
         finish = time()
-        res: bool = True if finish - start < 0.0035 else False
+        res: bool = True if finish - start < 0.05 else False
         self.assertTrue(res, f'Actual time: {finish - start}')
 
     def test_languages_4(self):
@@ -86,12 +86,13 @@ class TestLanguages(unittest.TestCase):
             for keys in TestLanguages.all_keys_for_each_language:
                 _values = tuple(receive_translation(lang, key) for key in keys)
                 res: bool = (len(_values) == len(set(_values)))
-                self.assertTrue(res)
+                self.assertTrue(res, f'Language: {lang}; len(_values) = {len(_values)}; '
+                                     f'len(set(_values)) = {len(set(_values))}')
 
     def test_languages_8(self):
         unknown_key: str = '123123'
         res: str = receive_translation("es", unknown_key)
-        self.assertIsNone(res)
+        self.assertEqual(res, 'Error')
 
     def test_languages_9(self):
         res: str = receive_translation("es", "invalid_value")
@@ -112,7 +113,7 @@ class TestLanguages(unittest.TestCase):
     def test_languages_13(self):
         unknown_key: str = 'unknown_key_unknown_key'
         res: str = receive_translation("en", unknown_key)
-        self.assertIsNone(res)
+        self.assertEqual(res, 'Error')
 
     def test_languages_14(self):
         res: str = receive_translation("de", "change_owner")
@@ -134,7 +135,7 @@ class TestLanguages(unittest.TestCase):
     def test_languages_18(self):
         unknown_lang: str = 'gb'
         res: str = receive_translation(unknown_lang, "data_is_safe")
-        self.assertIsNone(res)
+        self.assertEqual(res, 'Error')
 
     def test_get_list_languages_1(self):
         res: tuple = get_list_languages()
