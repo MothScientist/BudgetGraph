@@ -96,9 +96,7 @@ class DatabaseQueries:
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))  # DO NOT REMOVE commas
                     res = cur.fetchone()
-                    if res:
-                        return res[0]
-                    return ''
+                    return res[0] if res else ''
 
         except (DatabaseError, TypeError) as err:
             # The logs store the error and parameters that were passed to the function (except secrets)
@@ -123,10 +121,8 @@ class DatabaseQueries:
                                    WHERE
                                      "username" = %s::text""", (username,))
                     res = cur.fetchone()
+                    return res[0] if res else 0
 
-                    if res:
-                        return res[0]
-                    return 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -146,9 +142,8 @@ class DatabaseQueries:
                                    WHERE
                                      "token" = %s::text""", (token,))
                     res = cur.fetchone()
-                    if res:
-                        return res[0]
-                    return 0
+                    return res[0] if res else 0
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"token: {token}")
@@ -168,10 +163,8 @@ class DatabaseQueries:
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
+                    return res[0] if res else 0
 
-                    if res:
-                        return res[0]
-                    return 0
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
@@ -196,9 +189,8 @@ class DatabaseQueries:
                                    WHERE
                                      u."username" = %s::text""", (username,))
                     res = cur.fetchall()
-                    if res:
-                        return res[0]
-                    return '', 0
+                    return res[0] if res else '', 0
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -222,9 +214,8 @@ class DatabaseQueries:
                                    WHERE
                                      u_g."telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
-                    if res:
-                        return res[0]
-                    return ""
+                    return res[0] if res else ""
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
@@ -244,9 +235,8 @@ class DatabaseQueries:
                                    WHERE
                                      "username" = %s::text""", (username,))
                     res = cur.fetchone()
-                    if res:
-                        return str(res[0])
-                    return ""
+                    return str(res[0]) if res else ""
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -268,9 +258,8 @@ class DatabaseQueries:
                                      AND
                                      u."psw_hash" = %s::text""", (username, psw_hash,))
                     res = cur.fetchone()
-                    if res:
-                        return True
-                    return False
+                    return bool(res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username: {logging_hash(username)}")
@@ -333,8 +322,8 @@ class DatabaseQueries:
                                          %s::smallint""",
                                     (group_id, number_of_last_records,))
                         res = cur.fetchall()
-                    res_list: tuple[tuple, ...] = tuple(tuple(row) for row in res)
-                    return res_list
+                    return tuple(tuple(row) for row in res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}, "
@@ -359,8 +348,8 @@ class DatabaseQueries:
                                    WHERE
                                      u_g."group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchall()
-                    res_list = tuple(str(row[0]) for row in res)
-                    return res_list
+                    return tuple(str(row[0]) for row in res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -380,8 +369,8 @@ class DatabaseQueries:
                                    WHERE
                                      "group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchall()
-                    res_list = tuple(row[0] for row in res)
-                    return res_list
+                    return tuple(row[0] for row in res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -406,8 +395,8 @@ class DatabaseQueries:
                                    WHERE
                                      u_g."group_id" = %s::smallint""", (group_id,))
                     res = cur.fetchall()
-                    res_list = [list(row) for row in res]
-                    return res_list
+                    return [list(row) for row in res]
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -430,6 +419,7 @@ class DatabaseQueries:
                                      "id" = %s::smallint""", (telegram_id, group_id,))
                     res = cur.fetchone()
                     return res[0]
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}"
@@ -451,9 +441,8 @@ class DatabaseQueries:
                                    WHERE
                                      g."id" = %s::smallint""", (group_id,))
                     res = cur.fetchone()
-                    if res:
-                        return str(res[0])
-                    return ""
+                    return str(res[0]) if res else ''
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -472,9 +461,8 @@ class DatabaseQueries:
                                    AND
                                      "transaction_id" = %s::integer""", (group_id, transaction_id,))
                     res = cur.fetchone()
-                    if res:
-                        return True
-                    return False
+                    return bool(res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}, "
@@ -496,9 +484,7 @@ class DatabaseQueries:
                                    WHERE
                                      LOWER("username") = LOWER(%s::text)""", (username,))
                     res = cur.fetchone()
-                    if res:
-                        return True
-                    return False
+                    return bool(res)
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -516,9 +502,8 @@ class DatabaseQueries:
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
-                    if res:
-                        return True
-                    return False
+                    return bool(res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram ID: {logging_hash(telegram_id)}")
@@ -538,9 +523,8 @@ class DatabaseQueries:
                                    WHERE
                                      "token" = %s::text""", (token,))
                     res = cur.fetchone()
-                    if res:
-                        return False
-                    return True
+                    return bool(res)
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"new token: {token}")
@@ -573,6 +557,7 @@ class DatabaseQueries:
                                      "id" = %s::smallint""", (group_id,))
                     res = cur.fetchone()
                     return res[0]
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group id: {group_id}")
@@ -595,10 +580,7 @@ class DatabaseQueries:
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
                     res = cur.fetchone()
-                    if res:
-                        language: str = str(res[0])
-                        return language
-                    return 'en'  # if the user did not change the default language
+                    return str(res[0]) if res else 'en'  # if the user did not change the default language
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -619,12 +601,13 @@ class DatabaseQueries:
                                    DO UPDATE SET
                                      "language" = %s::text""", (telegram_id, language, language))
                     conn.commit()
+                    return True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}, "
                                   f"language: {language}")
             return False
-        return True
 
     # pylint: disable=too-many-arguments
     @timeit
@@ -661,6 +644,8 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     sql_query = read_sql_file('add_transaction_to_db')
                     cur.execute(sql_query, params)
+            return True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"username (hash): {logging_hash(username)
@@ -672,7 +657,6 @@ class DatabaseQueries:
                                   f"category: {category},"
                                   f"description: {description}")
             return False
-        return True
 
     def process_delete_transaction_record(self, group_id: int, transaction_id: int) -> bool:
         """
@@ -688,12 +672,13 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     sql_query = read_sql_file('delete_transaction_record')
                     cur.execute(sql_query, params)
+            return True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}, "
                                   f"transaction ID: {transaction_id}")
             return False
-        return True
 
     # pylint: disable=too-many-arguments
     @timeit
@@ -733,6 +718,8 @@ class DatabaseQueries:
                     sql_query = read_sql_file('new_user_in_group' if group_id else 'new_user_with_group')
                     cur.execute(sql_query, params)
                     conn.commit()
+            return group_token if group_token else True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id (hash): {logging_hash(telegram_id)}; "
@@ -741,8 +728,7 @@ class DatabaseQueries:
                                   f"psw_salt - {bool(psw_salt)}; "
                                   f"psw_hash - {bool(psw_hash)}; "
                                   f"token = {group_token}")
-            return False if not group_token else ''
-        return True if not group_token else group_token
+            return '' if group_token else False
 
     def update_user_last_login_by_telegram_id(self, telegram_id: int) -> None:
         """
@@ -800,12 +786,13 @@ class DatabaseQueries:
                                      "telegram_id" = %s::bigint
                                 """, (telegram_id, telegram_id,))
                     conn.commit()
+            logger_database.info(f"Telegram ID {logging_hash(telegram_id)} has been removed from the database")
+            return True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram ID: {logging_hash(telegram_id)}")
             return False
-        logger_database.info(f"Telegram ID {logging_hash(telegram_id)} has been removed from the database")
-        return True
 
     def delete_group_with_users(self, group_id: int) -> bool:  # TODO REFERENCES IN .sql
         """
@@ -847,9 +834,10 @@ class DatabaseQueries:
                                      "group_id" = %s::smallint""", (group_id, group_id, group_id, group_id,))
 
                     conn.commit()
+            logger_database.info(f"Group #{group_id} has been completely deleted")
+            return True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"group ID: {group_id}")
             return False
-        logger_database.info(f"Group #{group_id} has been completely deleted")
-        return True
