@@ -95,8 +95,7 @@ class DatabaseQueries:
                                      "budget_graph"."users"
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))  # DO NOT REMOVE commas
-                    res = cur.fetchone()
-                    return res[0] if res else ''
+                    return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
             # The logs store the error and parameters that were passed to the function (except secrets)
@@ -120,8 +119,7 @@ class DatabaseQueries:
                                      "budget_graph"."users"
                                    WHERE
                                      "username" = %s::text""", (username,))
-                    res = cur.fetchone()
-                    return res[0] if res else 0
+                    return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -141,8 +139,7 @@ class DatabaseQueries:
                                      "budget_graph"."groups"
                                    WHERE
                                      "token" = %s::text""", (token,))
-                    res = cur.fetchone()
-                    return res[0] if res else 0
+                    return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -162,8 +159,7 @@ class DatabaseQueries:
                                      "budget_graph"."users_groups"
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
-                    res = cur.fetchone()
-                    return res[0] if res else 0
+                    return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -174,22 +170,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     g."token", g."id"
-                                   FROM
-                                     "budget_graph"."groups" g
-                                   INNER JOIN
-                                     "budget_graph"."users_groups" u_g
-                                   ON
-                                     g."id" = u_g."group_id"
-                                   INNER JOIN
-                                     "budget_graph"."users" u
-                                   ON
-                                     u."telegram_id" = u_g."telegram_id"
-                                   WHERE
-                                     u."username" = %s::text""", (username,))
-                    res = cur.fetchall()
-                    return res[0] if res else '', 0
+                    cur.execute(read_sql_file('get_group_id_token_by_username'), {'username': username})
+                    return res[0] if (res := cur.fetchall()) else ('', 0)
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -213,8 +195,7 @@ class DatabaseQueries:
                                      g."id" = u_g."group_id"
                                    WHERE
                                      u_g."telegram_id" = %s::bigint""", (telegram_id,))
-                    res = cur.fetchone()
-                    return res[0] if res else ""
+                    return res[0] if (res := cur.fetchone()) else ""
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -234,8 +215,7 @@ class DatabaseQueries:
                                      "budget_graph"."users"
                                    WHERE
                                      "username" = %s::text""", (username,))
-                    res = cur.fetchone()
-                    return str(res[0]) if res else ""
+                    return str(res[0]) if (res := cur.fetchone()) else ""
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -257,8 +237,7 @@ class DatabaseQueries:
                                      u."username" = %s::text
                                      AND
                                      u."psw_hash" = %s::text""", (username, psw_hash,))
-                    res = cur.fetchone()
-                    return bool(res)
+                    return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -300,7 +279,6 @@ class DatabaseQueries:
                                        LIMIT
                                          %s::smallint""",
                                     (group_id, number_of_last_records,))
-                        res = cur.fetchall()
                     else:
                         # use DESC to make it easier for the user to read
                         cur.execute("""SELECT
@@ -321,8 +299,7 @@ class DatabaseQueries:
                                        LIMIT
                                          %s::smallint""",
                                     (group_id, number_of_last_records,))
-                        res = cur.fetchall()
-                    return tuple(tuple(row) for row in res)
+                    return tuple(tuple(row) for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -347,8 +324,7 @@ class DatabaseQueries:
                                      u."telegram_id" = u_g."telegram_id"
                                    WHERE
                                      u_g."group_id" = %s::smallint""", (group_id,))
-                    res = cur.fetchall()
-                    return tuple(str(row[0]) for row in res)
+                    return tuple(str(row[0]) for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -368,8 +344,7 @@ class DatabaseQueries:
                                      "budget_graph"."users_groups"
                                    WHERE
                                      "group_id" = %s::smallint""", (group_id,))
-                    res = cur.fetchall()
-                    return tuple(row[0] for row in res)
+                    return tuple(row[0] for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -394,8 +369,7 @@ class DatabaseQueries:
                                      u."telegram_id" = u_g."telegram_id"
                                    WHERE
                                      u_g."group_id" = %s::smallint""", (group_id,))
-                    res = cur.fetchall()
-                    return [list(row) for row in res]
+                    return [list(row) for row in cur.fetchall()]
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -417,8 +391,7 @@ class DatabaseQueries:
                                      "budget_graph"."groups"
                                    WHERE
                                      "id" = %s::smallint""", (telegram_id, group_id,))
-                    res = cur.fetchone()
-                    return res[0]
+                    return (cur.fetchone())[0]
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -460,8 +433,7 @@ class DatabaseQueries:
                                      "group_id" = %s::smallint
                                    AND
                                      "transaction_id" = %s::integer""", (group_id, transaction_id,))
-                    res = cur.fetchone()
-                    return bool(res)
+                    return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -501,8 +473,7 @@ class DatabaseQueries:
                                      "budget_graph"."users"
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
-                    res = cur.fetchone()
-                    return bool(res)
+                    return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -522,8 +493,7 @@ class DatabaseQueries:
                                      "budget_graph"."groups"
                                    WHERE
                                      "token" = %s::text""", (token,))
-                    res = cur.fetchone()
-                    return bool(res)
+                    return bool(not (cur.fetchone()))
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -540,23 +510,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     CASE
-                                        WHEN
-                                          "users_number" IS NOT NULL
-                                          AND
-                                          "users_number" <> 20
-                                        THEN
-                                          TRUE
-                                        ELSE
-                                          FALSE
-                                     END
-                                   FROM
-                                     "budget_graph"."groups"
-                                   WHERE
-                                     "id" = %s::smallint""", (group_id,))
-                    res = cur.fetchone()
-                    return res[0]
+                    cur.execute(read_sql_file('check_limit_users_in_group'), {'group_id': group_id})
+                    return (cur.fetchone())[0]
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -579,8 +534,8 @@ class DatabaseQueries:
                                      "budget_graph"."user_languages_telegram"
                                    WHERE
                                      "telegram_id" = %s::bigint""", (telegram_id,))
-                    res = cur.fetchone()
-                    return str(res[0]) if res else 'en'  # if the user did not change the default language
+                    # if the user did not change the default language
+                    return str(res[0]) if (res := cur.fetchone()) else 'en'
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
@@ -642,8 +597,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    sql_query = read_sql_file('add_transaction_to_db')
-                    cur.execute(sql_query, params)
+                    cur.execute(read_sql_file('add_transaction_to_db'), params)
             return True
 
         except (DatabaseError, TypeError) as err:
@@ -670,8 +624,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    sql_query = read_sql_file('delete_transaction_record')
-                    cur.execute(sql_query, params)
+                    cur.execute(read_sql_file('delete_transaction_record'), params)
             return True
 
         except (DatabaseError, TypeError) as err:
@@ -715,8 +668,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    sql_query = read_sql_file('new_user_in_group' if group_id else 'new_user_with_group')
-                    cur.execute(sql_query, params)
+                    cur.execute(read_sql_file('new_user_in_group' if group_id else 'new_user_with_group'), params)
                     conn.commit()
             return group_token if group_token else True
 
@@ -763,7 +715,10 @@ class DatabaseQueries:
                                    WHERE
                                      "id" = %s::smallint""", (telegram_id, group_id,))
                     conn.commit()
-                    return True
+            logger_database.info(f"Updated group owner: group_id = {logging_hash(group_id)},"
+                                 f"telegram_id owner = {logging_hash(telegram_id)}")
+            return True
+
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"{str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}, "
