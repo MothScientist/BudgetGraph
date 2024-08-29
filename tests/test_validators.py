@@ -98,7 +98,7 @@ class TestDateValidation(unittest.TestCase):
         """
         Leap years
         """
-        leap_years: tuple = (1600, 1992, 2000, 2020, 2024, 2028, 2032, 2156, 2400)
+        leap_years: tuple = (1600, 1992, 2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2156, 2400)
         for leap_year in leap_years:
             res = asyncio.run(check_year_is_leap(leap_year))
             self.assertTrue(res, leap_year)
@@ -107,7 +107,7 @@ class TestDateValidation(unittest.TestCase):
         """
         Non-leap years
         """
-        non_leap_years: tuple = (1700, 1800, 1900, 2025, 2030, 2100, 2100, 2200, 2300, 2500, 2600)
+        non_leap_years: tuple = (1700, 1800, 1900, 2025, 2026, 2027, 2029, 2030, 2100, 2100, 2200, 2300, 2500, 2600)
         for non_leap_year in non_leap_years:
             res = asyncio.run(check_year_is_leap(non_leap_year))
             self.assertFalse(res, non_leap_year)
@@ -151,6 +151,20 @@ class TestDateValidation(unittest.TestCase):
     def test_check_date_in_correct_format_10(self):
         res = asyncio.run(check_date_in_correct_format("00/12/2017"))
         self.assertFalse(res)
+
+    def test_check_date_in_correct_format_11(self):
+        for day in range(1, 10):
+            for month in range(1, 3):
+                for year in range(0, 4):
+                    res = asyncio.run(check_date_in_correct_format(f"0{day}/0{month}/202{year}"))
+                    self.assertTrue(res, f"0{day}/0{month}/202{year}")
+
+    def test_check_date_in_correct_format_12(self):
+        for day in range(0, 10):
+            for month in range(0, 3):
+                for year in range(18, 23):
+                    res = asyncio.run(check_date_in_correct_format(f"1{day}/1{month}/20{year}"))
+                    self.assertTrue(res, f"1{day}/1{month}/20{year}")
 
     def test_date_validation_1(self):
         current_date = datetime.now(timezone.utc).strftime('%d/%m/%Y')
