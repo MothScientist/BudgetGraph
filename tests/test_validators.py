@@ -95,18 +95,14 @@ class TestDateValidation(unittest.TestCase):
             self.assertFalse(res)
 
     def test_leap_year_1(self):
-        """
-        Leap years
-        """
+        """ Leap years """
         leap_years: tuple = (1600, 1992, 2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2156, 2400)
         for leap_year in leap_years:
             res = asyncio.run(check_year_is_leap(leap_year))
             self.assertTrue(res, leap_year)
 
     def test_leap_year_2(self):
-        """
-        Non-leap years
-        """
+        """ Non-leap years """
         non_leap_years: tuple = (1700, 1800, 1900, 2025, 2026, 2027, 2029, 2030, 2100, 2100, 2200, 2300, 2500, 2600)
         for non_leap_year in non_leap_years:
             res = asyncio.run(check_year_is_leap(non_leap_year))
@@ -244,6 +240,21 @@ class TestRegistrationValidation(unittest.TestCase):
     def test_telegram_id_8(self):
         res = asyncio.run(telegram_id_validation("5"))  # 1
         self.assertFalse(res)
+
+    def test_telegram_id_9(self):
+        for factor in range(0, 2):
+            res = asyncio.run(telegram_id_validation(str(10 ** factor)))
+            self.assertFalse(res, f'factor = {factor}')
+
+    def test_telegram_id_10(self):
+        for factor in range(2, 12):
+            res = asyncio.run(telegram_id_validation(str(10 ** factor)))
+            self.assertTrue(res, f'factor = {factor}')
+
+    def test_telegram_id_11(self):
+        for factor in range(12, 100):
+            res = asyncio.run(telegram_id_validation(str(10 ** factor)))
+            self.assertFalse(res, f'factor = {factor}')
 
 
 class TestNumberValidation(unittest.TestCase):
