@@ -11,7 +11,7 @@ class TestLanguages(unittest.TestCase):
     for lang in languages:
         with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as language_json_file:
             keys_data = json.load(language_json_file)
-        keys_list: list = keys_data.keys()
+        keys_list: list = list(keys_data.keys())
         all_keys_for_each_language_list.append(keys_list)
     # immutable
     all_keys_for_each_language: tuple = tuple(all_keys_for_each_language_list)
@@ -34,7 +34,7 @@ class TestLanguages(unittest.TestCase):
         dict_len: int = len(TestLanguages.all_keys_for_each_language[0])
         number_of_languages: int = len(TestLanguages.languages)
         res: bool = all(dict_len == len(TestLanguages.all_keys_for_each_language[i])
-                        for i in range(1, number_of_languages))
+                        for i in range(number_of_languages))
         self.assertTrue(res)
 
     def test_languages_3(self):
@@ -44,7 +44,7 @@ class TestLanguages(unittest.TestCase):
         test_list: list = []  # here we will add information about the dictionary for load simulation
         start = time()
         for lang in self.languages:
-            with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as f:
+            with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as f:
                 keys_data = json.load(f)
             test_list += keys_data
         finish = time()

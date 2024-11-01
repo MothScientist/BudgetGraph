@@ -65,7 +65,7 @@ def receive_translation(language: str, phrase: str) -> str:
     :return: value in the json-dictionary in the selected language.
     """
     dict_language_obj: dict = get_translate_from_json(language)
-    return dict_language_obj.get(phrase, 'Error')
+    return str(dict_language_obj.get(phrase, 'Error'))
 
 
 @cache
