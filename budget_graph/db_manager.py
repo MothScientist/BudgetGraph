@@ -1,5 +1,6 @@
 from os import getenv, path
 from flask import g
+from functools import wraps
 from dotenv import load_dotenv
 from psycopg2 import connect, DatabaseError
 
@@ -23,17 +24,39 @@ logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
 def connect_db():
     try:
         conn = connect(DSN)
-        logger_database.debug("SUCCESS: connecting to database")
-        return conn
     except (DatabaseError, UnicodeDecodeError) as err:
         logger_database.critical(f"connecting to database: {str(err)}")
         return None
+    else:
+        logger_database.debug("SUCCESS: connecting to database")
+        return conn
 
 
 def close_db(conn):
     if conn:
         conn.close()
         logger_database.debug("SUCCESS: connection to database closed")
+
+
+def after_connect_before_close_db(func):
+    """
+    This function is used as a decorator that creates a connection to the database,
+    passes a pointer and closes the connection after execution
+    """
+    # @wraps is used to preserve the metadata of the original function when it is wrapped by another decorator
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        connection = None
+        try:
+            connection = connect_db()
+            result = func(connection, *args, **kwargs)
+            return result
+        # pylint: disable=broad-exception-raised
+        except Exception:
+            pass  # all the necessary event handlers are already contained inside the called functions
+        finally:
+            close_db(connection)  # the 'if' condition is not required since it is inside the called function
+    return wrapper
 
 
 def connect_db_flask_g():

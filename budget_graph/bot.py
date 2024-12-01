@@ -26,15 +26,15 @@ from datetime import datetime, UTC
 from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-sys_path.append('../')
 
+sys_path.append('../')
 from budget_graph.logger import setup_logger
 from budget_graph.time_checking import timeit
 from budget_graph.create_csv import CsvFileWithTable
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
-from budget_graph.db_manager import DatabaseQueries, connect_db, close_db
+from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, after_connect_before_close_db
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
@@ -253,12 +253,11 @@ def restart_language_after_changes(call) -> None:
                      reply_markup=markup_1)
 
 
-def get_my_token(message, user_language: str) -> None:
+@after_connect_before_close_db
+def get_my_token(connection, message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
-    connection = connect_db()
     bot_db = DatabaseQueries(connection)
     token: str = bot_db.get_token_by_telegram_id(telegram_id)
-    close_db(connection)
     token: str = token if token else receive_translation(user_language, "unknown")
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "group_token")}:")
     bot.send_message(message.chat.id, token)
@@ -827,18 +826,16 @@ def get_str_with_group_users(telegram_id: int, with_owner: bool) -> str:
     return res
 
 
-def user_is_registered(telegram_id: int) -> bool:
+@after_connect_before_close_db
+def user_is_registered(connection, telegram_id: int) -> bool:
     """
     We check whether the user is registered in the project.
     Since the user may accidentally end up in a menu
     intended only for registered users.
     """
     res: bool = UserRegistrationStatusCache.get_cache_data(telegram_id)
-    connection = connect_db()
     bot_db = DatabaseQueries(connection)
     if not res:  # if the data is not found in the cache
-        connection = connect_db()
-        bot_db = DatabaseQueries(connection)
         res: bool = bot_db.check_telegram_id_is_exist(telegram_id)
         if res:
             # updating the data in the cache
@@ -850,18 +847,17 @@ def user_is_registered(telegram_id: int) -> bool:
     return res
 
 
-def check_user_language(telegram_id: int) -> str:
+@after_connect_before_close_db
+def check_user_language(connection, telegram_id: int) -> str:
     """
     Makes a request to the database via the get_user_language function.
     The telegram id of the user taken from the message is used.
     """
     language: str = UserLanguageCache.get_cache_data(telegram_id)
     if not language:
-        connection = connect_db()
         bot_db = DatabaseQueries(connection)
         language: str = bot_db.get_user_language(telegram_id)
         UserLanguageCache.input_cache_data(telegram_id, language)
-        close_db(connection)
     return language
 
 
