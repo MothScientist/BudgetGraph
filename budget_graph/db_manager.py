@@ -9,15 +9,15 @@ from budget_graph.time_checking import timeit
 from budget_graph.encryption import get_token, logging_hash
 
 load_dotenv()  # Load environment variables from .env file
-db_host = getenv("POSTGRES_HOST")
-db_port = getenv("POSTGRES_PORT")
-db_name = getenv("POSTGRES_NAME")
-db_user = getenv("POSTGRES_USERNAME")
-db_psw = getenv("POSTGRES_PASSWORD")
+db_host = getenv('POSTGRES_HOST')
+db_port = getenv('POSTGRES_PORT')
+db_name = getenv('POSTGRES_NAME')
+db_user = getenv('POSTGRES_USERNAME')
+db_psw = getenv('POSTGRES_PASSWORD')
 
-DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}"
+DSN = f'dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}'
 
-logger_database = setup_logger("logs/DatabaseLog.log", "db_logger")
+logger_database = setup_logger('logs/DatabaseLog.log', 'db_logger')
 
 
 @timeit
@@ -25,35 +25,38 @@ def connect_db():
     try:
         conn = connect(DSN)
     except (DatabaseError, UnicodeDecodeError) as err:
-        logger_database.critical(f"connecting to database: {str(err)}")
+        logger_database.critical(f'[DB_CONNECT] FAILED: connecting to database: {str(err)}')
         return None
     else:
-        logger_database.debug("SUCCESS: connecting to database")
+        logger_database.debug('[DB_CONNECT] SUCCESS: connecting to database')
         return conn
 
 
 def close_db(conn):
     if conn:
         conn.close()
-        logger_database.debug("SUCCESS: connection to database closed")
+        logger_database.debug('[DB_CONNECT] SUCCESS: connection to database closed')
 
 
-def after_connect_before_close_db(func):
+def connect_defer_close_db(func):
     """
     This function is used as a decorator that creates a connection to the database,
     passes a pointer and closes the connection after execution
+
+    :return: db_connection -> object of the DatabaseQueries class used to call the class functions
     """
     # @wraps is used to preserve the metadata of the original function when it is wrapped by another decorator
     @wraps(func)
     def wrapper(*args, **kwargs):
         connection = None
         try:
-            connection = connect_db()
-            result = func(connection, *args, **kwargs)
-            return result
+            res = DatabaseQueries(connect_db())
+            logger_database.debug("[DB_CONNECT][defer] SUCCESS: db query was processed using the 'defer' decorator")
+            return func(res, *args, **kwargs)
         # pylint: disable=broad-exception-raised
-        except Exception:
-            pass  # all the necessary event handlers are already contained inside the called functions
+        except Exception as err:
+            # all the necessary event handlers are already contained inside the called functions
+            logger_database.debug(f'[DB_CONNECT][defer] FAILED: connecting to database: {str(err)}')
         finally:
             close_db(connection)  # the 'if' condition is not required since it is inside the called function
     return wrapper
@@ -64,7 +67,7 @@ def connect_db_flask_g():
     connect to a database using a Flask application object.
     :return: connection
     """
-    if not hasattr(g, "link_db"):
+    if not hasattr(g, 'link_db'):
         g.link_db = connect_db()
     return g.link_db
 
@@ -80,6 +83,7 @@ def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
 
 def read_sql_file(request_name):
     filename: str = path.join(path.dirname(__file__), f'sql/{request_name}.sql')
+    logger_database.info(f'[DB_QUERY] request to *.sql file: {filename}')
     with open(filename, 'r', encoding='utf-8') as sql_file:
         return sql_file.read()
 
@@ -123,7 +127,7 @@ class DatabaseQueries:
         except (DatabaseError, TypeError) as err:
             # The logs store the error and parameters that were passed to the function (except secrets)
             # The time and function where the error occurred will be added automatically
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
             # Returning an empty string (or zero) in an exception block
             # allows validators to treat this as no data in the database
@@ -145,7 +149,7 @@ class DatabaseQueries:
                     return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username: {logging_hash(username)}")
             return 0
 
@@ -165,7 +169,7 @@ class DatabaseQueries:
                     return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"token: {token}")
             return 0
 
@@ -185,7 +189,7 @@ class DatabaseQueries:
                     return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
             return 0
 
@@ -197,7 +201,7 @@ class DatabaseQueries:
                     return res[0] if (res := cur.fetchall()) else ('', 0)
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username: {logging_hash(username)}")
             return '', 0
 
@@ -221,7 +225,7 @@ class DatabaseQueries:
                     return res[0] if (res := cur.fetchone()) else ""
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
             return ""
 
@@ -241,7 +245,7 @@ class DatabaseQueries:
                     return str(res[0]) if (res := cur.fetchone()) else ""
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username: {logging_hash(username)}")
             return ""
 
@@ -263,7 +267,7 @@ class DatabaseQueries:
                     return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username: {logging_hash(username)}")
             return False
 
@@ -289,7 +293,7 @@ class DatabaseQueries:
                                          "username",
                                          "transfer",
                                          "total",
-                                         to_char("record_date", 'DD/MM/YYYY')::date as record_date,
+                                         to_char("record_date", 'DD/MM/YYYY')::date record_date,
                                          "category",
                                          "description"
                                        FROM
@@ -309,7 +313,7 @@ class DatabaseQueries:
                                          "username",
                                          "transfer",
                                          "total",
-                                         "to_char"("record_date", 'DD/MM/YYYY')::date as record_date,
+                                         "to_char"("record_date", 'DD/MM/YYYY')::date record_date,
                                          "category",
                                          "description"
                                        FROM
@@ -325,7 +329,7 @@ class DatabaseQueries:
                     return tuple(tuple(row) for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}, "
                                   f"n: {number_of_last_records}")
             return ()
@@ -350,7 +354,7 @@ class DatabaseQueries:
                     return tuple(str(row[0]) for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return ()
 
@@ -370,7 +374,7 @@ class DatabaseQueries:
                     return tuple(row[0] for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return ()
 
@@ -395,7 +399,7 @@ class DatabaseQueries:
                     return [list(row) for row in cur.fetchall()]
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return []
 
@@ -417,7 +421,7 @@ class DatabaseQueries:
                     return (cur.fetchone())[0]
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}"
                                   f"group id: {group_id}")
             return False
@@ -440,7 +444,7 @@ class DatabaseQueries:
                     return str(res[0]) if res else ''
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return ""
 
@@ -448,18 +452,12 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     1
-                                   FROM
-                                     "budget_graph"."monetary_transactions"
-                                   WHERE
-                                     "group_id" = %s::smallint
-                                   AND
-                                     "transaction_id" = %s::integer""", (group_id, transaction_id,))
+                    cur.execute(read_sql_file('check_record_id_is_exist'),
+                                {'group_id': group_id, 'transaction_id': transaction_id})
                     return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group ID: {group_id}, "
                                   f"transaction ID: {transaction_id}")
             return False
@@ -471,18 +469,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    # LOWER() -> username is case-insensitive
-                    cur.execute("""SELECT
-                                     1
-                                   FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     LOWER("username") = LOWER(%s::text)""", (username,))
-                    res = cur.fetchone()
-                    return bool(res)
+                    cur.execute(read_sql_file('check_username_is_exist'), {'username': username})
+                    return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username: {logging_hash(username)}")
             return False
 
@@ -490,16 +481,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     1
-                                   FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (telegram_id,))
+                    cur.execute(read_sql_file('check_telegram_id_is_exist'), {'telegram_id': telegram_id})
                     return bool(cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram ID: {logging_hash(telegram_id)}")
             return False
 
@@ -510,16 +496,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     1
-                                   FROM
-                                     "budget_graph"."groups"
-                                   WHERE
-                                     "token" = %s::text""", (token,))
+                    cur.execute(read_sql_file('check_token_is_unique'), {'token': token})
                     return bool(not (cur.fetchone()))
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"new token: {token}")
             return False
 
@@ -537,7 +518,7 @@ class DatabaseQueries:
                     return (cur.fetchone())[0]
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return False  # to prevent a user from being written to a non-existent group
 
@@ -561,7 +542,7 @@ class DatabaseQueries:
                     return str(res[0]) if (res := cur.fetchone()) else 'en'
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
             return 'en'  # return default language
 
@@ -582,7 +563,7 @@ class DatabaseQueries:
                     return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}, "
                                   f"language: {language}")
             return False
@@ -624,7 +605,7 @@ class DatabaseQueries:
             return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username (hash): {logging_hash(username)
                                                       if username is not None else None}, "
                                   f"telegram_id (hash): {logging_hash(telegram_id)
@@ -651,19 +632,21 @@ class DatabaseQueries:
             return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group ID: {group_id}, "
                                   f"transaction ID: {transaction_id}")
             return False
 
     # pylint: disable=too-many-arguments
     @timeit
-    def registration_new_user(self,
-                              telegram_id: int,
-                              username: str,
-                              psw_salt: str,
-                              psw_hash: str,
-                              group_id: int | None = None) -> bool | str:
+    def registration_new_user(
+            self,
+            telegram_id: int,
+            username: str,
+            psw_salt: str,
+            psw_hash: str,
+            group_id: int | None = None
+    ) -> bool | str:
         """
         This function is needed to be able to rollback a transaction when an error occurs in any request:
         in fact, there are 2-3 requests inside using the INSERT operator,
@@ -696,7 +679,7 @@ class DatabaseQueries:
             return group_token if group_token else True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id (hash): {logging_hash(telegram_id)}; "
                                   f"username (hash): {logging_hash(username)}; "
                                   f"group_id: {group_id}; "
@@ -721,7 +704,7 @@ class DatabaseQueries:
                                      "telegram_id" = %s::bigint""", (telegram_id,))
                     conn.commit()
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
 
     def update_group_owner(self, telegram_id: int, group_id: int) -> bool:
@@ -743,7 +726,7 @@ class DatabaseQueries:
             return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}, "
                                   f"group_id: {group_id}")
             return False
@@ -768,7 +751,7 @@ class DatabaseQueries:
             return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram ID: {logging_hash(telegram_id)}")
             return False
 
@@ -812,10 +795,10 @@ class DatabaseQueries:
                                      "group_id" = %s::smallint""", (group_id, group_id, group_id, group_id,))
 
                     conn.commit()
-            logger_database.info(f"Group #{group_id} has been completely deleted")
+            logger_database.info(f'[DB_QUERY] Group #{group_id} has been completely deleted')
             return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"{str(err)}, "
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group ID: {group_id}")
             return False
