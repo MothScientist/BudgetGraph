@@ -369,7 +369,8 @@ def delete_record(message, user_language: str) -> None:
     bot.register_next_step_handler(message, process_delete_record, user_language)
 
 
-def process_delete_record(message, user_language: str):
+@connect_defer_close_db
+def process_delete_record(db_connection, message, user_language: str):
     telegram_id: int = message.from_user.id
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     btn1 = KeyboardButton(f"❌ {receive_translation(user_language, 'del_record')}")
@@ -458,8 +459,6 @@ def process_token(db_connection, message, username: str, psw_hash: str, psw_salt
     return
 
 
-@timeit
-def view_table(message, res: bool, user_language: str) -> None:
 @connect_defer_close_db
 def view_table(db_connection, message, res: bool, user_language: str) -> None:
     telegram_id: int = message.from_user.id
@@ -481,8 +480,6 @@ def view_table(db_connection, message, res: bool, user_language: str) -> None:
             bot.send_message(message.chat.id, f"{receive_translation(user_language, "table_is_empty")}")
 
 
-@timeit
-def get_csv(message, user_language: str) -> None:
 @connect_defer_close_db
 def get_csv(db_connection, message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
