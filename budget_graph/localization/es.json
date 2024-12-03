@@ -127,5 +127,6 @@
     "TOTAL": "TOTAL",
     "DATE": "FECHA",
     "CATEGORY": "CATEGORÍA",
-    "DESCRIPTION": "DESCRIPCIÓN"
+    "DESCRIPTION": "DESCRIPCIÓN",
+    "time_to_process": "El proceso llevará algún tiempo."
 }

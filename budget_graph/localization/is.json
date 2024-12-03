@@ -127,5 +127,6 @@
     "TOTAL": "SAMTALS",
     "DATE": "DAGSETNING",
     "CATEGORY": "FLOKKUR",
-    "DESCRIPTION": "LÝSING"
+    "DESCRIPTION": "LÝSING",
+    "time_to_process": "Ferlið mun taka nokkurn tíma"
 }
