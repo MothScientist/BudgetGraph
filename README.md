@@ -22,9 +22,9 @@
 
 | Technology            | Version                                            |
 |-----------------------|----------------------------------------------------|
-| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)        | <center><font color="white">3.12.4</font></center> |
-| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)         | <center><font color="white">3.0.3</font></center>  |
-| **pyTelegramBotAPI**  | <center><font color="white">4.20.0</font></center> |
+| ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)        | <center><font color="white">3.12.7</font></center> |
+| ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)         | <center><font color="white">3.1.0</font></center>  |
+| **pyTelegramBotAPI**  | <center><font color="white">4.24.0</font></center> |
 | ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)      | <center><font color="white">16.2</font></center>   |
 
 ### Testing:
