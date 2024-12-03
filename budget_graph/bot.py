@@ -200,6 +200,8 @@ def change_language(message) -> None:
     markup_1.add(InlineKeyboardButton("Français", callback_data="change_language_fr"))
     markup_1.add(InlineKeyboardButton("Deutsch", callback_data="change_language_de"))
     markup_1.add(InlineKeyboardButton("Islenskur", callback_data="change_language_is"))
+    markup_1.add(InlineKeyboardButton("Português", callback_data="change_language_pt"))
+    markup_1.add(InlineKeyboardButton("қазақ", callback_data="change_language_kk"))
 
     bot.send_message(message.chat.id,f"{receive_translation(user_language, "choose_language")}:",
                      reply_markup=markup_1)
