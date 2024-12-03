@@ -1,6 +1,7 @@
 [![UnitTests](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/unit_tests.yml)
 [![Build Test](https://github.com/MothScientist/BudgetGraph/actions/workflows/build_test.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/build_test.yml)
 [![Pylint](https://github.com/MothScientist/BudgetGraph/actions/workflows/pylint.yml/badge.svg?branch=master)](https://github.com/MothScientist/BudgetGraph/actions/workflows/pylint.yml)
+[![Flake8](https://github.com/MothScientist/BudgetGraph/actions/workflows/flake8.yml/badge.svg)](https://github.com/MothScientist/BudgetGraph/actions/workflows/flake8.yml)
 ![Status](https://img.shields.io/github/v/release/MothScientist/BudgetControl?label=Unstable&color=yellow)
 ![Static Badge](https://img.shields.io/badge/python-3.12-blue)
 ![Static Badge](https://img.shields.io/badge/First_commit-August_20%2C_2023-blue)
