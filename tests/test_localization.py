@@ -137,10 +137,45 @@ class TestLanguages(unittest.TestCase):
         res: str = receive_translation(unknown_lang, "data_is_safe")
         self.assertEqual(res, 'Error')
 
+    def test_languages_19(self):
+        res: str = receive_translation('kk', 'time_to_process')
+        self.assertEqual(res, 'Процесс біраз уақыт алады')
+
+    def test_languages_20(self):
+        res: str = receive_translation('kk', 'add_income')
+        self.assertEqual(res, 'Табыс қосыңыз')
+
+    def test_languages_21(self):
+        res: str = receive_translation('kk', 'group_is_full')
+        self.assertEqual(res, 'Бұл белгі бар топ жоқ немесе ол толы. Қосымша ақпарат алу үшін топ мүшелеріне '
+                              'хабарласыңыз немесе өз тобыңызды жасаңыз!')
+
+    def test_languages_22(self):
+        unknown_phrase: str = 'qwerty'
+        res: str = receive_translation('kk', unknown_phrase)
+        self.assertEqual(res, 'Error')
+
+    def test_languages_23(self):
+        res: str = receive_translation('pt', 'view_table')
+        self.assertEqual(res, 'Ver tabela')
+
+    def test_languages_24(self):
+        res: str = receive_translation('pt', 'premium')
+        self.assertEqual(res, 'Prêmio')
+
+    def test_languages_25(self):
+        res: str = receive_translation('pt', 'USERNAME')
+        self.assertEqual(res, 'NOME DE UTILIZADOR')
+
+    def test_languages_26(self):
+        unknown_phrase: str = 'earth_moon'
+        res: str = receive_translation('pt', unknown_phrase)
+        self.assertEqual(res, 'Error')
+
     def test_get_list_languages_1(self):
         res: tuple = get_list_languages()
         # don`t take into account the order of languages in the tuple
-        self.assertEqual(list(res).sort(), ['ru', 'es', 'de', 'en', 'is', 'fr'].sort())
+        self.assertEqual(list(res).sort(), ['ru', 'es', 'de', 'en', 'is', 'fr', 'pt', 'kk'].sort())
 
     def test_get_list_languages_2(self):
         languages: tuple = get_list_languages()
