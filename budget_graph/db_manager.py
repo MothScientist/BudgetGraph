@@ -1,6 +1,6 @@
 from os import getenv, path
-from flask import g
 from functools import wraps
+from flask import g
 from dotenv import load_dotenv
 from psycopg2 import connect, DatabaseError
 
@@ -27,9 +27,9 @@ def connect_db():
     except (DatabaseError, UnicodeDecodeError) as err:
         logger_database.critical(f'[DB_CONNECT] FAILED: connecting to database: {str(err)}')
         return None
-    else:
-        logger_database.debug('[DB_CONNECT] SUCCESS: connecting to database')
-        return conn
+
+    logger_database.debug('[DB_CONNECT] SUCCESS: connecting to database')
+    return conn
 
 
 def close_db(conn):
@@ -46,6 +46,7 @@ def connect_defer_close_db(func):
     :return: db_connection -> object of the DatabaseQueries class used to call the class functions
     """
     # @wraps is used to preserve the metadata of the original function when it is wrapped by another decorator
+    # pylint: disable=inconsistent-return-statements
     @wraps(func)
     def wrapper(*args, **kwargs):
         connection = None
@@ -497,7 +498,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_token_is_unique'), {'token': token})
-                    return bool(not (cur.fetchone()))
+                    return bool(not cur.fetchone())
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -568,7 +569,7 @@ class DatabaseQueries:
                                   f"language: {language}")
             return False
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     @timeit
     def add_transaction_to_db(self,
                               transaction_amount: int,
@@ -637,7 +638,7 @@ class DatabaseQueries:
                                   f"transaction ID: {transaction_id}")
             return False
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     @timeit
     def registration_new_user(
             self,
