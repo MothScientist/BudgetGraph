@@ -37,6 +37,18 @@ def get_category_button_labels(user_language: str) -> tuple:
 	)
 
 
+@cache
+def get_category_translate(user_language: str) -> tuple:
+	return (
+		receive_translation(user_language, 'username'),
+		receive_translation(user_language, 'transfer'),
+		receive_translation(user_language, 'total'),
+		receive_translation(user_language, 'datetime'),
+		receive_translation(user_language, 'category'),
+		receive_translation(user_language, 'description')
+	)
+
+
 def get_bot_commands() -> list:
 	return [
 		BotCommand('start', 'Start'),

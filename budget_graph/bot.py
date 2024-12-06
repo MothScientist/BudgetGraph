@@ -26,7 +26,7 @@ from budget_graph.create_csv import CsvFileWithTable
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
-from budget_graph.helpers import get_category_button_labels, get_bot_commands
+from budget_graph.helpers import get_category_button_labels, get_bot_commands, get_category_translate
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
@@ -474,15 +474,15 @@ def view_table(db_connection, message, res: bool, user_language: str) -> None:
         data: tuple = db_connection.select_data_for_household_table(group_id, 10)
         if data:
             # Generating a single message from nested lists of the 'data' tuple
-            bot.send_message(message.chat.id,
+            category_data: tuple = get_category_translate(user_language)
             bot.send_message(chat_id,
                              '\n'.join([f"ID: {table_entry[0]}\n"
-                                        f"{receive_translation(user_language, "username")}: {table_entry[1]}\n"
-                                        f"{receive_translation(user_language, "transfer")}: {table_entry[2]}\n"
-                                        f"{receive_translation(user_language, "total")}: {table_entry[3]}\n"
-                                        f"{receive_translation(user_language, "datetime")}: {table_entry[4]}\n"
-                                        f"{receive_translation(user_language, "category")}: {table_entry[5]}\n"
-                                        f"{receive_translation(user_language, "description")}: {table_entry[6]}\n\n"
+                                        f"{category_data[0]}: {table_entry[1]}\n"
+                                        f"{category_data[1]}: {table_entry[2]}\n"
+                                        f"{category_data[2]}: {table_entry[3]}\n"
+                                        f"{category_data[3]}: {table_entry[4]}\n"
+                                        f"{category_data[4]}: {table_entry[5]}\n"
+                                        f"{category_data[5]}: {table_entry[6]}\n\n"
                                         for table_entry in data]))
         else:
             bot.send_message(chat_id, f"{receive_translation(user_language, "table_is_empty")}")
