@@ -8,14 +8,6 @@ Description: At your discretion
 Description Picture: At your discretion
 
 Bot Picture: At your discretion
-
-Commands:
-start - Start
-help - Help
-project_github - GitHub
-change_language - Change language
-get_my_id - Get my Telegram ID
-premium - Premium
 """
 
 from sys import path as sys_path
@@ -31,10 +23,10 @@ sys_path.append('../')
 from budget_graph.logger import setup_logger
 from budget_graph.time_checking import timeit
 from budget_graph.create_csv import CsvFileWithTable
-from budget_graph.helpers import get_category_button_labels
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
+from budget_graph.helpers import get_category_button_labels, get_bot_commands
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
@@ -47,6 +39,15 @@ bot_token = getenv("BOT_TOKEN")  # Get the bot token from an environment variabl
 bot = TeleBot(bot_token, skip_pending=True)
 
 logger_bot = setup_logger("logs/BotLog.log", "bot_logger")
+
+# change the list of the bot’s commands
+bot.set_my_commands(get_bot_commands())
+# change the bot’s description, which is shown in the chat with the bot if the chat is empty
+bot.set_my_description('Get started with the easy budgeting bot by entering the /start command')
+# change the bot’s name
+bot.set_my_name('BudgetGraph')
+# change the bot’s short description, which is shown on the bot’s profile page
+bot.set_my_short_description('Simple and fast budget control')
 
 
 @timeit
@@ -463,6 +464,10 @@ def process_token(db_connection, message, username: str, psw_hash: str, psw_salt
 
 @connect_defer_close_db
 def view_table(db_connection, message, res: bool, user_language: str) -> None:
+    chat_id: int = message.chat.id
+    # https://core.telegram.org/bots/api#sendchataction
+    # https://pytba.readthedocs.io/en/latest/sync_version/index.html#telebot.TeleBot.send_chat_action
+    bot.send_chat_action(chat_id, 'typing')  # returns True on success
     telegram_id: int = message.from_user.id
     if res:  # user authorization check
         group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
@@ -470,6 +475,7 @@ def view_table(db_connection, message, res: bool, user_language: str) -> None:
         if data:
             # Generating a single message from nested lists of the 'data' tuple
             bot.send_message(message.chat.id,
+            bot.send_message(chat_id,
                              '\n'.join([f"ID: {table_entry[0]}\n"
                                         f"{receive_translation(user_language, "username")}: {table_entry[1]}\n"
                                         f"{receive_translation(user_language, "transfer")}: {table_entry[2]}\n"
@@ -479,11 +485,15 @@ def view_table(db_connection, message, res: bool, user_language: str) -> None:
                                         f"{receive_translation(user_language, "description")}: {table_entry[6]}\n\n"
                                         for table_entry in data]))
         else:
-            bot.send_message(message.chat.id, f"{receive_translation(user_language, "table_is_empty")}")
+            bot.send_message(chat_id, f"{receive_translation(user_language, "table_is_empty")}")
 
 
 @connect_defer_close_db
 def get_csv(db_connection, message, user_language: str) -> None:
+    chat_id: int = message.chat.id
+    # https://core.telegram.org/bots/api#sendchataction
+    # https://pytba.readthedocs.io/en/latest/sync_version/index.html#telebot.TeleBot.send_chat_action
+    bot.send_chat_action(chat_id, 'upload_document')  # returns True on success
     telegram_id: int = message.from_user.id
     group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
     # to be able to call a function from any file
@@ -501,20 +511,20 @@ def get_csv(db_connection, message, user_language: str) -> None:
                                 f"{'{:.3f}'.format(file_size)} kB\n\n"
                                 f"{receive_translation(user_language, 'hashsum')} "
                                 f"(sha-256): {file_checksum}")
-                bot.send_document(message.chat.id, csv_table_file, caption=caption)
+                bot.send_document(chat_id, csv_table_file, caption=caption)
         except FileNotFoundError as err:
-            bot.send_message(message.chat.id, f"{receive_translation(user_language, 'csv_not_found_error')}.")
+            bot.send_message(chat_id, f"{receive_translation(user_language, 'csv_not_found_error')}.")
             logger_bot.error(f"CSV FileNotFoundError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         # when trying to run an operation without access rights
         except PermissionError as err:
-            bot.send_message(message.chat.id, f"{receive_translation(user_language, 'csv_not_found_error')}.")
+            bot.send_message(chat_id, f"{receive_translation(user_language, 'csv_not_found_error')}.")
             logger_bot.error(f"CSV PermissionError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         except ValueError as err:
-            bot.send_message(message.chat.id, f"{receive_translation(user_language, 'invalid_data_table_for_csv')}")
+            bot.send_message(chat_id, f"{receive_translation(user_language, 'invalid_data_table_for_csv')}")
             logger_bot.error(f"CSV ValueError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")

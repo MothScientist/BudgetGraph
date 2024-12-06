@@ -3,6 +3,7 @@ Auxiliary methods
 """
 from sys import path as sys_path
 from functools import cache
+from telebot.types import BotCommand
 
 sys_path.append('../')
 from budget_graph.dictionary import receive_translation
@@ -34,3 +35,14 @@ def get_category_button_labels(user_language: str) -> tuple:
 		receive_translation(user_language, "charity"),
 		receive_translation(user_language, "other")
 	)
+
+
+def get_bot_commands() -> list:
+	return [
+		BotCommand('start', 'Start'),
+		BotCommand('help', 'Help'),
+		BotCommand('project_github', 'GitHub'),
+		BotCommand('change_language', 'Change Language'),
+		BotCommand('get_my_id', 'Get my Telegram ID'),
+		BotCommand('premium', 'Premium')
+	]
