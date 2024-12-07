@@ -183,19 +183,17 @@ def change_language(message) -> None:
     markup_1 = InlineKeyboardMarkup(row_width=2)
     # button_labels: dict = {'English': 'en', 'Español': 'es', 'Русский': 'ru', 'Français': 'fr', ...} - cache
 
-    markup_1.add(InlineKeyboardButton("English", callback_data="change_language_en"))
-    markup_1.add(InlineKeyboardButton("Español", callback_data="change_language_es"))
-    markup_1.add(InlineKeyboardButton("Русский", callback_data="change_language_ru"))
-    markup_1.add(InlineKeyboardButton("Français", callback_data="change_language_fr"))
-    markup_1.add(InlineKeyboardButton("Deutsch", callback_data="change_language_de"))
-    markup_1.add(InlineKeyboardButton("Islenskur", callback_data="change_language_is"))
-    markup_1.add(InlineKeyboardButton("Português", callback_data="change_language_pt"))
-    markup_1.add(InlineKeyboardButton("қазақ", callback_data="change_language_kk"))
+    markup_1.add(InlineKeyboardButton('English', callback_data='change_language_en'))
+    markup_1.add(InlineKeyboardButton('Español', callback_data='change_language_es'))
+    markup_1.add(InlineKeyboardButton('Русский', callback_data='change_language_ru'))
+    markup_1.add(InlineKeyboardButton('Français', callback_data='change_language_fr'))
+    markup_1.add(InlineKeyboardButton('Deutsch', callback_data='change_language_de'))
+    markup_1.add(InlineKeyboardButton('Islenskur', callback_data='change_language_is'))
+    markup_1.add(InlineKeyboardButton('Português', callback_data='change_language_pt'))
+    markup_1.add(InlineKeyboardButton('қазақ', callback_data='change_language_kk'))
 
     bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
                      reply_markup=markup_1)
-
-# TODO - remove the inlinekeyboard after pressing
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('change_language'))
@@ -226,6 +224,8 @@ def callback_query_change_language(call):
         logger_bot.error(f"Error language change. "
                          f"TelegramID: {logging_hash(telegram_id)}, "
                          f"language: {new_user_language}")
+
+    bot.delete_message(call.message.chat.id, call.message.message_id)  # delete message with list of languages
 
 
 def restart_language_after_changes(call) -> None:
