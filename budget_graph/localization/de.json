@@ -110,7 +110,7 @@
     "delete_table": "(Eine Tabelle und alle Teilnehmer werden gelöscht)",
     "not_deleted_by_owner": "Die Gruppe kann nur von ihrem Besitzer entfernt werden – wenden Sie sich an den Besitzer der Gruppe oder löschen Sie das Konto.",
     "remove_completed": "Die Gruppe und Benutzer werden vollständig gelöscht!",
-    "not_register": "Sie sind nicht registriert.",
+    "not_register": "Sie sind nicht registriert",
     "file_size": "Dateigröße",
     "hashsum": "Prüfsumme",
     "unsupported_language": "Es tut uns leid, aber diese Sprache wird nicht unterstützt. Wählen Sie aus den im Schaltflächenmenü angezeigten Optionen aus.",
@@ -127,5 +127,8 @@
     "TOTAL": "GESAMT",
     "DATE": "DATUM",
     "CATEGORY": "KATEGORIE",
-    "DESCRIPTION": "BESCHREIBUNG"
+    "DESCRIPTION": "BESCHREIBUNG",
+    "select_timezone": "Wählen Sie Ihre Zeitzone aus",
+    "error_select_timezone": "Fehler beim Festlegen des Zeitzonenwerts",
+    "timezone_changed": "Die Zeitzone für Ihr Konto wurde erfolgreich eingestellt"
 }

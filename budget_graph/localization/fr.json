@@ -110,7 +110,7 @@
     "delete_table": "(Une table et tous les participants seront supprimés)",
     "not_deleted_by_owner": "Le groupe ne peut être supprimé que par son propriétaire - contactez le propriétaire du groupe ou supprimez le compte.",
     "remove_completed": "Le groupe et les utilisateurs sont complètement supprimés!",
-    "not_register": "Vous n'êtes pas inscrit.",
+    "not_register": "Vous n'êtes pas inscrit",
     "file_size": "Taille du fichier",
     "hashsum": "Somme de contrôle",
     "unsupported_language": "Nous sommes désolés, mais cette langue n'est pas prise en charge. Sélectionnez parmi ceux présentés dans le menu des boutons.",
@@ -127,5 +127,8 @@
     "TOTAL": "TOTAL",
     "DATE": "DATE",
     "CATEGORY": "CATÉGORIE",
-    "DESCRIPTION": "DESCRIPTION"
+    "DESCRIPTION": "DESCRIPTION",
+    "select_timezone": "Sélectionnez votre fuseau horaire",
+    "error_select_timezone": "Erreur lors de la définition de la valeur du fuseau horaire",
+    "timezone_changed": "Le fuseau horaire de votre compte a été défini avec succès"
 }

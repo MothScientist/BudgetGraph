@@ -110,7 +110,7 @@
     "delete_table": "(Uma mesa e todos os participantes serão excluídos)",
     "not_deleted_by_owner": "O grupo só pode ser removido pelo seu proprietário - entre em contato com o proprietário do grupo ou exclua a conta.",
     "remove_completed": "O grupo e os usuários foram completamente excluídos!",
-    "not_register": "Você não está cadastrado.",
+    "not_register": "Você não está cadastrado",
     "file_size": "Tamanho do arquivo",
     "hashsum": "Soma de verificação",
     "unsupported_language": "Lamentamos, mas este idioma não é suportado. Selecione entre aqueles apresentados no menu de botões.",
@@ -127,5 +127,8 @@
     "TOTAL": "TOTAL",
     "DATE": "DATA",
     "CATEGORY": "CATEGORIA",
-    "DESCRIPTION": "DESCRIÇÃO"
+    "DESCRIPTION": "DESCRIÇÃO",
+    "select_timezone": "Selecione o seu fuso horário",
+    "error_select_timezone": "Erro ao definir o valor do fuso horário",
+    "timezone_changed": "O fuso horário da sua conta foi definido com sucesso"
 }

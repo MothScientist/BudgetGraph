@@ -11,7 +11,7 @@ class TestLanguages(unittest.TestCase):
     for lang in languages:
         with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as language_json_file:
             keys_data = json.load(language_json_file)
-        keys_list: list = keys_data.keys()
+        keys_list: list = list(keys_data.keys())
         all_keys_for_each_language_list.append(keys_list)
     # immutable
     all_keys_for_each_language: tuple = tuple(all_keys_for_each_language_list)
@@ -34,7 +34,7 @@ class TestLanguages(unittest.TestCase):
         dict_len: int = len(TestLanguages.all_keys_for_each_language[0])
         number_of_languages: int = len(TestLanguages.languages)
         res: bool = all(dict_len == len(TestLanguages.all_keys_for_each_language[i])
-                        for i in range(1, number_of_languages))
+                        for i in range(number_of_languages))
         self.assertTrue(res)
 
     def test_languages_3(self):
@@ -44,7 +44,7 @@ class TestLanguages(unittest.TestCase):
         test_list: list = []  # here we will add information about the dictionary for load simulation
         start = time()
         for lang in self.languages:
-            with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as f:
+            with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as f:
                 keys_data = json.load(f)
             test_list += keys_data
         finish = time()
@@ -137,10 +137,45 @@ class TestLanguages(unittest.TestCase):
         res: str = receive_translation(unknown_lang, "data_is_safe")
         self.assertEqual(res, 'Error')
 
+    def test_languages_19(self):
+        res: str = receive_translation('kk', 'add_description')
+        self.assertEqual(res, 'Сипаттама қосу (50 таңбадан артық емес)')
+
+    def test_languages_20(self):
+        res: str = receive_translation('kk', 'add_income')
+        self.assertEqual(res, 'Табыс қосыңыз')
+
+    def test_languages_21(self):
+        res: str = receive_translation('kk', 'group_is_full')
+        self.assertEqual(res, 'Бұл белгі бар топ жоқ немесе ол толы. Қосымша ақпарат алу үшін топ мүшелеріне '
+                              'хабарласыңыз немесе өз тобыңызды жасаңыз!')
+
+    def test_languages_22(self):
+        unknown_phrase: str = 'qwerty'
+        res: str = receive_translation('kk', unknown_phrase)
+        self.assertEqual(res, 'Error')
+
+    def test_languages_23(self):
+        res: str = receive_translation('pt', 'view_table')
+        self.assertEqual(res, 'Ver tabela')
+
+    def test_languages_24(self):
+        res: str = receive_translation('pt', 'premium')
+        self.assertEqual(res, 'Prêmio')
+
+    def test_languages_25(self):
+        res: str = receive_translation('pt', 'USERNAME')
+        self.assertEqual(res, 'NOME DE UTILIZADOR')
+
+    def test_languages_26(self):
+        unknown_phrase: str = 'earth_moon'
+        res: str = receive_translation('pt', unknown_phrase)
+        self.assertEqual(res, 'Error')
+
     def test_get_list_languages_1(self):
         res: tuple = get_list_languages()
         # don`t take into account the order of languages in the tuple
-        self.assertEqual(list(res).sort(), ['ru', 'es', 'de', 'en', 'is', 'fr'].sort())
+        self.assertEqual(list(res).sort(), ['ru', 'es', 'de', 'en', 'is', 'fr', 'pt', 'kk'].sort())
 
     def test_get_list_languages_2(self):
         languages: tuple = get_list_languages()

@@ -484,20 +484,19 @@ class TestDbQueries(unittest.TestCase):
     def test_011_get_group_id_by_token_1(self):
         group_id: int = 3
         res: int = self.test_db.get_group_id_by_token(TestDbQueries.group_3_token)
-        self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'group_id'))
+        self.assertEqual(res, group_id)
 
     def test_011_get_group_id_by_token_2(self):
         group_id: int = 4
         res: int = self.test_db.get_group_id_by_token(TestDbQueries.group_4_token)
-        self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'group_id'))
+        self.assertEqual(res, group_id)
 
     def test_012_get_group_id_by_telegram_id_1(self):
         group_id: int = 3
         number_of_user: int = randint(1, TestDbQueries._number_of_users_group_3)
         res: int = self.test_db.get_group_id_by_telegram_id(TestDbQueries._data.get_user_data(group_id, number_of_user,
                                                                                               'telegram_id'))
-        self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, number_of_user, 'group_id'),
-                         f'number_of_user = {number_of_user}')
+        self.assertEqual(res, group_id, f'number_of_user = {number_of_user}')
 
     def test_012_get_group_id_by_telegram_id_2(self):
         group_id: int = 3
@@ -506,15 +505,24 @@ class TestDbQueries(unittest.TestCase):
                                                                                               'telegram_id'))
         self.assertEqual(res, 0)
 
-    def test_013_get_group_id_token_by_username(self):
+    def test_013_get_group_id_token_by_username_1(self):
         group_id: int = 3
         number_of_user: int = randint(1, TestDbQueries._number_of_users_group_3)
         res: tuple = self.test_db.get_group_id_token_by_username(TestDbQueries._data.get_user_data(group_id,
                                                                                                    number_of_user,
                                                                                                    'username'))
         self.assertEqual(res,
-                         (TestDbQueries.group_3_token, TestDbQueries._data.get_user_data(group_id, number_of_user,
-                                                                                         'group_id')),
+                         (TestDbQueries.group_3_token, group_id),
+                         f'type(res) = {type(res)}')
+
+    def test_013_get_group_id_token_by_username_2(self):
+        group_id: int = 4
+        number_of_user: int = randint(1, TestDbQueries._number_of_users_group_4)
+        res: tuple = self.test_db.get_group_id_token_by_username(TestDbQueries._data.get_user_data(group_id,
+                                                                                                   number_of_user,
+                                                                                                   'username'))
+        self.assertEqual(res,
+                         (TestDbQueries.group_4_token, group_id),
                          f'type(res) = {type(res)}')
 
     def test_014_get_token_by_telegram_id_1(self):
@@ -587,6 +595,26 @@ class TestDbQueries(unittest.TestCase):
                                                   TestDbQueries._data.get_user_data(4, number_of_user, 'psw_hash'))
         self.assertFalse(res)
 
+    def test_016_auth_by_username_5(self):
+        group_id: int = 3
+        res: bool = self.test_db.auth_by_username(TestDbQueries._data.get_user_data(group_id,
+                                                                                    3,
+                                                                                    'username'),
+                                                  TestDbQueries._data.get_user_data(group_id,
+                                                                                    4,
+                                                                                    'psw_hash'))
+        self.assertFalse(res)
+
+    def test_016_auth_by_username_6(self):
+        group_id: int = 4
+        res: bool = self.test_db.auth_by_username(TestDbQueries._data.get_user_data(group_id,
+                                                                                    randint(1, 2),
+                                                                                    'username'),
+                                                  TestDbQueries._data.get_user_data(group_id,
+                                                                                    randint(3, 4),
+                                                                                    'psw_hash'))
+        self.assertFalse(res)
+
     def test_017_get_group_usernames_1(self):
         group_id: int = 3
         res: tuple = self.test_db.get_group_usernames(group_id)
@@ -622,89 +650,109 @@ class TestDbQueries(unittest.TestCase):
         self.assertEqual(res, tuple())
 
     def test_019_check_user_is_group_owner_by_telegram_id_1(self):
-        group_id: int = 3
-        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
-            TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'),
-            TestDbQueries._data.get_user_data(group_id, 1, 'group_id')
-        )
-        self.assertTrue(res)
+        # Checking if there is only one user in a group
+        group_id: int = randint(3, 4)
+        number_of_users_group: int = TestDbQueries._number_of_users_group_3 if group_id == 3 \
+            else TestDbQueries._number_of_users_group_4
+        owner_status: list[int | bool] = [0] * number_of_users_group
+        for user in range(number_of_users_group):
+            owner_status[user] = self.test_db.check_user_is_group_owner_by_telegram_id(
+                TestDbQueries._data.get_user_data(group_id, user + 1, 'telegram_id'), group_id
+            )
+        self.assertEqual(owner_status.count(True), 1, owner_status.count(True))
+        self.assertEqual(owner_status.count(False), number_of_users_group - 1,
+                         owner_status.count(False))
 
     def test_019_check_user_is_group_owner_by_telegram_id_2(self):
-        group_id: int = 4
+        group_id: int = 3
         res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
-            TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'),
-            TestDbQueries._data.get_user_data(group_id, 1, 'group_id')
+            TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'), group_id
         )
         self.assertTrue(res)
 
     def test_019_check_user_is_group_owner_by_telegram_id_3(self):
+        group_id: int = 4
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'),
+            group_id
+        )
+        self.assertTrue(res)
+
+    def test_019_check_user_is_group_owner_by_telegram_id_4(self):
         group_id: int = 3
         res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
             TestDbQueries._data.get_user_data(group_id, 2, 'telegram_id'),
-            TestDbQueries._data.get_user_data(group_id, 2, 'group_id')
+            group_id
         )
         self.assertFalse(res)
 
-    def test_019_check_user_is_group_owner_by_telegram_id_4(self):
+    def test_019_check_user_is_group_owner_by_telegram_id_5(self):
         # data from different users
         res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
             TestDbQueries._data.get_user_data(3, 1, 'telegram_id'), TestDbQueries._data.get_user_data(4, 1, 'group_id'))
         self.assertFalse(res)
 
+    def test_019_check_user_is_group_owner_by_telegram_id_6(self):
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data(4, randint(1, 5), 'telegram_id'),
+            TestDbQueries._data.get_user_data(3, randint(10, 15), 'group_id'))
+        self.assertFalse(res)
+
+    def test_019_check_user_is_group_owner_by_telegram_id_7(self):
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data(3, randint(1, 3), 'telegram_id'),
+            TestDbQueries._data.get_user_data(4, randint(4, 5), 'group_id'))
+        self.assertFalse(res)
+
+    def test_019_check_user_is_group_owner_by_telegram_id_8(self):
+        res: bool = self.test_db.check_user_is_group_owner_by_telegram_id(
+            TestDbQueries._data.get_user_data(4, randint(3, 5), 'telegram_id'),
+            TestDbQueries._data.get_user_data(3, randint(1, 2), 'group_id'))
+        self.assertFalse(res)
+
     def test_020_get_group_owner_username_by_group_id_1(self):
         group_id: int = 3
-        res: str = self.test_db.get_group_owner_username_by_group_id(
-            TestDbQueries._data.get_user_data(group_id, 1, 'group_id')
-        )
+        res: str = self.test_db.get_group_owner_username_by_group_id(group_id)
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'username'))
 
     def test_020_get_group_owner_username_by_group_id_2(self):
         group_id: int = 4
-        res: str = self.test_db.get_group_owner_username_by_group_id(
-            TestDbQueries._data.get_user_data(group_id, 1, 'group_id')
-        )
+        res: str = self.test_db.get_group_owner_username_by_group_id(group_id)
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'username'))
 
     def test_020_get_group_owner_username_by_group_id_3(self):
         group_id: int = 3
-        res: str = self.test_db.get_group_owner_username_by_group_id(
-            TestDbQueries._data.get_user_data(group_id, 16, 'group_id')
-        )
+        res: str = self.test_db.get_group_owner_username_by_group_id(group_id)
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'username'))
 
     def test_020_get_group_owner_username_by_group_id_4(self):
         group_id: int = 4
-        res: str = self.test_db.get_group_owner_username_by_group_id(
-            TestDbQueries._data.get_user_data(group_id, 3, 'group_id')
-        )
+        res: str = self.test_db.get_group_owner_username_by_group_id(group_id)
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'username'))
 
     def test_020_get_group_owner_username_by_group_id_5(self):
-        res: str = self.test_db.get_group_owner_username_by_group_id(
-            # non-existent group
-            10_000
-        )
+        # non-existent group
+        res: str = self.test_db.get_group_owner_username_by_group_id(10_000)
+        self.assertEqual(res, '')
+
+    def test_020_get_group_owner_username_by_group_id_6(self):
+        # negative number
+        res: str = self.test_db.get_group_owner_username_by_group_id(-10)
         self.assertEqual(res, '')
 
     def test_021_check_username_is_exist_1(self):
         group_id: int = 3
-        res: bool = self.test_db.check_username_is_exist(
-            TestDbQueries._data.get_user_data(group_id, 10, 'username')
-        )
+        res: bool = self.test_db.check_username_is_exist(TestDbQueries._data.get_user_data(group_id, 10, 'username'))
         self.assertTrue(res)
 
     def test_021_check_username_is_exist_2(self):
         group_id: int = 4
-        res: bool = self.test_db.check_username_is_exist(
-            TestDbQueries._data.get_user_data(group_id, 3, 'username')
-        )
+        res: bool = self.test_db.check_username_is_exist(TestDbQueries._data.get_user_data(group_id, 3, 'username'))
         self.assertTrue(res)
 
     def test_021_check_username_is_exist_3(self):
         group_id: int = 3
-        res: bool = self.test_db.check_username_is_exist(
-            TestDbQueries._data.get_user_data(group_id, 21, 'username')
-        )
+        res: bool = self.test_db.check_username_is_exist(TestDbQueries._data.get_user_data(group_id, 21, 'username'))
         self.assertFalse(res)
 
     def test_021_check_username_is_exist_4(self):
@@ -752,77 +800,58 @@ class TestDbQueries(unittest.TestCase):
         self.assertTrue(res)
 
     def test_023_check_token_is_unique_4(self):
-        token: str = ''  # noqa
+        token: str = ''
         res: bool = self.test_db.check_token_is_unique(token)
         self.assertTrue(res)  # the token type is incorrect, but there is no such thing in the database -> unique
 
     def test_024_check_limit_users_in_group_1(self):
         group_id: int = 3
-        res: bool = self.test_db.check_limit_users_in_group(
-            TestDbQueries._data.get_user_data(group_id, 12, 'group_id')
-        )
-        self.assertFalse(res, f'Group #{TestDbQueries._data.get_user_data(group_id, 12, 'group_id')}')
+        res: bool = self.test_db.check_limit_users_in_group(group_id)
+        self.assertFalse(res)
 
     def test_024_check_limit_users_in_group_2(self):
         group_id: int = 4
-        res: bool = self.test_db.check_limit_users_in_group(
-            TestDbQueries._data.get_user_data(group_id, 3, 'group_id')
-        )
-        self.assertTrue(res, f'Group #{TestDbQueries._data.get_user_data(group_id, 3, 'group_id')}')
+        res: bool = self.test_db.check_limit_users_in_group(group_id)
+        self.assertTrue(res)
 
     def test_024_check_limit_users_in_group_3(self):
-        res: bool = self.test_db.check_limit_users_in_group(
-            1_000  # non-existent group
-        )
+        # non-existent group
+        res: bool = self.test_db.check_limit_users_in_group(1_000)
         self.assertFalse(res)
 
     def test_024_check_limit_users_in_group_4(self):
         group_id: int = 3
-        res: bool = self.test_db.check_limit_users_in_group(
-            TestDbQueries._data.get_user_data(group_id, 17, 'group_id')
-        )
-        self.assertFalse(res, f'Group #{TestDbQueries._data.get_user_data(group_id, 12, 'group_id')}')
+        res: bool = self.test_db.check_limit_users_in_group(group_id)
+        self.assertFalse(res)
 
     def test_024_check_limit_users_in_group_5(self):
         group_id: int = 4
-        res: bool = self.test_db.check_limit_users_in_group(
-            TestDbQueries._data.get_user_data(group_id, 1, 'group_id')
-        )
-        self.assertTrue(res, f'Group #{TestDbQueries._data.get_user_data(group_id, 3, 'group_id')}')
+        res: bool = self.test_db.check_limit_users_in_group(group_id)
+        self.assertTrue(res)
 
     def test_025_get_user_language_1(self):
         group_id: int = 3
-        res: str = self.test_db.get_user_language(
-            TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id')
-        )
+        res: str = self.test_db.get_user_language(TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'))
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'language'))
 
     def test_025_get_user_language_2(self):
         group_id: int = 3
-        res: str = self.test_db.get_user_language(
-            TestDbQueries._data.get_user_data(group_id, 5, 'telegram_id')
-        )
+        res: str = self.test_db.get_user_language(TestDbQueries._data.get_user_data(group_id, 5, 'telegram_id'))
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 5, 'language'))
 
     def test_025_get_user_language_3(self):
         group_id: int = 3
-        res: str = self.test_db.get_user_language(
-            TestDbQueries._data.get_user_data(group_id, 16, 'telegram_id')
-        )
+        res: str = self.test_db.get_user_language(TestDbQueries._data.get_user_data(group_id, 16, 'telegram_id'))
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 16, 'language'))
 
     def test_025_get_user_language_4(self):
         group_id: int = 4
-        res: str = self.test_db.get_user_language(
-            TestDbQueries._data.get_user_data(group_id, 3, 'telegram_id')
-        )
+        res: str = self.test_db.get_user_language(TestDbQueries._data.get_user_data(group_id, 3, 'telegram_id'))
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 3, 'language'))
 
     def test_025_get_user_language_5(self):
         group_id: int = 4
-        res: str = self.test_db.get_user_language(
-            TestDbQueries._data.get_user_data(group_id, 5, 'telegram_id')
-        )
+        res: str = self.test_db.get_user_language(TestDbQueries._data.get_user_data(group_id, 5, 'telegram_id'))
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 5, 'language'))
 
     def test_025_get_user_language_6(self):

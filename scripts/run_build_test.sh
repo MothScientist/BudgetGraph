@@ -8,7 +8,7 @@ docker compose up --detach --build
 echo ">>> Pause 5s..."
 sleep 5 # time to start the containers
 
-container_status=$(docker-compose ps)
+container_status=$(docker compose ps)
 
 if ! echo "$container_status" | grep -q "Up"; then
     echo ">>> Status: FAILED"
@@ -17,12 +17,12 @@ if ! echo "$container_status" | grep -q "Up"; then
 fi
 
 echo ">>> Stopping Docker Compose..."
-docker-compose down --volumes
+docker compose down --volumes
 
 echo ">>> Pause 5s..."
 sleep 5 # time to stop the containers
 
-container_status=$(docker-compose ps -q)
+container_status=$(docker compose ps -q)
 
 if [ -n "$container_status" ]; then
     echo ">>> Status: FAILED"

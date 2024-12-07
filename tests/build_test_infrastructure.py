@@ -1,4 +1,5 @@
 from os import getenv, makedirs
+from shutil import rmtree
 from psycopg2 import connect
 from dotenv import load_dotenv
 from sys import path as sys_path
@@ -21,6 +22,7 @@ def prepare_db_tables_for_tests() -> None:
 
 
 def build() -> None:
+    rmtree('logs', ignore_errors=True)
     makedirs('logs', exist_ok=True)
 
 
@@ -38,4 +40,5 @@ def close_test_db(conn) -> None:
 
 
 if __name__ == '__main__':
+    build()
     prepare_db_tables_for_tests()

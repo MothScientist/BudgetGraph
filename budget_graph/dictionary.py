@@ -49,8 +49,8 @@ class Stickers:
 
     @staticmethod
     @cache
-    def get_sticker_by_id(sticker_id):
-        return Stickers.__stickers.get(sticker_id)
+    def get_sticker_by_id(sticker_id) -> str:
+        return Stickers.__stickers.get(sticker_id) or ''
 
 
 @cache
@@ -65,7 +65,7 @@ def receive_translation(language: str, phrase: str) -> str:
     :return: value in the json-dictionary in the selected language.
     """
     dict_language_obj: dict = get_translate_from_json(language)
-    return dict_language_obj.get(phrase, 'Error')
+    return str(dict_language_obj.get(phrase, 'Error'))
 
 
 @cache
@@ -89,7 +89,7 @@ def get_list_languages() -> tuple:
     Returns a list of available languages
     """
     # some dictionaries already exist, but are not yet available to users
-    list_of_excluded_languages: tuple = ('kk', 'pt')
+    list_of_excluded_languages: tuple = ()
     localization_dir_path: str = path.join(path.dirname(__file__), 'localization')
     lang_json: list = [file[:2] for file in listdir(localization_dir_path)
                        if file.endswith('.json') and file[:2] not in list_of_excluded_languages]
