@@ -138,8 +138,8 @@ class TestLanguages(unittest.TestCase):
         self.assertEqual(res, 'Error')
 
     def test_languages_19(self):
-        res: str = receive_translation('kk', 'time_to_process')
-        self.assertEqual(res, 'Процесс біраз уақыт алады')
+        res: str = receive_translation('kk', 'add_description')
+        self.assertEqual(res, 'Сипаттама қосу (50 таңбадан артық емес)')
 
     def test_languages_20(self):
         res: str = receive_translation('kk', 'add_income')
