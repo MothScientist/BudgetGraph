@@ -20,7 +20,8 @@ from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
-from budget_graph.helpers import get_category_button_labels, get_bot_commands, get_category_translate
+from budget_graph.helpers import get_category_button_labels, get_bot_commands, get_category_translate, \
+    get_timezone_buttons
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
 
@@ -35,11 +36,11 @@ logger_bot = setup_logger('logs/BotLog.log', 'bot_logger')
 # change the list of the bot’s commands
 bot.set_my_commands(get_bot_commands())
 # change the bot’s description, which is shown in the chat with the bot if the chat is empty
-bot.set_my_description('Get started with the easy budgeting bot by entering the /start command')
+# bot.set_my_description('Get started with the easy budgeting bot by entering the /start command')
 # change the bot’s name
-bot.set_my_name('BudgetGraph')
+# bot.set_my_name('BudgetGraph')
 # change the bot’s short description, which is shown on the bot’s profile page
-bot.set_my_short_description('Simple and fast budget control')
+# bot.set_my_short_description('Simple and fast budget control')
 
 
 @timeit
@@ -60,7 +61,7 @@ def reply_menu_buttons_not_register(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton("🤡 I want to register")
+    btn1 = KeyboardButton(f"📬 {receive_translation(user_language, 'register')}")
     btn2 = KeyboardButton(f"⭐ {receive_translation(user_language, 'premium')}")
     markup_1.add(btn1, btn2)
 
@@ -149,14 +150,14 @@ def start(message) -> None:
 def help_msg(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    bot.send_message(message.chat.id, receive_translation(user_language, "support_information"))
+    bot.send_message(message.chat.id, receive_translation(user_language, 'support_information'))
 
 
 @bot.message_handler(commands=['get_my_id'])
 def get_my_id(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    bot.send_sticker(message.chat.id,Stickers.get_sticker_by_id("id_3"))
+    bot.send_sticker(message.chat.id,Stickers.get_sticker_by_id('id_3'))
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "your")} "
                                       f"telegram ID: {message.from_user.id}")
 
@@ -166,14 +167,62 @@ def project_github(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("github.com", url="https://github.com/MothScientist/BudgetGraph"))
+    markup.add(InlineKeyboardButton('github.com', url='https://github.com/MothScientist/BudgetGraph'))
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "project_on_github")}:",
                      reply_markup=markup)
 
 
 @bot.message_handler(commands=['premium'])
 def premium(message, user_language):
-    bot.send_message(message.chat.id, "soon")
+    bot.send_message(message.chat.id, 'soon')
+    # TODO - пока идея, что для премиума доступна аналитика по расходам их собственным
+    # TODO - если премиум имеет владелец группы, то для всех в группе доступна общая аналитика, но не собственная
+
+
+@bot.message_handler(commands=['change_timezone'])
+def change_timezone(message) -> None:
+    telegram_id: int = message.from_user.id
+    user_language: str = check_user_language(telegram_id)
+
+    reg_res: bool = user_is_registered(telegram_id)
+    if not reg_res:
+        bot.send_message(message.chat.id, receive_translation(user_language, 'not_register'))
+        bot.send_sticker(message.chat.id, Stickers.get_sticker_by_id('id_5'))
+        logger_bot.info(f'[change_timezone] Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
+        reply_menu_buttons_not_register(message)
+        return
+
+    bot.send_message(message.chat.id, f"{receive_translation(user_language, 'select_timezone')}:",
+                     reply_markup=InlineKeyboardMarkup(get_timezone_buttons()))
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('change_timezone'))
+def callback_query_change_timezone(call):
+    telegram_id: int = call.from_user.id
+    user_language: str = check_user_language(telegram_id)
+    timezone: int = int(call.data.replace('change_timezone_', '', 1).strip())
+
+    connection = connect_db()
+    bot_db = DatabaseQueries(connection)
+    res_query: bool = bot_db.add_user_timezone(telegram_id, timezone)
+    close_db(connection)
+
+    if res_query:
+        bot.answer_callback_query(call.id,
+                                  f"{receive_translation(user_language, "great")}\n"
+                                  f"{receive_translation(user_language, "timezone_changed")}")
+        logger_bot.info(f"[change_timezone] Successful timezone change. "
+                        f"TelegramID: {logging_hash(telegram_id)}, "
+                        f"timezone: {timezone}")
+    else:
+        bot.answer_callback_query(call.id,
+                                  f"{receive_translation(user_language, "error_select_timezone")}.\n"
+                                  f"{receive_translation(user_language, "contact_support")}")
+        logger_bot.error(f"[change_timezone] Error timezone change. "
+                         f"TelegramID: {logging_hash(telegram_id)}, "
+                         f"timezone: {timezone}")
+
+    bot.delete_message(call.message.chat.id, call.message.message_id)  # delete message with list of languages
 
 
 @bot.message_handler(commands=['change_language'])
@@ -183,6 +232,7 @@ def change_language(message) -> None:
     markup_1 = InlineKeyboardMarkup(row_width=2)
     # button_labels: dict = {'English': 'en', 'Español': 'es', 'Русский': 'ru', 'Français': 'fr', ...} - cache
 
+    # TODO - cache
     markup_1.add(InlineKeyboardButton('English', callback_data='change_language_en'))
     markup_1.add(InlineKeyboardButton('Español', callback_data='change_language_es'))
     markup_1.add(InlineKeyboardButton('Русский', callback_data='change_language_ru'))
@@ -213,7 +263,7 @@ def callback_query_change_language(call):
         bot.answer_callback_query(call.id,
                                   f"{receive_translation(user_language, "great")}\n"
                                   f"{receive_translation(user_language, "language_changed")}")
-        logger_bot.info(f"Successful language change. "
+        logger_bot.info(f"[change_language] Successful language change. "
                         f"TelegramID: {logging_hash(telegram_id)}, "
                         f"language: {new_user_language}")
         restart_language_after_changes(call)  # reload button names and text for new language
@@ -221,7 +271,7 @@ def callback_query_change_language(call):
         bot.answer_callback_query(call.id,
                                   f"{receive_translation(user_language, "error_change_language")}.\n"
                                   f"{receive_translation(user_language, "contact_support")}")
-        logger_bot.error(f"Error language change. "
+        logger_bot.error(f"[change_language] Error language change. "
                          f"TelegramID: {logging_hash(telegram_id)}, "
                          f"language: {new_user_language}")
 
@@ -237,7 +287,7 @@ def restart_language_after_changes(call) -> None:
     telegram_id: int = call.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    markup_1.add(KeyboardButton("/start"))
+    markup_1.add(KeyboardButton('/start'))
     # The bot needs to be restarted for it to work correctly (maybe it’s worth reconsidering this in the future)
     bot.send_message(call.message.chat.id,
                      f"{receive_translation(user_language, "start_after_change_language")}\n"
@@ -249,7 +299,7 @@ def restart_language_after_changes(call) -> None:
 def get_my_token(db_connection, message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
     token: str = db_connection.get_token_by_telegram_id(telegram_id)
-    token: str = token if token else receive_translation(user_language, "unknown")
+    token: str = token if token else receive_translation(user_language, 'unknown')
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "group_token")}:")
     bot.send_message(message.chat.id, token)
 
@@ -292,7 +342,7 @@ def process_add_date_for_transfer(message, is_negative: bool) -> None:
                          reply_markup=markup_1)
         bot.register_next_step_handler(message, process_add_category_for_transfer, value, user_language)
     else:
-        bot.send_message(message.chat.id, receive_translation(user_language, "invalid_value"))
+        bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_value'))
 
 
 def process_add_category_for_transfer(message, value: int, user_language: str) -> None:
@@ -309,7 +359,7 @@ def process_add_category_for_transfer(message, value: int, user_language: str) -
                          reply_markup=markup_1)
         bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, user_language)
     else:
-        bot.send_message(message.chat.id, receive_translation(user_language, "invalid_date"))
+        bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_date'))
         reply_buttons(message)
 
 
@@ -495,7 +545,7 @@ def get_csv(db_connection, message, user_language: str) -> None:
             csv_obj.create_csv_file()
             file_size: float = csv_obj.get_file_size_kb()
             file_checksum: str = csv_obj.get_file_checksum()
-            with open(f"csv_tables/table_{group_id}.csv", 'rb') as csv_table_file:
+            with open(f'csv_tables/table_{group_id}.csv', 'rb') as csv_table_file:
                 caption: str = (f"{receive_translation(user_language, 'file_size')}: "
                                 f"{'{:.3f}'.format(file_size)} kB\n\n"
                                 f"{receive_translation(user_language, 'hashsum')} "
@@ -521,7 +571,7 @@ def get_csv(db_connection, message, user_language: str) -> None:
             logger_bot.info(f"CSV: SUCCESS. "
                             f"TelegramID: {logging_hash(telegram_id)}, "
                             f"group #{group_id}. "
-                            f"File size: {"{:.3f}".format(file_size)} kB, "
+                            f"File size: {'{:.3f}'.format(file_size)} kB, "
                             f"hashsum: {file_checksum}")
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'table_is_empty'))
@@ -625,7 +675,7 @@ def delete_account(db_connection, message, user_language: str):
 @connect_defer_close_db
 def process_delete_account(db_connection, message, user_language: str):
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    btn1 = KeyboardButton("/start")
+    btn1 = KeyboardButton('/start')
     markup_1.add(btn1)
     telegram_id: int = message.from_user.id
     user_choice: str = message.text
@@ -816,9 +866,9 @@ def check_user_language(db_connection, telegram_id: int) -> str:
 def text(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    res = user_is_registered(telegram_id)
+    res: bool = user_is_registered(telegram_id)
 
-    if message.text == '🤡 I want to register':
+    if message.text == f"📬 {receive_translation(user_language, 'register')}":
         registration(message, user_language, res)
     elif message.text == f"⭐ {receive_translation(user_language, 'premium')}":
         premium(message, user_language)

@@ -14,7 +14,7 @@
     "group_settings": "Group settings",
     "my": "My",
     "get_my_token": "Get my token",
-    "register": "I want to register",
+    "register": "Register",
     "view_table": "View table",
     "add_income": "Add income",
     "add_expense": "Add expense",
@@ -110,7 +110,7 @@
     "delete_table": "(A table and all participants will be deleted)",
     "not_deleted_by_owner": "The group can only be removed by its owner - contact the owner of the group, or delete the account.",
     "remove_completed": "The group and users are completely deleted!",
-    "not_register": "You are not register.",
+    "not_register": "You are not register",
     "file_size": "File size",
     "hashsum": "Checksum",
     "unsupported_language": "We're sorry, but this language is not supported. Select from those presented in the button menu.",
@@ -128,5 +128,7 @@
     "DATE": "DATE",
     "CATEGORY": "CATEGORY",
     "DESCRIPTION": "DESCRIPTION",
-    "time_to_process": "The process will take some time"
+    "select_timezone": "Select your time zone",
+    "error_select_timezone": "Error setting time zone value",
+    "timezone_changed": "The time zone for your account has been successfully set"
 }

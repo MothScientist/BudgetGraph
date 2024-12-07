@@ -110,7 +110,7 @@
     "delete_table": "(Tafla og öllum þátttakendum verður eytt)",
     "not_deleted_by_owner": "Einungis eigandi hans getur fjarlægt hópinn - hafðu samband við eiganda hópsins eða eyddu reikningnum.",
     "remove_completed": "Hópnum og notendum er alveg eytt!",
-    "not_register": "Þú ert ekki skráður.",
+    "not_register": "Þú ert ekki skráður",
     "file_size": "Skjala stærð",
     "hashsum": "Athugunarsumma",
     "unsupported_language": "Því miður er þetta tungumál ekki stutt. Veldu úr þeim sem kynntar eru í hnappavalmyndinni.",
@@ -128,5 +128,7 @@
     "DATE": "DAGSETNING",
     "CATEGORY": "FLOKKUR",
     "DESCRIPTION": "LÝSING",
-    "time_to_process": "Ferlið mun taka nokkurn tíma"
+    "select_timezone": "Veldu tímabeltið þitt",
+    "error_select_timezone": "Villa við að stilla gildi tímabeltis",
+    "timezone_changed": "Tímabelti fyrir reikninginn þinn hefur verið stillt"
 }

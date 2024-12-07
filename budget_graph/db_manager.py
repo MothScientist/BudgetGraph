@@ -568,6 +568,25 @@ class DatabaseQueries:
                                   f"language: {language}")
             return False
 
+    def add_user_timezone(self, telegram_id: int, timezone: int) -> bool:  # TODO - мне кажется можно проще и яснее
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""UPDATE
+                                     "budget_graph"."users"
+                                   SET
+                                     "timezone" = %s::smallint
+                                   WHERE
+                                     "telegram_id" = %s::bigint""", (timezone, telegram_id))
+                    conn.commit()
+                    return True
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"telegram_id: {logging_hash(telegram_id)}, "
+                                  f"timezone: {timezone}")
+            return False
+
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     @timeit
     def add_transaction_to_db(self,
@@ -762,7 +781,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""DELETE FROM
+                    cur.execute("""
+                                   DELETE FROM
                                      "budget_graph"."users"
                                    WHERE
                                      "telegram_id" IN
@@ -792,7 +812,8 @@ class DatabaseQueries:
                                    DELETE FROM
                                      "budget_graph"."monetary_transactions"
                                    WHERE
-                                     "group_id" = %s::smallint""", (group_id, group_id, group_id, group_id,))
+                                     "group_id" = %s::smallint
+                    """, (group_id, group_id, group_id, group_id,))
 
                     conn.commit()
             logger_database.info(f'[DB_QUERY] Group #{group_id} has been completely deleted')
