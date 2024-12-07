@@ -49,8 +49,8 @@ class Stickers:
 
     @staticmethod
     @cache
-    def get_sticker_by_id(sticker_id):
-        return Stickers.__stickers.get(sticker_id)
+    def get_sticker_by_id(sticker_id) -> str:
+        return Stickers.__stickers.get(sticker_id) or ''
 
 
 @cache

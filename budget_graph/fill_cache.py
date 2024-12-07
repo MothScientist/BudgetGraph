@@ -3,7 +3,7 @@ The file is run as a script after the main application is deployed, it populates
 """
 from json import load
 
-from dictionary import get_list_languages, get_translate_from_json, receive_translation
+from dictionary import get_list_languages, receive_translation
 
 
 def fill_localization_cache() -> None:

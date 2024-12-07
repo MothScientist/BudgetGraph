@@ -52,9 +52,10 @@ def get_category_translate(user_language: str) -> tuple:
 def get_bot_commands() -> list:
 	return [
 		BotCommand('start', 'Start'),
-		BotCommand('help', 'Help'),
-		BotCommand('project_github', 'GitHub'),
 		BotCommand('change_language', 'Change Language'),
+		BotCommand('change_timezone', 'Change Time zone'),
 		BotCommand('get_my_id', 'Get my Telegram ID'),
-		BotCommand('premium', 'Premium')
+		BotCommand('premium', 'Premium'),
+		BotCommand('help', 'Help'),
+		BotCommand('project_github', 'GitHub')
 	]
