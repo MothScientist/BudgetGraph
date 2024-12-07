@@ -419,7 +419,7 @@ class DatabaseQueries:
                                      "budget_graph"."groups"
                                    WHERE
                                      "id" = %s::smallint""", (telegram_id, group_id,))
-                    return (cur.fetchone())[0]
+                    return cur.fetchone()[0]
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -441,8 +441,7 @@ class DatabaseQueries:
                                      u."telegram_id" = g."owner"
                                    WHERE
                                      g."id" = %s::smallint""", (group_id,))
-                    res = cur.fetchone()
-                    return str(res[0]) if res else ''
+                    return str(res[0]) if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -455,7 +454,7 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_record_id_is_exist'),
                                 {'group_id': group_id, 'transaction_id': transaction_id})
-                    return bool(cur.fetchone())
+                    return bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -471,7 +470,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_username_is_exist'), {'username': username})
-                    return bool(cur.fetchone())
+                    return bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -483,7 +482,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_telegram_id_is_exist'), {'telegram_id': telegram_id})
-                    return bool(cur.fetchone())
+                    return bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -498,7 +497,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_token_is_unique'), {'token': token})
-                    return bool(not cur.fetchone())
+                    return not bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -516,7 +515,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_limit_users_in_group'), {'group_id': group_id})
-                    return (cur.fetchone())[0]
+                    return bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
