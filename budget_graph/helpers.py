@@ -9,6 +9,27 @@ sys_path.append('../')
 from budget_graph.dictionary import receive_translation
 
 
+class StorageMsgIdForDeleteAfterOperation:
+	"""
+	Stores message IDs that are deleted after a transaction is completed (the option is enabled in the user settings)
+	"""
+	def __init__(self, feature_is_active=None):
+		self.feature_is_active: bool = feature_is_active
+		self.msg_id_to_delete: list = []
+
+	def append(self, msg_id: int):
+		if self.feature_is_active:
+			self.msg_id_to_delete.append(msg_id)
+
+	def delete_messages(self, bot, chat_id: int) -> None:
+		"""
+		:param bot: bot object through which messages can be deleted
+		:param chat_id:
+		"""
+		if self.feature_is_active:
+			bot.delete_messages(chat_id, self.msg_id_to_delete)
+
+
 @cache
 def get_category_button_labels(user_language: str) -> tuple:
 	"""
@@ -109,6 +130,7 @@ def get_bot_commands() -> list:
 	return [
 		BotCommand('start', 'Start'),
 		BotCommand('change_language', 'Change Language'),
+		BotCommand('del_msg_transaction', '[ON/OFF] Delete messages after successful transaction'),
 		BotCommand('change_timezone', 'Change Time zone'),
 		BotCommand('get_my_id', 'Get my Telegram ID'),
 		BotCommand('premium', 'Premium'),

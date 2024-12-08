@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
     -- user time zone
     "timezone"    smallint                     NULL           CHECK("timezone" IS NULL OR "timezone" >= -12 AND "timezone" <= 12),
     -- other settings for the user (for example, the activation status of some functionality)
-    -- 0: Status that the dialog clearing function is enabled after a successful transaction
+    -- 0: Status that the dialog clearing function is enabled after a successful transaction (default value - False)
     -- 1: Reserve
     -- 2: Reserve
     -- 3: Reserve
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
     -- 8: Reserve
     -- 9: Reserve
     "settings"    boolean[]
-                  DEFAULT ARRAY[NULL::bool, NULL::bool,
+                  DEFAULT ARRAY[FALSE,      NULL::bool,
                                 NULL::bool, NULL::bool,
                                 NULL::bool, NULL::bool,
                                 NULL::bool, NULL::bool,

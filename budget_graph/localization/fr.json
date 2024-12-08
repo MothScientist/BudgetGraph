@@ -130,5 +130,8 @@
     "DESCRIPTION": "DESCRIPTION",
     "select_timezone": "Sélectionnez votre fuseau horaire",
     "error_select_timezone": "Erreur lors de la définition de la valeur du fuseau horaire",
-    "timezone_changed": "Le fuseau horaire de votre compte a été défini avec succès"
+    "timezone_changed": "Le fuseau horaire de votre compte a été défini avec succès",
+    "del_msg_transaction_on": "Fonction de suppression des messages post-transaction activée",
+    "del_msg_transaction_of": "La fonction de suppression des messages après une transaction est désactivée",
+    "del_msg_transaction_err": "Une erreur s'est produite lors de l'activation/désactivation de la fonctionnalité"
 }
