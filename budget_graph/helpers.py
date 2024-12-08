@@ -1,5 +1,5 @@
 """
-Auxiliary methods
+Methods for the bot to work, mainly keyboard caching
 """
 from sys import path as sys_path
 from functools import cache
