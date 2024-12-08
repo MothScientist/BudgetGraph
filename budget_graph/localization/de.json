@@ -130,5 +130,8 @@
     "DESCRIPTION": "BESCHREIBUNG",
     "select_timezone": "Wählen Sie Ihre Zeitzone aus",
     "error_select_timezone": "Fehler beim Festlegen des Zeitzonenwerts",
-    "timezone_changed": "Die Zeitzone für Ihr Konto wurde erfolgreich eingestellt"
+    "timezone_changed": "Die Zeitzone für Ihr Konto wurde erfolgreich eingestellt",
+    "del_msg_transaction_on": "Funktion zum Löschen von Nachrichten nach der Transaktion aktiviert",
+    "del_msg_transaction_of": "Die Funktion zum Löschen von Nachrichten nach einer Transaktion ist deaktiviert",
+    "del_msg_transaction_err": "Beim Aktivieren/Deaktivieren der Funktionalität ist ein Fehler aufgetreten"
 }

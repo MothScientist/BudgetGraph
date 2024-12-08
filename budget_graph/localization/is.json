@@ -130,5 +130,8 @@
     "DESCRIPTION": "LÝSING",
     "select_timezone": "Veldu tímabeltið þitt",
     "error_select_timezone": "Villa við að stilla gildi tímabeltis",
-    "timezone_changed": "Tímabelti fyrir reikninginn þinn hefur verið stillt"
+    "timezone_changed": "Tímabelti fyrir reikninginn þinn hefur verið stillt",
+    "del_msg_transaction_on": "Eiginleiki til að eyða skilaboðum eftir færslu virkur",
+    "del_msg_transaction_of": "Aðgerðin til að eyða skilaboðum eftir færslu er óvirk",
+    "del_msg_transaction_err": "Villa kom upp við að virkja/slökkva á virkni"
 }

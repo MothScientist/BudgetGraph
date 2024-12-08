@@ -130,5 +130,8 @@
     "DESCRIPTION": "DESCRIPTION",
     "select_timezone": "Select your time zone",
     "error_select_timezone": "Error setting time zone value",
-    "timezone_changed": "The time zone for your account has been successfully set"
+    "timezone_changed": "The time zone for your account has been successfully set",
+    "del_msg_transaction_on": "The function to delete messages after a transaction is enabled",
+    "del_msg_transaction_of": "The function of deleting messages after a transaction is disabled",
+    "del_msg_transaction_err": "An error occurred while enabling/disabling functionality"
 }

@@ -9,6 +9,27 @@ sys_path.append('../')
 from budget_graph.dictionary import receive_translation
 
 
+class StorageMsgIdForDeleteAfterOperation:
+	"""
+	Stores message IDs that are deleted after a transaction is completed (the option is enabled in the user settings)
+	"""
+	def __init__(self, feature_is_active=None):
+		self.feature_is_active: bool = feature_is_active
+		self.msg_id_to_delete: list = []
+
+	def append(self, msg_id: int):
+		if self.feature_is_active:
+			self.msg_id_to_delete.append(msg_id)
+
+	def delete_messages(self, bot, chat_id: int) -> None:
+		"""
+		:param bot: bot object through which messages can be deleted
+		:param chat_id:
+		"""
+		if self.feature_is_active:
+			bot.delete_messages(chat_id, self.msg_id_to_delete)
+
+
 @cache
 def get_category_button_labels(user_language: str) -> tuple:
 	"""
@@ -34,6 +55,20 @@ def get_category_button_labels(user_language: str) -> tuple:
 		receive_translation(user_language, 'salary'),
 		receive_translation(user_language, 'charity'),
 		receive_translation(user_language, 'other')
+	)
+
+
+@cache
+def get_language_buttons() -> tuple:
+	return (
+		[InlineKeyboardButton('English', callback_data='change_language_en')],
+		[InlineKeyboardButton('Español', callback_data='change_language_es')],
+		[InlineKeyboardButton('Русский', callback_data='change_language_ru')],
+		[InlineKeyboardButton('Français', callback_data='change_language_fr')],
+		[InlineKeyboardButton('Deutsch', callback_data='change_language_de')],
+		[InlineKeyboardButton('Islenskur', callback_data='change_language_is')],
+		[InlineKeyboardButton('Português', callback_data='change_language_pt')],
+		[InlineKeyboardButton('қазақ', callback_data='change_language_kk')]
 	)
 
 
@@ -95,6 +130,7 @@ def get_bot_commands() -> list:
 	return [
 		BotCommand('start', 'Start'),
 		BotCommand('change_language', 'Change Language'),
+		BotCommand('del_msg_transaction', '[ON/OFF] Delete messages after successful transaction'),
 		BotCommand('change_timezone', 'Change Time zone'),
 		BotCommand('get_my_id', 'Get my Telegram ID'),
 		BotCommand('premium', 'Premium'),

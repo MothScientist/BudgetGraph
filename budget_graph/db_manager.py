@@ -522,6 +522,42 @@ class DatabaseQueries:
                                   f"group id: {group_id}")
             return False  # to prevent a user from being written to a non-existent group
 
+    def get_feature_status_del_msg_after_transaction(self, telegram_id: int) -> bool:
+        """
+        Checks the status whether the function is enabled
+        for the operation of the StorageMsgIdForDeleteAfterOperation class
+        """
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        read_sql_file('get_feature_status_del_msg_after_transaction'),
+                        {'telegram_id': telegram_id}
+                    )
+                    return bool(cur.fetchone()[0])
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"telegram_id: {telegram_id}")
+            return False  # default value - False
+
+    def change_feature_status_del_msg_after_transaction(self, telegram_id: int) -> bool:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        read_sql_file('change_feature_status_del_msg_after_transaction'),
+                        {'telegram_id': telegram_id}
+                    )
+                    conn.commit()
+            logger_database.info(f"[del_msg_transaction] successfully changed for {logging_hash(telegram_id)}")
+            return True
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"telegram_id: {telegram_id}")
+            return False
+
     @timeit
     def get_user_language(self, telegram_id: int) -> str:
         """
@@ -782,38 +818,44 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                                   DELETE FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     "telegram_id" IN
-                                      (
-                                       SELECT
+                                    -- users
+                                    WITH
+                                    telegram_id_users AS (
+                                        SELECT
                                          u."telegram_id"
                                        FROM
                                          "budget_graph"."users" u
-                                       INNER JOIN
+                                       JOIN
                                          "budget_graph"."users_groups" u_g
                                        ON
                                          u."telegram_id" = u_g."telegram_id"
                                        WHERE
                                          u_g."group_id" = %s::smallint
-                                      );
+                                    )
                                     
-                                   DELETE FROM
-                                     "budget_graph"."users_groups"
-                                   WHERE
-                                     "group_id" = %s::smallint;
-
-                                   DELETE FROM
-                                     "budget_graph"."groups"
-                                   WHERE
-                                     "id" = %s::smallint;
-                                     
-                                   DELETE FROM
-                                     "budget_graph"."monetary_transactions"
-                                   WHERE
-                                     "group_id" = %s::smallint
-                    """, (group_id, group_id, group_id, group_id,))
+                                    DELETE FROM
+                                        "budget_graph"."users"
+                                    WHERE
+                                        "telegram_id" = ANY(ARRAY(SELECT "telegram_id" FROM telegram_id_users));
+                                    
+                                    -- groups
+                                    DELETE FROM
+                                        "budget_graph"."groups"
+                                    WHERE
+                                        "id" = %s::smallint;
+                                    
+                                    -- users_groups
+                                    DELETE FROM
+                                        "budget_graph"."users_groups"
+                                    WHERE
+                                        "group_id" = %s::smallint;
+                                    
+                                    -- monetary_transactions
+                                    DELETE FROM
+                                        "budget_graph"."monetary_transactions"
+                                    WHERE
+                                        "group_id" = %s::smallint;
+                    """, (*([group_id]*4),))
 
                     conn.commit()
             logger_database.info(f'[DB_QUERY] Group #{group_id} has been completely deleted')

@@ -130,5 +130,8 @@
     "DESCRIPTION": "DESCRIPCIÓN",
     "select_timezone": "Seleccione su zona horaria",
     "error_select_timezone": "Error al configurar el valor de la zona horaria",
-    "timezone_changed": "La zona horaria de su cuenta se ha configurado correctamente"
+    "timezone_changed": "La zona horaria de su cuenta se ha configurado correctamente",
+    "del_msg_transaction_on": "Función de eliminación de mensajes posteriores a la transacción habilitada",
+    "del_msg_transaction_of": "La función para eliminar mensajes después de una transacción está deshabilitada",
+    "del_msg_transaction_err": "Se produjo un error al habilitar/deshabilitar la funcionalidad"
 }

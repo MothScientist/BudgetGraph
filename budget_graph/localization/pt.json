@@ -130,5 +130,8 @@
     "DESCRIPTION": "DESCRIÇÃO",
     "select_timezone": "Selecione o seu fuso horário",
     "error_select_timezone": "Erro ao definir o valor do fuso horário",
-    "timezone_changed": "O fuso horário da sua conta foi definido com sucesso"
+    "timezone_changed": "O fuso horário da sua conta foi definido com sucesso",
+    "del_msg_transaction_on": "Recurso de eliminação de mensagem pós-transação ativado",
+    "del_msg_transaction_of": "A função para eliminar mensagens após uma transação ser desativada",
+    "del_msg_transaction_err": "Ocorreu um erro ao ativar/desativar a funcionalidade"
 }

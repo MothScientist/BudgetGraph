@@ -13,17 +13,17 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
-from budget_graph.time_checking import timeit
+# from budget_graph.time_checking import timeit
 from budget_graph.create_csv import CsvFileWithTable
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
-from budget_graph.helpers import get_category_button_labels, get_bot_commands, get_category_translate, \
-    get_timezone_buttons
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
+from budget_graph.helpers import StorageMsgIdForDeleteAfterOperation, get_category_button_labels, get_bot_commands, \
+    get_category_translate, get_timezone_buttons, get_language_buttons
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -103,13 +103,10 @@ def group_settings_get_buttons(message):
                      reply_markup=markup_1)
 
 
-@timeit
-def reply_buttons(message):
+@connect_defer_close_db
+def reply_buttons(db_connection, message):
     telegram_id: int = message.from_user.id
-    connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-    res: str = bot_db.get_username_by_telegram_id(telegram_id)
-    close_db(connection)
+    res: str = db_connection.get_username_by_telegram_id(telegram_id)
     if res:
         reply_menu_buttons_register(message)
     else:
@@ -160,6 +157,32 @@ def get_my_id(message) -> None:
     bot.send_sticker(message.chat.id,Stickers.get_sticker_by_id('id_3'))
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "your")} "
                                       f"telegram ID: {message.from_user.id}")
+
+
+@bot.message_handler(commands=['del_msg_transaction'])
+@connect_defer_close_db
+def del_msg_transaction(db_connection, message) -> None:
+    telegram_id: int = message.from_user.id
+    chat_id: int = message.chat.id
+    user_language: str = check_user_language(telegram_id)
+
+    reg_res: bool = user_is_registered(telegram_id)
+    if not reg_res:
+        bot.send_message(chat_id, receive_translation(user_language, 'not_register'))
+        bot.send_sticker(chat_id, Stickers.get_sticker_by_id('id_5'))
+        logger_bot.info(f'[del_msg_transaction] Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
+        reply_menu_buttons_not_register(message)
+        return
+
+    old_feature_status: bool = db_connection.get_feature_status_del_msg_after_transaction(telegram_id)
+    res: bool = db_connection.change_feature_status_del_msg_after_transaction(telegram_id)
+    if res and old_feature_status:  # the functionality was enabled
+        bot.send_message(chat_id, receive_translation(user_language, 'del_msg_transaction_of'))
+    elif res and not old_feature_status:  # the functionality was disabled
+        bot.send_message(chat_id, receive_translation(user_language, 'del_msg_transaction_on'))
+    else:
+        bot.send_message(chat_id, f"{receive_translation(user_language, 'del_msg_transaction_on')}\n"
+                                  f"{receive_translation(user_language, 'contact_support')}")
 
 
 @bot.message_handler(commands=['project_github'])
@@ -229,19 +252,7 @@ def callback_query_change_timezone(call):
 def change_language(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    markup_1 = InlineKeyboardMarkup(row_width=2)
-    # button_labels: dict = {'English': 'en', 'Español': 'es', 'Русский': 'ru', 'Français': 'fr', ...} - cache
-
-    # TODO - cache
-    markup_1.add(InlineKeyboardButton('English', callback_data='change_language_en'))
-    markup_1.add(InlineKeyboardButton('Español', callback_data='change_language_es'))
-    markup_1.add(InlineKeyboardButton('Русский', callback_data='change_language_ru'))
-    markup_1.add(InlineKeyboardButton('Français', callback_data='change_language_fr'))
-    markup_1.add(InlineKeyboardButton('Deutsch', callback_data='change_language_de'))
-    markup_1.add(InlineKeyboardButton('Islenskur', callback_data='change_language_is'))
-    markup_1.add(InlineKeyboardButton('Português', callback_data='change_language_pt'))
-    markup_1.add(InlineKeyboardButton('қазақ', callback_data='change_language_kk'))
-
+    markup_1 = InlineKeyboardMarkup(get_language_buttons())
     bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
                      reply_markup=markup_1)
 
@@ -304,17 +315,17 @@ def get_my_token(db_connection, message, user_language: str) -> None:
     bot.send_message(message.chat.id, token)
 
 
-def add_income(message, user_language: str) -> None:
-    bot.send_message(message.chat.id, f"{receive_translation(user_language, "enter_income")}:")
-    bot.register_next_step_handler(message, process_add_date_for_transfer, False)
+@connect_defer_close_db
+def start_transaction(db_connection, message, user_language: str, is_negative: bool) -> None:
+    text_key: str = 'enter_expense' if is_negative else 'enter_income'
+    msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, text_key)}:")
+    feature_is_active: bool = db_connection.get_feature_status_del_msg_after_transaction(message.from_user.id)
+    msg_del_obj = StorageMsgIdForDeleteAfterOperation(feature_is_active)
+    msg_del_obj.append(msg.id)
+    bot.register_next_step_handler(message, process_add_date_for_transfer, is_negative, msg_del_obj)
 
 
-def add_expense(message, user_language: str) -> None:
-    bot.send_message(message.chat.id, f"{receive_translation(user_language, "enter_expense")}:")
-    bot.register_next_step_handler(message, process_add_date_for_transfer, True)
-
-
-def process_add_date_for_transfer(message, is_negative: bool) -> None:
+def process_add_date_for_transfer(message, is_negative: bool, msg_del_obj: StorageMsgIdForDeleteAfterOperation) -> None:
     """
     Adds income and expense to the database.
     Accepts an unvalidated value,
@@ -324,9 +335,11 @@ def process_add_date_for_transfer(message, is_negative: bool) -> None:
         message:
         is_negative (bool): False if X > 0 (add_income), True if X < 0 (add_expense)
         X = 0 - will be rejected by the validator
+        msg_del_obj:
 
     Returns: None
     """
+    msg_del_obj.append(message.message_id)
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     value: str = message.text
@@ -338,14 +351,17 @@ def process_add_date_for_transfer(message, is_negative: bool) -> None:
 
     if value:
         value *= -1 if is_negative else 1
-        bot.send_message(message.chat.id, f"{receive_translation(user_language, "set_date")} (DD/MM/YYYY)",
-                         reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_add_category_for_transfer, value, user_language)
+        msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, "set_date")} (DD/MM/YYYY)",
+                               reply_markup=markup_1)
+        msg_del_obj.append(msg.id)
+        bot.register_next_step_handler(message, process_add_category_for_transfer, value, user_language, msg_del_obj)
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_value'))
 
 
-def process_add_category_for_transfer(message, value: int, user_language: str) -> None:
+def process_add_category_for_transfer(message, value: int, user_language: str,
+                                      msg_del_obj: StorageMsgIdForDeleteAfterOperation) -> None:
+    msg_del_obj.append(message.message_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
     button_labels: tuple = get_category_button_labels(user_language)
     buttons: list = [KeyboardButton(label) for label in button_labels]  # assembling buttons from the tuple above
@@ -355,24 +371,30 @@ def process_add_category_for_transfer(message, value: int, user_language: str) -
     record_date_is_valid: bool = asyncio_run(date_validation(record_date))  # DD/MM/YYYY
 
     if record_date_is_valid:
-        bot.send_message(message.chat.id, f"{receive_translation(user_language, "select_category")}:",
-                         reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_add_description_for_transfer, value, record_date, user_language)
+        msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, "select_category")}:",
+                               reply_markup=markup_1)
+        msg_del_obj.append(msg.id)
+        bot.register_next_step_handler(message, process_add_description_for_transfer, value,
+                                       record_date, user_language, msg_del_obj)
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_date'))
         reply_buttons(message)
 
 
-def process_add_description_for_transfer(message, value: int, record_date: str, user_language: str) -> None:
+def process_add_description_for_transfer(message, value: int, record_date: str, user_language: str,
+                                         msg_del_obj: StorageMsgIdForDeleteAfterOperation) -> None:
+    msg_del_obj.append(message.message_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
     btn1 = KeyboardButton(receive_translation(user_language, 'no_description'))
     markup_1.add(btn1)
     category: str = message.text
 
     if category_validation(user_language, category):
-        bot.send_message(message.chat.id, receive_translation(user_language, 'add_description'),
-                         reply_markup=markup_1)
-        bot.register_next_step_handler(message, process_transfer_final, value, record_date, category, user_language)
+        msg = bot.send_message(message.chat.id, receive_translation(user_language, 'add_description'),
+                               reply_markup=markup_1)
+        msg_del_obj.append(msg.id)
+        bot.register_next_step_handler(message, process_transfer_final, value, record_date,
+                                       category, user_language, msg_del_obj)
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_category'))
         reply_buttons(message)
@@ -386,8 +408,10 @@ def process_transfer_final(
         value: int,
         record_date: str,
         category: str,
-        user_language: str
+        user_language: str,
+        msg_del_obj: StorageMsgIdForDeleteAfterOperation
 ) -> None:
+    msg_del_obj.append(message.message_id)
     telegram_id: int = message.from_user.id
     description: str = message.text
 
@@ -396,7 +420,8 @@ def process_transfer_final(
 
     if description_validation(description):
         if db_connection.add_transaction_to_db(value, record_date, category, description, telegram_id=telegram_id):
-            bot.send_message(message.chat.id, f"{receive_translation(user_language, 'entry_add_success')}!")
+            bot.send_message(chat_id := message.chat.id, f"{receive_translation(user_language, 'entry_add_success')}!")
+            msg_del_obj.delete_messages(bot, chat_id)
         else:
             bot.send_message(message.chat.id, f"{receive_translation(user_language, 'entry_add_error')}\n"
                                               f"{receive_translation(user_language, 'contact_support')}")
@@ -896,9 +921,9 @@ def text(message) -> None:
         if message.text == f"📖 {receive_translation(user_language, 'view_table')}":
             view_table(message, res, user_language)
         elif message.text == f"📈 {receive_translation(user_language, 'add_income')}":
-            add_income(message, user_language)
+            start_transaction(message, user_language, False)
         elif message.text == f"📉 {receive_translation(user_language, 'add_expense')}":
-            add_expense(message, user_language)
+            start_transaction(message, user_language, True)
         elif message.text == f"❌ {receive_translation(user_language, 'del_record')}":
             delete_record(message, user_language)
         elif message.text == f"🗃️ {receive_translation(user_language, 'get_csv')}":
