@@ -13,7 +13,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
-from budget_graph.time_checking import timeit
+# from budget_graph.time_checking import timeit
 from budget_graph.create_csv import CsvFileWithTable
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation

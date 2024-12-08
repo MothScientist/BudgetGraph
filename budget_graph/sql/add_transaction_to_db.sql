@@ -1,9 +1,10 @@
 WITH
 user_info AS (
-  SELECT u."username", u."telegram_id", u_g."group_id"
-  FROM "budget_graph"."users" u
-  INNER JOIN "budget_graph"."users_groups" u_g
-  ON u."telegram_id" = u_g."telegram_id"
+  SELECT
+    u."username", u."telegram_id", u_g."group_id"
+  FROM
+    "budget_graph"."users" u
+    JOIN "budget_graph"."users_groups" u_g ON u."telegram_id" = u_g."telegram_id"
   WHERE
     (%(telegram_id)s::bigint IS NOT NULL AND u."telegram_id" = %(telegram_id)s::bigint) OR
     (%(username)s::text IS NOT NULL AND u."username" = %(username)s::text)
