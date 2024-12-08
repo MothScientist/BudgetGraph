@@ -38,6 +38,20 @@ def get_category_button_labels(user_language: str) -> tuple:
 
 
 @cache
+def get_language_buttons() -> tuple:
+	return (
+		[InlineKeyboardButton('English', callback_data='change_language_en')],
+		[InlineKeyboardButton('Español', callback_data='change_language_es')],
+		[InlineKeyboardButton('Русский', callback_data='change_language_ru')],
+		[InlineKeyboardButton('Français', callback_data='change_language_fr')],
+		[InlineKeyboardButton('Deutsch', callback_data='change_language_de')],
+		[InlineKeyboardButton('Islenskur', callback_data='change_language_is')],
+		[InlineKeyboardButton('Português', callback_data='change_language_pt')],
+		[InlineKeyboardButton('қазақ', callback_data='change_language_kk')]
+	)
+
+
+@cache
 def get_timezone_buttons() -> tuple:
 	buttons_timezone_negative: tuple = (
 		InlineKeyboardButton('UTC-12', callback_data='change_timezone_-12'),

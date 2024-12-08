@@ -21,7 +21,7 @@ from budget_graph.encryption import getting_hash, get_salt, logging_hash
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
 from budget_graph.helpers import get_category_button_labels, get_bot_commands, get_category_translate, \
-    get_timezone_buttons
+    get_timezone_buttons, get_language_buttons
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
 
@@ -229,19 +229,7 @@ def callback_query_change_timezone(call):
 def change_language(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    markup_1 = InlineKeyboardMarkup(row_width=2)
-    # button_labels: dict = {'English': 'en', 'Español': 'es', 'Русский': 'ru', 'Français': 'fr', ...} - cache
-
-    # TODO - cache
-    markup_1.add(InlineKeyboardButton('English', callback_data='change_language_en'))
-    markup_1.add(InlineKeyboardButton('Español', callback_data='change_language_es'))
-    markup_1.add(InlineKeyboardButton('Русский', callback_data='change_language_ru'))
-    markup_1.add(InlineKeyboardButton('Français', callback_data='change_language_fr'))
-    markup_1.add(InlineKeyboardButton('Deutsch', callback_data='change_language_de'))
-    markup_1.add(InlineKeyboardButton('Islenskur', callback_data='change_language_is'))
-    markup_1.add(InlineKeyboardButton('Português', callback_data='change_language_pt'))
-    markup_1.add(InlineKeyboardButton('қазақ', callback_data='change_language_kk'))
-
+    markup_1 = InlineKeyboardMarkup(get_language_buttons())
     bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
                      reply_markup=markup_1)
 
