@@ -237,13 +237,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "psw_salt"
-                                   FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     "username" = %s::text""", (username,))
-                    return str(res[0]) if (res := cur.fetchone()) else ""
+                    cur.execute(read_sql_file('get_salt_by_username'), {'username': username})
+                    return str(res[0]) if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -257,15 +252,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     1
-                                   FROM
-                                     "budget_graph"."users" u
-                                   WHERE
-                                     u."username" = %s::text
-                                     AND
-                                     u."psw_hash" = %s::text""", (username, psw_hash,))
-                    return bool(cur.fetchone())
+                    cur.execute(read_sql_file('auth_by_username'), {'username': username, 'psw_hash': psw_hash})
+                    return bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -408,18 +396,11 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     CASE 
-                                       WHEN "owner" = %s::bigint THEN
-                                         TRUE 
-                                       ELSE 
-                                         FALSE 
-                                     END
-                                   FROM
-                                     "budget_graph"."groups"
-                                   WHERE
-                                     "id" = %s::smallint""", (telegram_id, group_id,))
-                    return cur.fetchone()[0]
+                    cur.execute(
+                        read_sql_file('check_user_is_group_owner_by_telegram_id'),
+                        {'telegram_id': telegram_id, 'group_id': group_id}
+                    )
+                    return bool(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "

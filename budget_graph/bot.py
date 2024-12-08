@@ -43,7 +43,6 @@ bot.set_my_commands(get_bot_commands())
 # bot.set_my_short_description('Simple and fast budget control')
 
 
-@timeit
 def reply_menu_buttons_register(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
@@ -56,7 +55,6 @@ def reply_menu_buttons_register(message):
     bot.send_message(message.chat.id, receive_translation(user_language, "click_need_button"), reply_markup=markup_1)
 
 
-@timeit
 def reply_menu_buttons_not_register(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
@@ -68,7 +66,6 @@ def reply_menu_buttons_not_register(message):
     bot.send_message(message.chat.id, receive_translation(user_language, 'click_need_button'), reply_markup=markup_1)
 
 
-@timeit
 def table_manage_get_buttons(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
@@ -85,7 +82,6 @@ def table_manage_get_buttons(message):
                      reply_markup=markup_1)
 
 
-@timeit
 def group_settings_get_buttons(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
@@ -196,7 +192,7 @@ def project_github(message) -> None:
 
 
 @bot.message_handler(commands=['premium'])
-def premium(message, user_language):
+def premium(message, user_language: str):
     bot.send_message(message.chat.id, 'soon')
     # TODO - пока идея, что для премиума доступна аналитика по расходам их собственным
     # TODO - если премиум имеет владелец группы, то для всех в группе доступна общая аналитика, но не собственная
@@ -220,16 +216,13 @@ def change_timezone(message) -> None:
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('change_timezone'))
-def callback_query_change_timezone(call):
+@connect_defer_close_db
+def callback_query_change_timezone(db_connection, call):
     telegram_id: int = call.from_user.id
     user_language: str = check_user_language(telegram_id)
     timezone: int = int(call.data.replace('change_timezone_', '', 1).strip())
 
-    connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-    res_query: bool = bot_db.add_user_timezone(telegram_id, timezone)
-    close_db(connection)
-
+    res_query: bool = db_connection.add_user_timezone(telegram_id, timezone)
     if res_query:
         bot.answer_callback_query(call.id,
                                   f"{receive_translation(user_language, "great")}\n"
@@ -258,16 +251,15 @@ def change_language(message) -> None:
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('change_language'))
-def callback_query_change_language(call):
+@connect_defer_close_db
+def callback_query_change_language(db_connection, call):
     telegram_id: int = call.from_user.id
     user_language: str = check_user_language(telegram_id)
     # remove old language values from cache
     UserLanguageCache.delete_data_from_cache(telegram_id)
     new_user_language: str = call.data[-2:]
-    connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-    res: bool = bot_db.add_user_language(telegram_id, new_user_language)
-    close_db(connection)
+
+    res: bool = db_connection.add_user_language(telegram_id, new_user_language)
     if res:
         # new value will be written to the cache
         user_language: str = check_user_language(telegram_id)  # change user language to new language
@@ -838,15 +830,15 @@ def get_str_with_group_users(telegram_id: int, with_owner: bool) -> str:
 
     if with_owner:
         res: str = '\n'.join(
-            f"{user} ({receive_translation(user_language, 'owner')})"
+            f'{user} ({receive_translation(user_language, 'owner')})'
             if user == group_owner_username
             else
-            f"{user}"
+            f'{user}'
             for user in group_users_list
         )
     else:
         res: str = '\n'.join(
-            f"{user}"
+            f'{user}'
             for user in group_users_list
             if user != group_owner_username
         )
