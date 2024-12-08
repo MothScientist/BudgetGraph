@@ -59,6 +59,7 @@ def connect_defer_close_db(func):
             # all the necessary event handlers are already contained inside the called functions
             logger_database.debug(f'[DB_CONNECT][defer] FAILED: connecting to database: {str(err)}')
         finally:
+            # logging is inside the function
             close_db(connection)  # the 'if' condition is not required since it is inside the called function
     return wrapper
 
@@ -398,7 +399,7 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     cur.execute(
                         read_sql_file('check_user_is_group_owner_by_telegram_id'),
-                        {'telegram_id': telegram_id, 'group_id': group_id}
+                        {'owner': telegram_id, 'group_id': group_id}
                     )
                     return bool(cur.fetchone()[0])
 
