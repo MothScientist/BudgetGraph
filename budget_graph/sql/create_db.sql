@@ -35,17 +35,14 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."groups" (
     "id"           smallserial PRIMARY KEY, -- It makes sense to add a UNIQUE or PRIMARY KEY constraint on this
                                             -- column to protect against erroneously adding duplicate values,
                                             -- but this does not happen automatically
-    "owner"        bigint      NOT NULL UNIQUE   CHECK("owner" BETWEEN 1 AND POWER(10, 12) - 1),
-    "token"        varchar(32) NOT NULL UNIQUE   CHECK(LENGTH("token") = 32),
+    "owner"        bigint      NOT NULL UNIQUE    CHECK("owner" BETWEEN 1 AND POWER(10, 12) - 1),
+    "token"        varchar(32) NOT NULL UNIQUE    CHECK(LENGTH("token") = 32),
     -- number of participants in the group (auto filling and counting)
-    "users_number" smallint    NOT NULL DEFAULT 1 CHECK(("users_number" BETWEEN 1 AND 20) OR "users_number" IS NULL),
-    FOREIGN KEY    ("owner")   REFERENCES "budget_graph"."users"("telegram_id")
+    "users_number" smallint    NOT NULL DEFAULT 1 CHECK(("users_number" BETWEEN 1 AND 20) OR "users_number" IS NULL)
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."users_groups" (
     "telegram_id" bigint          PRIMARY KEY CHECK("telegram_id" BETWEEN 1 AND POWER(10, 12) - 1),
-    "group_id"    smallint        NOT NULL    CHECK("group_id" > 0),
-    FOREIGN KEY   ("telegram_id") REFERENCES "budget_graph"."users"("telegram_id"),
-    FOREIGN KEY   ("group_id")    REFERENCES "budget_graph"."groups"("id")
+    "group_id"    smallint        NOT NULL    CHECK("group_id" > 0)
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."monetary_transactions" (
     "group_id"       smallint    NOT NULL CHECK("group_id" > 0),
@@ -56,8 +53,7 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."monetary_transactions" (
     "record_date"    date        NOT NULL,
     "category"       varchar(25)     NULL,
     "description"    varchar(50)     NULL,
-    PRIMARY KEY      ("group_id", "transaction_id"),
-    FOREIGN KEY      ("group_id")         REFERENCES "budget_graph"."groups"("id")
+    PRIMARY KEY      ("group_id", "transaction_id")
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."user_languages_telegram" (
     "telegram_id"  bigint     NOT NULL UNIQUE CHECK("telegram_id" BETWEEN 1 AND POWER(10, 12) - 1),
@@ -69,5 +65,4 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."premium_users" (
     "paid_until"     date    NOT NULL,
     "premium_status" boolean NOT NULL DEFAULT False, -- auto fill depending on "paid_until"
     PRIMARY KEY      ("telegram_id")
-    -- FOREIGN KEY      ("telegram_id")  REFERENCES "budget_graph"."users"("telegram_id")
 );
