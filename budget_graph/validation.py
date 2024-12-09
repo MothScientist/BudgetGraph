@@ -27,18 +27,20 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
         telegram_id_validation(telegram_id)
     )
 
-    if username_is_valid:  # TODO remove flask flash and return raise error
-        if password_is_valid:
-            if telegram_id_is_valid:
-                return True
-            flash("Error - invalid telegram ID.", category="error")
-        else:  # each error has its own flash message so that the user knows where he made a mistake
-            flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
-                  category="error")
-    else:
+    # TODO remove flask flash and return raise error
+    if not username_is_valid:
         flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
+        return False
 
-    return False
+    if not password_is_valid:
+        flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter", category="error")
+        return False
+
+    if not telegram_id_is_valid:
+        flash("Error - invalid telegram ID.", category="error")
+        return False
+
+    return True
 
 
 async def username_validation(username: str) -> bool:
