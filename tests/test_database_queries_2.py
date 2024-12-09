@@ -85,10 +85,10 @@ class TestDbQueries1(unittest.TestCase):
         for i in range(1, TestDbQueries1._number_of_users_group_1 + 1):
             group_id: int | None = None if i == 1 else TestDbQueries1._data.get_user_data(1, i, 'group_id')
             res: bool | str = self.test_db.registration_new_user(
-                TestDbQueries1._data.get_user_data(2, i, 'telegram_id'),
-                TestDbQueries1._data.get_user_data(2, i, 'username'),
-                TestDbQueries1._data.get_user_data(2, i, 'psw_salt'),
-                TestDbQueries1._data.get_user_data(2, i, 'psw_hash'),
+                TestDbQueries1._data.get_user_data(1, i, 'telegram_id'),
+                TestDbQueries1._data.get_user_data(1, i, 'username'),
+                TestDbQueries1._data.get_user_data(1, i, 'psw_salt'),
+                TestDbQueries1._data.get_user_data(1, i, 'psw_hash'),
                 group_id=group_id)
             if group_id is None:
                 self.assertEqual(len(res), 32, f"Failed at iteration: {i}")
