@@ -104,12 +104,13 @@ async def comparison_dates_unix_format(entered_date: str) -> bool:
     Time 1 day ahead is necessary due to the difference in time zones
     (since the user enters the date independently in the DD/MM/YYYY format)
     """
-    twelve_hours_in_seconds: int = 43_200  # 12 hours in seconds
-    ten_years_in_seconds: int = 315_360_000 + twelve_hours_in_seconds  # 3650 days in seconds
+    twelve_hours_in_seconds: int = 43_200  # 12 hours in seconds (time zone accounting)
+    ten_years_in_seconds: int = 315_360_000  # 3650 days in seconds (10 years)
+    time_diff: int = ten_years_in_seconds + twelve_hours_in_seconds
     current_time: int = int(datetime.now(timezone.utc).timestamp())  # unix format
     entered_date_unix: int = int(datetime.strptime(entered_date, '%d/%m/%Y').timestamp())
 
-    if current_time - ten_years_in_seconds <= entered_date_unix <= current_time + twelve_hours_in_seconds:
+    if current_time - time_diff <= entered_date_unix <= current_time + twelve_hours_in_seconds:
         return True
     return False
 
