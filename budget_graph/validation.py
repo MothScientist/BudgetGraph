@@ -27,7 +27,6 @@ async def registration_validation(username: str, psw: str, telegram_id: str) -> 
         telegram_id_validation(telegram_id)
     )
 
-    # TODO remove flask flash and return raise error
     if not username_is_valid:
         flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
         return False
