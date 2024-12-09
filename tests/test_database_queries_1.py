@@ -408,7 +408,7 @@ class TestDbQueries(unittest.TestCase):
 
     def test_006_add_users_to_db_1(self):
         for i in range(1, TestDbQueries._number_of_users_group_3 + 1):
-            group_id: int | None = None if i == 1 else TestDbQueries._data.get_user_data(3, i, 'group_id')
+            group_id: int | None = None if (i == 1) else TestDbQueries._data.get_user_data(3, i, 'group_id')
             res: bool | str = self.test_db.registration_new_user(
                 TestDbQueries._data.get_user_data(3, i, 'telegram_id'),
                 TestDbQueries._data.get_user_data(3, i, 'username'),
@@ -423,7 +423,7 @@ class TestDbQueries(unittest.TestCase):
 
     def test_006_add_users_to_db_2(self):
         for i in range(1, TestDbQueries._number_of_users_group_4 + 1):
-            group_id: int | None = None if i == 1 else TestDbQueries._data.get_user_data(4, i, 'group_id')
+            group_id: int | None = None if (i == 1) else TestDbQueries._data.get_user_data(4, i, 'group_id')
             res: bool | str = self.test_db.registration_new_user(
                 TestDbQueries._data.get_user_data(4, i, 'telegram_id'),
                 TestDbQueries._data.get_user_data(4, i, 'username'),

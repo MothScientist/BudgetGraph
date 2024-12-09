@@ -55,7 +55,7 @@ class DatabaseTestData1:
 
     @cache
     def get_user_data(self, group_id: int, attribute_1: int, attribute_2: str) -> int | str:
-        if group_id == 3:
+        if group_id == 1:
             return self.__users_data_1[attribute_1][attribute_2]
         return self.__users_data_2[attribute_1][attribute_2]
 
@@ -91,10 +91,10 @@ class TestDbQueries1(unittest.TestCase):
                 TestDbQueries1._data.get_user_data(1, i, 'psw_hash'),
                 group_id=group_id)
             if group_id is None:
-                self.assertEqual(len(res), 32, f"Failed at iteration: {i}")
+                self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
                 TestDbQueries1.group_1_token = res
             else:
-                self.assertEqual(res, True, f"Failed at iteration: {i}")
+                self.assertEqual(res, True, f'Failed at iteration: {i}')
 
     def test_001_add_users_to_db_2(self):
         for i in range(1, TestDbQueries1._number_of_users_group_2 + 1):
@@ -106,7 +106,7 @@ class TestDbQueries1(unittest.TestCase):
                 TestDbQueries1._data.get_user_data(2, i, 'psw_hash'),
                 group_id=group_id)
             if group_id is None:
-                self.assertEqual(len(res), 32, f"Failed at iteration: {i}")
+                self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
                 TestDbQueries1.group_2_token = res
             else:
-                self.assertTrue(res, f"Failed at iteration: {i}")
+                self.assertTrue(res, f'Failed at iteration: {i}')
