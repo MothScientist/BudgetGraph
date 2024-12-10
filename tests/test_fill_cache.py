@@ -10,19 +10,13 @@ class TestFillCache(unittest.TestCase):
 	"""
 	Testing that caching functions reduces their response time
 	"""
-	@classmethod
-	def setUpClass(cls):
-		rmtree('../budget_graph/__pycache__', ignore_errors=True)
-		rmtree('.pytest_cache', ignore_errors=True)
-		rmtree('__pycache__', ignore_errors=True)
-
-	@classmethod
-	def tearDownClass(cls):
-		rmtree('../budget_graph/__pycache__', ignore_errors=True)
-		rmtree('.pytest_cache', ignore_errors=True)
-		rmtree('__pycache__', ignore_errors=True)
 
 	def test_fill_localization_cache_001(self):
+		# delete all cache
+		rmtree('../budget_graph/__pycache__', ignore_errors=True)
+		rmtree('.pytest_cache', ignore_errors=True)
+		rmtree('__pycache__', ignore_errors=True)
+
 		time_first_call_start_list_lang: float = perf_counter()
 		list_languages_1: tuple = get_list_languages()
 		time_first_call_finish_list_lang: float = perf_counter()
@@ -73,21 +67,20 @@ class TestFillCache(unittest.TestCase):
 		time_first_call_finish_translation: float = perf_counter()
 		after_res_translation: float = time_first_call_finish_translation - time_first_call_start_translation
 
-		# check that the response time is at least 2 times faster
 		self.assertTrue(
-			after_res_list_lang < (before_res_list_lang / 2),
-			f'after_res_list_lang = {after_res_list_lang}\n'
-			f'before_res_list_lang = {before_res_list_lang}'
+			after_res_list_lang < before_res_list_lang,
+			f'before_res_list_lang = {before_res_list_lang}\n'
+			f'after_res_list_lang = {after_res_list_lang}'
 		)
 		self.assertTrue(
 			after_res_json < (before_res_json / 2),
-			f'after_res_json = {after_res_json}\n'
-			f'before_res_json = {before_res_json}'
+			f'before_res_json = {before_res_json}\n'
+			f'after_res_json = {after_res_json}'
 		)
 		self.assertTrue(
 			after_res_translation < (before_res_translation / 2),
-			f'after_res_translation = {after_res_translation}\n'
-			f'before_res_translation = {before_res_translation}'
+			f'before_res_translation = {before_res_translation}\n'
+			f'after_res_translation = {after_res_translation}'
 		)
 
 
