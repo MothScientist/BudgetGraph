@@ -83,6 +83,14 @@ class TestFillCache(unittest.TestCase):
 			f'after_res_translation = {after_res_translation}'
 		)
 
+	# look at the fact that the result is repeatable
+
+	def test_fill_localization_cache_002(self):
+		self.test_fill_localization_cache_001()
+
+	def test_fill_localization_cache_003(self):
+		self.test_fill_localization_cache_001()
+
 
 if __name__ == '__main__':
 	unittest.main()
