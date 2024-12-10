@@ -207,17 +207,17 @@ class TestCreateCSV(unittest.TestCase):
 
         self.assertEqual(path.exists(file_path), True)
 
-        start_generation_csv_file = perf_counter()
+        start_generation_csv_file: float = perf_counter()
         file_size: str = '{:.3f}'.format(create_csv_obj_14.get_file_size_kb())
-        finish_generation_csv_file = perf_counter()
+        finish_generation_csv_file: float = perf_counter()
         time = finish_generation_csv_file - start_generation_csv_file
         self.assertTrue(time < 0.002, f'Time (file_size): {time}')
 
         self.assertEqual(file_size, '146.537')
 
-        start_generation_csv_file = perf_counter()
+        start_generation_csv_file: float = perf_counter()
         file_checksum: str = create_csv_obj_14.get_file_checksum()
-        finish_generation_csv_file = perf_counter()
+        finish_generation_csv_file: float = perf_counter()
         time = finish_generation_csv_file - start_generation_csv_file
         self.assertTrue(time < 0.002, f'Time (file_checksum): {time}')
 
@@ -237,17 +237,17 @@ class TestCreateCSV(unittest.TestCase):
 
         self.assertEqual(path.exists(file_path), True)
 
-        start_generation_csv_file = perf_counter()
+        start_generation_csv_file: float = perf_counter()
         file_size: str = '{:.3f}'.format(create_csv_obj_15.get_file_size_kb())
-        finish_generation_csv_file = perf_counter()
+        finish_generation_csv_file: float = perf_counter()
         time = finish_generation_csv_file - start_generation_csv_file
         self.assertTrue(time < 0.01, f'Time (file_size): {time}')
 
         self.assertEqual(file_size, '1464.896')
 
-        start_generation_csv_file = perf_counter()
+        start_generation_csv_file: float = perf_counter()
         file_checksum: str = create_csv_obj_15.get_file_checksum()
-        finish_generation_csv_file = perf_counter()
+        finish_generation_csv_file: float = perf_counter()
         time = finish_generation_csv_file - start_generation_csv_file
         self.assertTrue(time < 0.01, f'Time (file_checksum): {time}')
 

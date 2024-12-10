@@ -20,9 +20,11 @@ class TestLanguages(unittest.TestCase):
         """
         Checking multiple keys for presence in each language dictionary
         """
-        _keys = ("link_github", "get_my_token", "delete_group", "services", "enter_username", "create_new_user_error",
-                 "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table",
-                 "category", "set_date", "YES", "get_csv", "language_changed", "misunderstanding", "my")
+        _keys: tuple = (
+            "link_github", "get_my_token", "delete_group", "services", "enter_username", "create_new_user_error",
+            "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table",
+            "category", "set_date", "YES", "get_csv", "language_changed", "misunderstanding", "my"
+        )
         res: bool = all(receive_translation(lang, _key) for _key in _keys for lang in TestLanguages.languages)
         self.assertTrue(res, f'Missing keys: {[(_key, lang) for _key in _keys for lang in TestLanguages.languages 
                                               if receive_translation(lang, _key) is None]}')
@@ -42,12 +44,12 @@ class TestLanguages(unittest.TestCase):
         Checking the loading time of dictionaries
         """
         test_list: list = []  # here we will add information about the dictionary for load simulation
-        start = time()
+        start: float = time()
         for lang in self.languages:
             with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as f:
                 keys_data = json.load(f)
             test_list += keys_data
-        finish = time()
+        finish: float = time()
         res: bool = True if finish - start < 0.05 else False
         self.assertTrue(res, f'Actual time: {finish - start}')
 

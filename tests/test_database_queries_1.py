@@ -1021,12 +1021,6 @@ class TestDbQueries(unittest.TestCase):
                                   f'res[j-1][1] = {res[j - 1][1]} => '
                                   f'res[j][1] - res[j][0] = {res[j][1] - res[j][0]}')
 
-    # TODO -> get_group_users_data
-    # TODO -> update_user_last_login_by_telegram_id
-    # TODO -> update_group_owner
-    # TODO -> delete_username_from_group_by_telegram_id
-    # TODO -> delete_group_with_users
-
 
 class TestRegistrationServiceData:
     def __init__(self):

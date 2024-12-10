@@ -130,11 +130,34 @@ class TestDbQueries1(unittest.TestCase):
         self.assertFalse(res)
 
     def test_002_add_feature_1_to_db_3(self):
+        """ OFF -> ON -> OFF """
         group_id: int = 2
-        res: bool = self.test_db.get_feature_status_del_msg_after_transaction(
+
+        off_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
             TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
         )
-        self.assertFalse(res)
+
+        # change status
+        self.test_db.change_feature_status_del_msg_after_transaction(
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+
+        on_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+
+        # change status
+        self.test_db.change_feature_status_del_msg_after_transaction(
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+
+        new_off_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+
+        self.assertFalse(
+            (
+                (off_feature is False) and (on_feature is True) and (new_off_feature is False)
+            ),
+            f'1. off_feature is False = {off_feature is False}\n'
+            f'2. on_feature is True = {on_feature is True}\n'
+            f'3. new_off_feature is False = {new_off_feature is False}')
 
     def test_003_add_user_timezone_to_db_1(self):
         group_id: int = 1
