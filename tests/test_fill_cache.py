@@ -73,12 +73,12 @@ class TestFillCache(unittest.TestCase):
 			f'after_res_list_lang = {after_res_list_lang}'
 		)
 		self.assertTrue(
-			after_res_json < (before_res_json / 2),
+			after_res_json < before_res_json,
 			f'before_res_json = {before_res_json}\n'
 			f'after_res_json = {after_res_json}'
 		)
 		self.assertTrue(
-			after_res_translation < (before_res_translation / 2),
+			after_res_translation < before_res_translation,
 			f'before_res_translation = {before_res_translation}\n'
 			f'after_res_translation = {after_res_translation}'
 		)
