@@ -107,9 +107,11 @@ def get_timezone_buttons() -> tuple:
 	rows: list = []
 	row_width: int = 4
 
-	[rows.append(buttons_timezone_negative[i: i + row_width]) for i in range(0, 12, row_width)]
+	# pylint: disable=expression-not-assigned
+	[rows.append(buttons_timezone_negative[i: i + row_width]) for i in range(0, 12, row_width)]  # append
 	rows.append([InlineKeyboardButton('UTC', callback_data='change_timezone_0')])
-	[rows.append(buttons_timezone_positive[j: j + row_width]) for j in range(0, 12, row_width)]
+	# pylint: disable=expression-not-assigned
+	[rows.append(buttons_timezone_positive[j: j + row_width]) for j in range(0, 12, row_width)]  # append
 
 	return tuple(rows)
 
