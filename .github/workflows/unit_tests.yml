@@ -47,13 +47,7 @@ jobs:
       - name: Run UnitTests
         run: |
           cd tests || exit 1
-          python -m pytest 
-          test_sources.py
-          test_validators.py
-          test_localization.py
-          test_user_cache.py
-          test_csv_tables.py
-          test_fill_cache.py
+          python -m pytest test_sources.py test_validators.py test_localization.py test_user_cache.py test_csv_tables.py test_fill_cache.py
 
   database-queries-unit-tests-1:
     runs-on: ubuntu-latest
