@@ -112,15 +112,28 @@ class TestDbQueries1(unittest.TestCase):
                 self.assertTrue(res, f'Failed at iteration: {i}')
 
     def test_002_add_feature_1_to_db_1(self):
+        """ OFF -> ON """
         group_id: int = 1
-        # False -> True
+
+        old_res: bool = self.test_db.get_feature_status_del_msg_after_transaction(
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
+
+        # change status
         self.test_db.change_feature_status_del_msg_after_transaction(
             TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
         )
-        res: bool = self.test_db.get_feature_status_del_msg_after_transaction(
+
+        new_res: bool = self.test_db.get_feature_status_del_msg_after_transaction(
             TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
         )
-        self.assertTrue(res)
+
+        self.assertTrue(
+            (
+                    (old_res is False) and (new_res is True)
+            ),
+            f'1. old_res is False = {old_res is False}\n'
+            f'2. new_res is True = {new_res is True}')
 
     def test_002_add_feature_1_to_db_2(self):
         group_id: int = 1
@@ -151,7 +164,7 @@ class TestDbQueries1(unittest.TestCase):
         new_off_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
             TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
 
-        self.assertFalse(
+        self.assertTrue(
             (
                 (off_feature is False) and (on_feature is True) and (new_off_feature is False)
             ),

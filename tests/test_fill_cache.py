@@ -1,4 +1,3 @@
-from os import makedirs, path
 from shutil import rmtree
 import unittest
 from time import perf_counter
