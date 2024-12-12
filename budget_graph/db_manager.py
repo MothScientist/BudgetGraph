@@ -376,7 +376,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     COALESCE("transactions_uuid", '')
+                                     COALESCE("transactions_uuid"::text, '')
                                    FROM
                                      "budget_graph"."groups"
                                    WHERE
