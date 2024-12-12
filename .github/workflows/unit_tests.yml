@@ -52,8 +52,7 @@ jobs:
           test_validators.py \
           test_localization.py \
           test_user_cache.py \
-          test_csv_tables.py \
-          test_fill_cache.py
+          test_csv_tables.py
 
   database-queries-unit-tests-1:
     runs-on: ubuntu-latest

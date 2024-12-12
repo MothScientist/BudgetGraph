@@ -26,7 +26,8 @@ RUN rm build_project.py \
        sql/create_db.sql \
        sql/indexes.sql \
        sql/func_auto_count_users_of_group.sql \
-       sql/func_transaction_number.sql
+       sql/func_transaction_number.sql \
+       sql/update_group_uuid_after_transaction.sql
 
 # Removing some unnecessary directories
 RUN rm -rf /static \

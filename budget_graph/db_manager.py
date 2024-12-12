@@ -376,7 +376,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     "transaction_uuid"
+                                     "transactions_uuid"
                                    FROM
                                      "budget_graph"."groups"
                                    WHERE
