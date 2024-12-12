@@ -376,12 +376,12 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute("""SELECT
-                                     "transactions_uuid"
+                                     COALESCE("transactions_uuid", '')
                                    FROM
                                      "budget_graph"."groups"
                                    WHERE
                                      "id" = %s::smallint""", (group_id,))
-                    return str(res[0]) if (res := cur.fetchone()) else ''
+                    return str(cur.fetchone()[0])
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
