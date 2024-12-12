@@ -380,7 +380,7 @@ class DatabaseQueries:
                                    FROM
                                      "budget_graph"."groups"
                                    WHERE
-                                     "group_id" = %s::smallint""", (group_id,))
+                                     "id" = %s::smallint""", (group_id,))
                     return str(res[0]) if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
