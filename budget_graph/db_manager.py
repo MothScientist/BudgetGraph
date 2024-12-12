@@ -381,7 +381,7 @@ class DatabaseQueries:
                                      "budget_graph"."groups"
                                    WHERE
                                      "id" = %s::smallint""", (group_id,))
-                    return str(cur.fetchone()[0])
+                    return cur.fetchone()[0]
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
