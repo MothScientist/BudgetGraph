@@ -1,7 +1,7 @@
 import unittest
 from random import randint, randrange
 from functools import cache
-# from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 from budget_graph.db_manager import DatabaseQueries
 from budget_graph.dictionary import get_list_languages
@@ -181,3 +181,82 @@ class TestDbQueries1(unittest.TestCase):
     def test_003_add_user_timezone_to_db_3(self):
         group_id: int = 2
 
+    def test_004_update_group_uuid_after_transaction_1(self):
+        """
+        check that the new group has uuid = null
+        """
+        group_id: int = 1
+        res: str = self.test_db.get_group_transaction_uuid(group_id)
+        self.assertEqual(res, '')
+
+    def test_004_update_group_uuid_after_transaction_2(self):
+        """
+        check that the new group has uuid = null
+        """
+        group_id: int = 2
+        res: str = self.test_db.get_group_transaction_uuid(group_id)
+        self.assertEqual(res, '')
+
+    def test_004_update_group_uuid_after_transaction_3(self):
+        """
+        check that uuid changes during transactions
+        """
+        group_id: int = 1
+        current_year: int = int(datetime.now().strftime("%Y"))
+
+        self.test_db.add_transaction_to_db(
+            randint(10, 100_000),
+            f'{randint(1, 28)}/{randint(1, 12)}/{randint(current_year - 9, current_year - 1)}',
+            get_salt()[:randint(1, 25)],
+            'qwerty',
+            telegram_id=TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
+
+        res_1: str = self.test_db.get_group_transaction_uuid(group_id)
+
+        self.assertEqual(len(res_1), 36, f'len = {len(res_1)}')
+
+        self.test_db.add_transaction_to_db(
+            randint(1_000, 1_000_000),
+            f'{randint(1, 28)}/{randint(1, 12)}/{randint(current_year - 5, current_year - 1)}',
+            get_salt()[:randint(1, 25)],
+            '',
+            telegram_id=TestDbQueries1._data.get_user_data(group_id, 2, 'telegram_id')
+        )
+
+        res_2: str = self.test_db.get_group_transaction_uuid(group_id)
+
+        self.assertEqual(len(res_2), 36, f'len = {len(res_2)}')
+
+        self.assertNotEqual(res_1, res_2, f'res_1 = {res_1}\n'
+                                          f'res_2 = {res_2}')
+
+    def test_004_update_group_uuid_after_transaction_4(self):
+        """
+        check that after a transaction in one group, the uuid in the other has not changed
+        """
+        group_id: int = 2
+        group_id_for_check: int = 1
+        current_year: int = int(datetime.now().strftime("%Y"))
+
+        res_1: str = self.test_db.get_group_transaction_uuid(group_id_for_check)
+
+        group_2_uuid_1: str = self.test_db.get_group_transaction_uuid(group_id)
+
+        self.test_db.add_transaction_to_db(
+            randint(10, 100_000),
+            f'{randint(1, 28)}/{randint(1, 12)}/{randint(current_year - 5, current_year - 3)}',
+            get_salt()[:randint(1, 20)],
+            'qwerty',
+            telegram_id=TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
+
+        group_2_uuid_2: str = self.test_db.get_group_transaction_uuid(group_id)
+
+        self.assertNotEqual(group_2_uuid_1, group_2_uuid_2, f'group_2_uuid_1 = {group_2_uuid_1}\n'
+                                                            f'group_2_uuid_2 = {group_2_uuid_2}')
+
+        res_2: str = self.test_db.get_group_transaction_uuid(group_id_for_check)
+
+        self.assertEqual(res_1, res_2, f'res_1 = {res_1}\n'
+                                       f'res_2 = {res_2}')

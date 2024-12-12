@@ -368,6 +368,26 @@ class DatabaseQueries:
                                   f"group id: {group_id}")
             return ()
 
+    def get_group_transaction_uuid(self, group_id: int) -> str:
+        """
+        :return: transaction uuid
+        """
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""SELECT
+                                     "transaction_uuid"
+                                   FROM
+                                     "budget_graph"."groups"
+                                   WHERE
+                                     "group_id" = %s::smallint""", (group_id,))
+                    return str(res[0]) if (res := cur.fetchone()) else ''
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"group id: {group_id}")
+            return ''
+
     def get_group_users_data(self, group_id: int) -> list:
         """
         :return: list (empty or with usernames of group members and last_login row)
