@@ -116,14 +116,8 @@ class DatabaseQueries:
                 # TypeError occurs in this block if the database connection returned null
                 with conn.cursor() as cur:
                     # Cursors can be used as context managers: leaving the context will close the cursor
-
                     # AttributeError occurs in this block if the database connection returned null
-                    cur.execute("""SELECT
-                                     "username"
-                                   FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (telegram_id,))  # DO NOT REMOVE commas
+                    cur.execute(read_sql_file('get_username_by_telegram_id'), {'telegram_id': telegram_id})
                     return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
@@ -142,12 +136,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "telegram_id"
-                                   FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     "username" = %s::text""", (username,))
+                    cur.execute(read_sql_file('get_telegram_id_by_username'), {'username': username})
                     return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
@@ -162,12 +151,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "id"
-                                   FROM
-                                     "budget_graph"."groups"
-                                   WHERE
-                                     "token" = %s::text""", (token,))
+                    cur.execute(read_sql_file('get_group_id_by_token'), {'token': token})
                     return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
@@ -182,12 +166,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "group_id"
-                                   FROM
-                                     "budget_graph"."users_groups"
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (telegram_id,))
+                    cur.execute(read_sql_file('get_group_id_by_telegram_id'), {'telegram_id': telegram_id})
                     return res[0] if (res := cur.fetchone()) else 0
 
         except (DatabaseError, TypeError) as err:
@@ -214,16 +193,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     g."token"
-                                   FROM
-                                     "budget_graph"."groups" g
-                                   JOIN
-                                     "budget_graph"."users_groups" u_g
-                                   ON
-                                     g."id" = u_g."group_id"
-                                   WHERE
-                                     u_g."telegram_id" = %s::bigint""", (telegram_id,))
+                    cur.execute(read_sql_file('get_token_by_telegram_id'), {'telegram_id': telegram_id})
                     return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
@@ -239,7 +209,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('get_salt_by_username'), {'username': username})
-                    return str(res[0]) if (res := cur.fetchone()) else ''
+                    return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
