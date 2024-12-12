@@ -152,17 +152,21 @@ class TestDbQueries1(unittest.TestCase):
 
         # change status
         self.test_db.change_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
 
         on_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
 
         # change status
         self.test_db.change_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
 
         new_off_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id'))
+            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+        )
 
         self.assertTrue(
             (

@@ -79,7 +79,7 @@ def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
     """
     Closing a database connection using a Flask application object.
     """
-    if hasattr(g, "link_db"):
+    if hasattr(g, 'link_db'):
         g.link_db.close()
 
 
@@ -218,13 +218,13 @@ class DatabaseQueries:
                                      g."token"
                                    FROM
                                      "budget_graph"."groups" g
-                                   INNER JOIN
+                                   JOIN
                                      "budget_graph"."users_groups" u_g
                                    ON
                                      g."id" = u_g."group_id"
                                    WHERE
                                      u_g."telegram_id" = %s::bigint""", (telegram_id,))
-                    return res[0] if (res := cur.fetchone()) else ""
+                    return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -244,7 +244,7 @@ class DatabaseQueries:
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"username: {logging_hash(username)}")
-            return ""
+            return ''
 
     def auth_by_username(self, username: str, psw_hash: str) -> bool:
         """
@@ -335,7 +335,7 @@ class DatabaseQueries:
                                      u."username"
                                    FROM
                                      "budget_graph"."users" u
-                                   INNER JOIN
+                                   JOIN
                                      "budget_graph"."users_groups" u_g
                                    ON
                                      u."telegram_id" = u_g."telegram_id"
@@ -400,7 +400,7 @@ class DatabaseQueries:
                                      u."last_login"
                                    FROM
                                      "budget_graph"."users" u
-                                   INNER JOIN
+                                   JOIN
                                      "budget_graph"."users_groups" u_g
                                    ON
                                      u."telegram_id" = u_g."telegram_id"
@@ -437,7 +437,7 @@ class DatabaseQueries:
                                      u."username"
                                    FROM
                                      "budget_graph"."users" u
-                                   INNER JOIN
+                                   JOIN
                                      "budget_graph"."groups" g
                                    ON
                                      u."telegram_id" = g."owner"
