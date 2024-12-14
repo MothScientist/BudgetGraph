@@ -590,7 +590,7 @@ class DatabaseQueries:
                                   f"language: {language}")
             return False
 
-    def add_user_timezone(self, telegram_id: int, timezone: int) -> bool:  # TODO - мне кажется можно проще и яснее
+    def add_user_timezone(self, telegram_id: int, timezone: int) -> bool:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
