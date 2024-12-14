@@ -114,18 +114,19 @@ class TestDbQueries1(unittest.TestCase):
     def test_002_add_feature_1_to_db_1(self):
         """ OFF -> ON """
         group_id: int = 1
+        user_id_in_group: int = TestDbQueries1._number_of_users_group_1
 
         old_res: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         # change status
         self.test_db.change_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         new_res: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         self.assertTrue(
@@ -145,27 +146,28 @@ class TestDbQueries1(unittest.TestCase):
     def test_002_add_feature_1_to_db_3(self):
         """ OFF -> ON -> OFF """
         group_id: int = 2
+        user_id_in_group: int = randint(1, TestDbQueries1._number_of_users_group_2)
 
         off_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         # change status
         self.test_db.change_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         on_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         # change status
         self.test_db.change_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         new_off_feature: bool = self.test_db.get_feature_status_del_msg_after_transaction(
-            TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            TestDbQueries1._data.get_user_data(group_id, user_id_in_group, 'telegram_id')
         )
 
         self.assertTrue(
@@ -176,14 +178,83 @@ class TestDbQueries1(unittest.TestCase):
             f'2. on_feature is True = {on_feature is True}\n'
             f'3. new_off_feature is False = {new_off_feature is False}')
 
-    def test_003_add_user_timezone_to_db_1(self):
+    def test_003_user_timezone_to_db_1(self):
+        """
+        SELECT #1
+        """
         group_id: int = 1
+        telegram_id: int = TestDbQueries1._data.get_user_data(
+            group_id,
+            randint(1, TestDbQueries1._number_of_users_group_1),
+            'telegram_id'
+        )
+        res: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
+        self.assertIsNone(res)
 
-    def test_003_add_user_timezone_to_db_2(self):
-        group_id: int = 1
-
-    def test_003_add_user_timezone_to_db_3(self):
+    def test_003_user_timezone_to_db_2(self):
+        """
+        SELECT #2
+        """
         group_id: int = 2
+        telegram_id: int = TestDbQueries1._data.get_user_data(
+            group_id,
+            TestDbQueries1._number_of_users_group_2,
+            'telegram_id'
+        )
+        res: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
+        self.assertIsNone(res)
+
+    def test_003_user_timezone_to_db_3(self):
+        """
+        SELECT -> UPDATE/SET -> SELECT
+        """
+        group_id: int = 1
+        telegram_id: int = TestDbQueries1._data.get_user_data(
+            group_id,
+            randint(1, TestDbQueries1._number_of_users_group_1),
+            'telegram_id'
+        )
+        timezone: int = randint(-12, 12)
+        self.test_db.add_user_timezone(telegram_id, timezone)
+        res: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
+        self.assertEqual(res, timezone)
+
+
+    def test_003_user_timezone_to_db_4(self):
+        """
+        SELECT -> UPDATE/SET -> SELECT
+        """
+        group_id: int = 1
+        telegram_id: int = TestDbQueries1._data.get_user_data(
+            group_id,
+            randint(1, TestDbQueries1._number_of_users_group_2),
+            'telegram_id'
+        )
+        timezone: int = randint(-12, 12)
+        self.test_db.add_user_timezone(telegram_id, timezone)
+        res: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
+        self.assertEqual(res, timezone)
+
+    def test_003_user_timezone_to_db_5(self):
+        """
+        double changes
+        """
+        group_id: int = 1
+        telegram_id: int = TestDbQueries1._data.get_user_data(
+            group_id,
+            randint(1, TestDbQueries1._number_of_users_group_2),
+            'telegram_id'
+        )
+
+        timezone_1: int = randint(0, 12)
+        self.test_db.add_user_timezone(telegram_id, timezone_1)
+        res_1: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
+        self.assertEqual(res_1, timezone_1)
+
+        timezone_2: int = randint(-12, -1)
+        self.test_db.add_user_timezone(telegram_id, timezone_2)
+        res_2: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
+        self.assertEqual(res_2, timezone_2)
 
     def test_004_update_group_uuid_after_transaction_1(self):
         """
@@ -252,7 +323,11 @@ class TestDbQueries1(unittest.TestCase):
             f'{randint(1, 28)}/{randint(1, 12)}/{randint(current_year - 5, current_year - 3)}',
             get_salt()[:randint(1, 20)],
             'qwerty',
-            telegram_id=TestDbQueries1._data.get_user_data(group_id, 1, 'telegram_id')
+            telegram_id=TestDbQueries1._data.get_user_data(
+                group_id,
+                TestDbQueries1._number_of_users_group_2,
+                'telegram_id'
+            )
         )
 
         group_2_uuid_2: str = self.test_db.get_group_transaction_uuid(group_id)

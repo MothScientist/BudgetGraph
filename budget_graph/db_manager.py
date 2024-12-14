@@ -413,12 +413,31 @@ class DatabaseQueries:
                                      u."telegram_id" = g."owner"
                                    WHERE
                                      g."id" = %s::smallint""", (group_id,))
-                    return str(res[0]) if (res := cur.fetchone()) else ''
+                    return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return ""
+
+    def get_user_timezone_by_telegram_id(self, telegram_id: int) -> int | None:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""SELECT
+                                     "timezone"
+                                   FROM
+                                     "budget_graph"."users"
+                                   WHERE
+                                     "telegram_id" = %s::bigint""", (telegram_id,))
+
+                    return res[0] if (res := cur.fetchone()) else None  # TODO - посмотреть вернет ли res[0] None при отсутствии записи
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"group id: {telegram_id}")
+            return None
+
 
     def check_record_id_is_exist(self, group_id: int, transaction_id: int) -> bool:
         try:
@@ -540,14 +559,9 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "language"
-                                   FROM
-                                     "budget_graph"."user_languages_telegram"
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (telegram_id,))
+                    cur.execute(read_sql_file('get_user_language'), {'telegram_id': telegram_id})
                     # if the user did not change the default language
-                    return str(res[0]) if (res := cur.fetchone()) else 'en'
+                    return res[0] if (res := cur.fetchone()) else 'en'
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -617,7 +631,7 @@ class DatabaseQueries:
         if not telegram_id and not username:
             logger_database.error("telegram_id and username are None")
             return False
-        params = {
+        params: dict = {
             'transaction_amount': transaction_amount,
             'record_date': record_date,
             'category': category,
@@ -632,15 +646,15 @@ class DatabaseQueries:
             return True
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"[DB_QUERY] {str(err)}, "
-                                  f"username (hash): {logging_hash(username)
-                                                      if username is not None else None}, "
-                                  f"telegram_id (hash): {logging_hash(telegram_id)
-                                                         if telegram_id is not None else None}, "
-                                  f"transaction_amount: {transaction_amount},"
-                                  f"record_date: {record_date},"
-                                  f"category: {category},"
-                                  f"description: {description}")
+            logger_database.error(
+                f"[DB_QUERY] {str(err)}, "
+                f"username (hash): {logging_hash(username) if username is not None else None}, "
+                f"telegram_id (hash): {logging_hash(telegram_id) if telegram_id is not None else None}, "
+                f"transaction_amount: {transaction_amount},"
+                f"record_date: {record_date},"
+                f"category: {category},"
+                f"description: {description}"
+            )
             return False
 
     def process_delete_transaction_record(self, group_id: int, transaction_id: int) -> bool:
@@ -648,7 +662,7 @@ class DatabaseQueries:
         Removes a record from the "monetary_transactions" table and then adjusts all later values in the "total" column
         so that the deleted record does not introduce artifacts for subsequent calculations
         """
-        params = {
+        params: dict = {
             'group_id': group_id,
             'transaction_id': transaction_id
         }
@@ -690,7 +704,7 @@ class DatabaseQueries:
         2. If the user is successfully registered into an existing group, returns True (otherwise False)
         """
         group_token: str | None = get_token() if not group_id else None
-        params = {
+        params: dict = {
             'telegram_id': telegram_id,
             'username': username,
             'psw_salt': psw_salt,
