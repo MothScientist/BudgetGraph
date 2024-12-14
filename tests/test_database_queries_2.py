@@ -89,7 +89,8 @@ class TestDbQueries1(unittest.TestCase):
                 TestDbQueries1._data.get_user_data(1, i, 'username'),
                 TestDbQueries1._data.get_user_data(1, i, 'psw_salt'),
                 TestDbQueries1._data.get_user_data(1, i, 'psw_hash'),
-                group_id=group_id)
+                group_id=group_id
+            )
             if group_id is None:
                 self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
                 TestDbQueries1.group_1_token = res
@@ -104,7 +105,8 @@ class TestDbQueries1(unittest.TestCase):
                 TestDbQueries1._data.get_user_data(2, i, 'username'),
                 TestDbQueries1._data.get_user_data(2, i, 'psw_salt'),
                 TestDbQueries1._data.get_user_data(2, i, 'psw_hash'),
-                group_id=group_id)
+                group_id=group_id
+            )
             if group_id is None:
                 self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
                 TestDbQueries1.group_2_token = res

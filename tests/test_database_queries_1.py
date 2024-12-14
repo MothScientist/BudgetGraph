@@ -1189,12 +1189,14 @@ class TestRegistrationService(unittest.TestCase):
     def test_050_user_registration_1(self):
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
-        res, msg = user_registration(self.test_db,
-                                     'None',
-                                     TestRegistrationService._data.get_user_data(1, 'telegram_id'),
-                                     TestRegistrationService._data.get_user_data(1, 'username'),
-                                     TestRegistrationService._data.get_user_data(1, 'psw_salt'),
-                                     TestRegistrationService._data.get_user_data(1, 'psw_hash'))
+        res, msg = user_registration(
+            self.test_db,
+            'None',
+            TestRegistrationService._data.get_user_data(1, 'telegram_id'),
+            TestRegistrationService._data.get_user_data(1, 'username'),
+            TestRegistrationService._data.get_user_data(1, 'psw_salt'),
+            TestRegistrationService._data.get_user_data(1, 'psw_hash')
+        )
         self.assertTrue(res)
         self.assertEqual(len(msg), 32)
         TestRegistrationService.token_5_group = self.test_db.get_token_by_telegram_id(
@@ -1207,12 +1209,14 @@ class TestRegistrationService(unittest.TestCase):
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
         for i in range(2, TestRegistrationService._data.get_number_of_users() + 1):
-            res, msg = user_registration(self.test_db,
-                                         TestRegistrationService.token_5_group,
-                                         TestRegistrationService._data.get_user_data(i, 'telegram_id'),
-                                         TestRegistrationService._data.get_user_data(i, 'username'),
-                                         TestRegistrationService._data.get_user_data(i, 'psw_salt'),
-                                         TestRegistrationService._data.get_user_data(i, 'psw_hash'))
+            res, msg = user_registration(
+                self.test_db,
+                TestRegistrationService.token_5_group,
+                TestRegistrationService._data.get_user_data(i, 'telegram_id'),
+                TestRegistrationService._data.get_user_data(i, 'username'),
+                TestRegistrationService._data.get_user_data(i, 'psw_salt'),
+                TestRegistrationService._data.get_user_data(i, 'psw_hash')
+            )
             self.assertTrue(res, f'i = {i}')
             self.assertEqual(msg, '', f'i = {i}')
         close_test_db(self.connection)
@@ -1220,12 +1224,14 @@ class TestRegistrationService(unittest.TestCase):
     def test_050_user_registration_3(self):
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
-        res, msg = user_registration(self.test_db,
-                                     'None',
-                                     TestRegistrationService._data.get_user_data(1, 'telegram_id'),
-                                     TestRegistrationService._data.get_user_data(1, 'username'),
-                                     TestRegistrationService._data.get_user_data(1, 'psw_salt'),
-                                     TestRegistrationService._data.get_user_data(1, 'psw_hash'))
+        res, msg = user_registration(
+            self.test_db,
+            'None',
+            TestRegistrationService._data.get_user_data(1, 'telegram_id'),
+            TestRegistrationService._data.get_user_data(1, 'username'),
+            TestRegistrationService._data.get_user_data(1, 'psw_salt'),
+            TestRegistrationService._data.get_user_data(1, 'psw_hash')
+        )
         close_test_db(self.connection)
         self.assertFalse(res)
         self.assertEqual(msg, 'create_new_user_or_group_error', f'msg = {msg}')
@@ -1233,12 +1239,14 @@ class TestRegistrationService(unittest.TestCase):
     def test_050_user_registration_4(self):
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
-        res, msg = user_registration(self.test_db,
-                                     TestRegistrationService.token_5_group,
-                                     TestRegistrationService._data.get_user_data(3, 'telegram_id'),
-                                     TestRegistrationService._data.get_user_data(3, 'username'),
-                                     TestRegistrationService._data.get_user_data(3, 'psw_salt'),
-                                     TestRegistrationService._data.get_user_data(3, 'psw_hash'))
+        res, msg = user_registration(
+            self.test_db,
+            TestRegistrationService.token_5_group,
+            TestRegistrationService._data.get_user_data(3, 'telegram_id'),
+            TestRegistrationService._data.get_user_data(3, 'username'),
+            TestRegistrationService._data.get_user_data(3, 'psw_salt'),
+            TestRegistrationService._data.get_user_data(3, 'psw_hash')
+        )
         close_test_db(self.connection)
         self.assertFalse(res)
         self.assertEqual(msg, 'group_is_full', f'msg = {msg}')
@@ -1247,12 +1255,14 @@ class TestRegistrationService(unittest.TestCase):
         invalid_username: str = TestRegistrationService._data.get_user_data(1, 'username').swapcase()
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
-        res, msg = user_registration(self.test_db,
-                                     'None',
-                                     TestRegistrationService._data.get_user_data(1, 'telegram_id'),
-                                     invalid_username,
-                                     TestRegistrationService._data.get_user_data(1, 'psw_salt'),
-                                     TestRegistrationService._data.get_user_data(1, 'psw_hash'))
+        res, msg = user_registration(
+            self.test_db,
+            'None',
+            TestRegistrationService._data.get_user_data(1, 'telegram_id'),
+            invalid_username,
+            TestRegistrationService._data.get_user_data(1, 'psw_salt'),
+            TestRegistrationService._data.get_user_data(1, 'psw_hash')
+        )
         close_test_db(self.connection)
         self.assertFalse(res)
         self.assertEqual(msg, 'create_new_user_or_group_error', f'msg = {msg}')
@@ -1261,12 +1271,14 @@ class TestRegistrationService(unittest.TestCase):
         invalid_token: str = TestRegistrationService.token_5_group.swapcase()
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
-        res, msg = user_registration(self.test_db,
-                                     invalid_token,
-                                     TestRegistrationService._data.get_user_data(2, 'telegram_id'),
-                                     TestRegistrationService._data.get_user_data(2, 'username'),
-                                     TestRegistrationService._data.get_user_data(2, 'psw_salt'),
-                                     TestRegistrationService._data.get_user_data(2, 'psw_hash'))
+        res, msg = user_registration(
+            self.test_db,
+            invalid_token,
+            TestRegistrationService._data.get_user_data(2, 'telegram_id'),
+            TestRegistrationService._data.get_user_data(2, 'username'),
+            TestRegistrationService._data.get_user_data(2, 'psw_salt'),
+            TestRegistrationService._data.get_user_data(2, 'psw_hash')
+        )
         close_test_db(self.connection)
         self.assertFalse(res)
         self.assertEqual(msg, 'invalid_token_format', f'msg = {msg}\nlen(invalid_token) = {len(invalid_token)}')
@@ -1275,12 +1287,14 @@ class TestRegistrationService(unittest.TestCase):
         invalid_token: str = TestRegistrationService.token_5_group[::-1]
         self.connection = connect_test_db()
         self.test_db = DatabaseQueries(self.connection)
-        res, msg = user_registration(self.test_db,
-                                     invalid_token,
-                                     TestRegistrationService._data.get_user_data(3, 'telegram_id'),
-                                     TestRegistrationService._data.get_user_data(3, 'username'),
-                                     TestRegistrationService._data.get_user_data(3, 'psw_salt'),
-                                     TestRegistrationService._data.get_user_data(3, 'psw_hash'))
+        res, msg = user_registration(
+            self.test_db,
+            invalid_token,
+            TestRegistrationService._data.get_user_data(3, 'telegram_id'),
+            TestRegistrationService._data.get_user_data(3, 'username'),
+            TestRegistrationService._data.get_user_data(3, 'psw_salt'),
+            TestRegistrationService._data.get_user_data(3, 'psw_hash')
+        )
         close_test_db(self.connection)
         self.assertFalse(res)
         self.assertEqual(msg, 'group_not_exist', f'msg = {msg}\nlen(invalid_token) = {len(invalid_token)}')

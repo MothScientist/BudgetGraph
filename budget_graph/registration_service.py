@@ -15,7 +15,7 @@ def user_registration(db_connection, token: str, telegram_id: int, username: str
     """
     Returns the status and a string (either with a token or an error message)
     """
-    if compare_digest(token, "None"):
+    if compare_digest(token, 'None'):
         res: str = db_connection.registration_new_user(telegram_id, username, psw_salt, psw_hash)
         if res:
             return True, res
