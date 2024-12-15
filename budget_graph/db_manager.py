@@ -346,12 +346,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     COALESCE("transactions_uuid"::text, '')
-                                   FROM
-                                     "budget_graph"."groups"
-                                   WHERE
-                                     "id" = %s::smallint""", (group_id,))
+                    cur.execute(read_sql_file('get_group_users_data'), {'group_id': group_id})
                     return cur.fetchone()[0]
 
         except (DatabaseError, TypeError) as err:
