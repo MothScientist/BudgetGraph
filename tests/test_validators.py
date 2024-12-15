@@ -18,22 +18,39 @@ from budget_graph.validation import (check_day_is_correct,
 
 
 class TestDateValidation(unittest.TestCase):
-    # def test_day_is_correct_1(self):
-    #     res = asyncio.run(check_day_is_correct(""))
-    #     self.assertEqual(res, )
-    #
-    # def test_day_is_correct_2(self):
-    #     res = asyncio.run(check_day_is_correct(""))
-    #     self.assertEqual(res, )
-    #
-    # def test_day_is_correct_3(self):
-    #     res = asyncio.run(check_day_is_correct(""))
-    #     self.assertEqual(res, )
-    #
-    # def test_day_is_correct_4(self):
-    #     res = asyncio.run(check_day_is_correct(""))
-    #     self.assertEqual(res, )
-    #
+    def test_day_is_correct_1(self):
+        for day_delta in range(-5000, 5000):
+            _date = datetime.now(timezone.utc) - timedelta(days=day_delta)
+            _day: int = int(_date.strftime('%d'))
+            _month: int = int(_date.strftime('%m'))
+            _year: int = int(_date.strftime('%Y'))
+            res = asyncio.run(check_day_is_correct(_year, _month, _day))
+            full_date_view: str = f"{_date.strftime('%d')}/{_date.strftime('%m')}/{_date.strftime('%Y')}"
+            self.assertTrue(res, f'day_delta = {day_delta}\n'
+                                f'date = {full_date_view}')
+
+    def test_day_is_correct_2(self):
+        _years: tuple = (15, 17, 18, 19, 21, 22, 23, 25, 26, 27, 29, 30, 31, 33, 34, 35, 37, 38, 39, 41, 42, 43, 45, 46)
+        _month: int = 2
+        _day: int = 29
+        for _year in _years:
+            res = asyncio.run(check_day_is_correct(int(f'20{_year}'), _month, _day))
+            self.assertFalse(res, f'20{_year}/{_month}/{_year}')
+
+    def test_day_is_correct_3(self):
+        _day: int = 31
+        for _year in range(1900, 2100):
+            for _month in (4, 6, 9, 11):
+                res = asyncio.run(check_day_is_correct(_year, _month, _day))
+                self.assertFalse(res, f'{_year}/{_month}/{_day}')
+
+    def test_day_is_correct_4(self):
+        _day: int = 30
+        for _year in range(1900, 2100):
+            for _month in (4, 6, 9, 11):
+                res = asyncio.run(check_day_is_correct(_year, _month, _day))
+                self.assertTrue(res, f'{_year}/{_month}/{_day}')
+
     # def test_day_is_correct_5(self):
     #     res = asyncio.run(check_day_is_correct(""))
     #     self.assertEqual(res, )
