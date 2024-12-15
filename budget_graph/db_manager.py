@@ -1,3 +1,4 @@
+from datetime import datetime
 from os import getenv, path
 from functools import wraps
 from flask import g
@@ -362,20 +363,11 @@ class DatabaseQueries:
         """
         :return: list (empty or with usernames of group members and last_login row)
         """
+        # TODO - покрыть тестами
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     u."username",
-                                     u."last_login"
-                                   FROM
-                                     "budget_graph"."users" u
-                                   JOIN
-                                     "budget_graph"."users_groups" u_g
-                                   ON
-                                     u."telegram_id" = u_g."telegram_id"
-                                   WHERE
-                                     u_g."group_id" = %s::smallint""", (group_id,))
+                    cur.execute(read_sql_file('get_group_users_data'), {'group_id': group_id})
                     return [list(row) for row in cur.fetchall()]
 
         except (DatabaseError, TypeError) as err:
@@ -403,16 +395,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     u."username"
-                                   FROM
-                                     "budget_graph"."users" u
-                                   JOIN
-                                     "budget_graph"."groups" g
-                                   ON
-                                     u."telegram_id" = g."owner"
-                                   WHERE
-                                     g."id" = %s::smallint""", (group_id,))
+                    cur.execute(read_sql_file('get_group_owner_username_by_group_id'), {'group_id': group_id})
                     return res[0] if (res := cur.fetchone()) else ''
 
         except (DatabaseError, TypeError) as err:
@@ -424,13 +407,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "timezone"
-                                   FROM
-                                     "budget_graph"."users"
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (telegram_id,))
-
+                    cur.execute(read_sql_file('get_user_timezone_by_telegram_id'), {'telegram_id': telegram_id})
                     return res[0] if (res := cur.fetchone()) else None  # TODO - посмотреть вернет ли res[0] None при отсутствии записи
 
         except (DatabaseError, TypeError) as err:
@@ -729,7 +706,7 @@ class DatabaseQueries:
                                   f"token = {group_token}")
             return '' if group_token else False
 
-    def update_user_last_login_by_telegram_id(self, telegram_id: int) -> None:
+    def update_user_last_login_by_telegram_id(self, telegram_id: int) -> None | datetime:
         """
         Changes the user's last login time in the last_login column in the Users table.
         :return: None
@@ -737,13 +714,8 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE
-                                     "budget_graph"."users"
-                                   SET
-                                     "last_login" = current_timestamp AT TIME ZONE 'UTC'
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (telegram_id,))
-                    conn.commit()
+                    cur.execute(read_sql_file('update_user_last_login_by_telegram_id'), {'telegram_id': telegram_id})
+                    return res[0] if (res := cur.fetchone()) else None  # TODO - довести до datetime возвращаемое значение и покрыть тестами
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
