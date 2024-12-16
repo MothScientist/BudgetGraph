@@ -714,31 +714,34 @@ class DatabaseQueries:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
 
-    def update_group_owner(self, telegram_id: int, group_id: int) -> bool:
+    def update_group_owner(self, new_owner_telegram_id: int, group_id: int) -> bool:
         """
         Changes the owner of a group to another user from that group
         """
+        group_id_by_new_owner_telegram_id: int = self.get_group_id_by_telegram_id(new_owner_telegram_id)
+        if group_id_by_new_owner_telegram_id != group_id:
+            logger_database.warning(f"[DB_QUERY] group_id_by_new_owner != group_id, "
+                                    f"telegram_id: {logging_hash(new_owner_telegram_id)}, "
+                                    f"group_id_by_new_owner: {group_id_by_new_owner_telegram_id}, "
+                                    f"group_id: {group_id}")
+            return False
+
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    group_id_by_new_owner_telegram_id: int = self.get_group_id_by_telegram_id(telegram_id)
-                    if group_id_by_new_owner_telegram_id != group_id:
-                        logger_database.warning(f"[DB_QUERY] group_id_by_new_owner != group_id, "
-                                                f"telegram_id: {logging_hash(telegram_id)}, "
-                                                f"group_id_by_new_owner: {group_id_by_new_owner_telegram_id}"
-                                                f"group_id: {group_id}")
-                        return False
-
                     cur.execute(
-                        read_sql_file('update_group_owner'), {'telegram_id': telegram_id, 'group_id': group_id})
+                        read_sql_file(
+                            'update_group_owner'),
+                        {'telegram_id': new_owner_telegram_id, 'group_id': group_id}
+                    )
                     conn.commit()
             logger_database.info(f"Updated group owner: group_id = {logging_hash(group_id)},"
-                                 f"telegram_id owner = {logging_hash(telegram_id)}")
+                                 f"telegram_id owner = {logging_hash(new_owner_telegram_id)}")
             return True
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
-                                  f"telegram_id: {logging_hash(telegram_id)}, "
+                                  f"telegram_id: {logging_hash(new_owner_telegram_id)}, "
                                   f"group_id: {group_id}")
             return False
 
