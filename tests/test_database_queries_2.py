@@ -221,7 +221,6 @@ class TestDbQueries1(unittest.TestCase):
         res: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
         self.assertEqual(res, timezone)
 
-
     def test_003_user_timezone_to_db_4(self):
         """
         SELECT -> UPDATE/SET -> SELECT

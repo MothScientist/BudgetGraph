@@ -495,8 +495,6 @@ class TestDbQueries(unittest.TestCase):
                                                                                        'telegram_id')))
         self.assertNotEqual(res, TestDbQueries._data.get_user_data(group_id, number_of_user_2, 'username'))
 
-
-
     def test_010_get_telegram_id_by_username_1(self):
         group_id: int = 4
         number_of_user: int = randint(1, TestDbQueries._number_of_users_group_4)
@@ -504,7 +502,6 @@ class TestDbQueries(unittest.TestCase):
             self.test_db.get_telegram_id_by_username(TestDbQueries._data.get_user_data(group_id, number_of_user,
                                                                                          'username')))
         self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, number_of_user, 'telegram_id'))
-
 
     def test_010_get_telegram_id_by_username_2(self):
         group_id: int = 3
