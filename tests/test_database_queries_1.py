@@ -1130,6 +1130,28 @@ class TestDbQueries(unittest.TestCase):
         # post check
         self.assertEqual(current_owner_telegram_id, telegram_id)
 
+    def test_020_get_group_owner_telegram_id_by_group_id_1(self):
+        group_id: int = 3
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(group_id)
+        self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'))
+
+    def test_020_get_group_owner_telegram_id_by_group_id_2(self):
+        group_id: int = 4
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(group_id)
+        self.assertEqual(res, TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'))
+
+    def test_020_get_group_owner_telegram_id_by_group_id_4(self):
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(0)
+        self.assertEqual(res, 0)
+
+    def test_020_get_group_owner_telegram_id_by_group_id_5(self):
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(1_000)
+        self.assertEqual(res, 0)
+
+    def test_020_get_group_owner_telegram_id_by_group_id_6(self):
+        res: int = self.test_db.get_group_owner_telegram_id_by_group_id(-5)
+        self.assertEqual(res, 0)
+
 
 class TestRegistrationServiceData:
     def __init__(self):

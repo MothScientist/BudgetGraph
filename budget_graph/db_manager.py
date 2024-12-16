@@ -398,6 +398,18 @@ class DatabaseQueries:
                                   f"group id: {group_id}")
             return ""
 
+    def get_group_owner_telegram_id_by_group_id(self, group_id: int) -> int:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute(read_sql_file('get_group_owner_telegram_id_by_group_id'), {'group_id': group_id})
+                    return res[0] if (res := cur.fetchone()) else 0
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"group id: {group_id}")
+            return 0
+
     def get_user_timezone_by_telegram_id(self, telegram_id: int) -> int | None:
         try:
             with self.__conn as conn:
@@ -723,6 +735,14 @@ class DatabaseQueries:
             logger_database.warning(f"[DB_QUERY] group_id_by_new_owner != group_id, "
                                     f"telegram_id: {logging_hash(new_owner_telegram_id)}, "
                                     f"group_id_by_new_owner: {group_id_by_new_owner_telegram_id}, "
+                                    f"group_id: {group_id}")
+            return False
+
+        current_group_owner: int = self.get_group_owner_telegram_id_by_group_id(group_id)
+        if new_owner_telegram_id == current_group_owner:
+            logger_database.warning(f"[DB_QUERY] new_owner_telegram_id == current_group_owner, "
+                                    f"new_owner_telegram_id: {logging_hash(new_owner_telegram_id)}, "
+                                    f"current_group_owner: {logging_hash(current_group_owner)}, "
                                     f"group_id: {group_id}")
             return False
 
