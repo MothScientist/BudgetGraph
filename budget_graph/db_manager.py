@@ -722,12 +722,16 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE
-                                     "budget_graph"."groups"
-                                   SET
-                                     "owner" = %s::bigint
-                                   WHERE
-                                     "id" = %s::smallint""", (telegram_id, group_id,))
+                    group_id_by_new_owner: int = self.get_group_id_by_telegram_id(telegram_id)
+                    if group_id_by_new_owner != group_id:
+                        logger_database.warning(f"[DB_QUERY] group_id_by_new_owner != group_id, "
+                                              f"telegram_id: {logging_hash(telegram_id)}, "
+                                              f"group_id_by_new_owner: {group_id_by_new_owner}"
+                                              f"group_id: {group_id}")
+                        return False
+
+                    cur.execute(
+                        read_sql_file('update_group_owner'), {'telegram_id': telegram_id, 'group_id': group_id})
                     conn.commit()
             logger_database.info(f"Updated group owner: group_id = {logging_hash(group_id)},"
                                  f"telegram_id owner = {logging_hash(telegram_id)}")
