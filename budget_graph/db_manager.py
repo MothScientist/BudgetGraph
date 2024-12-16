@@ -415,7 +415,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('get_user_timezone_by_telegram_id'), {'telegram_id': telegram_id})
-                    return res[0] if (res := cur.fetchone()) else None  # TODO - посмотреть вернет ли res[0] None при отсутствии записи
+                    return cur.fetchone()[0]
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
