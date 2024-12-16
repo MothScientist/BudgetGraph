@@ -702,9 +702,12 @@ class TestDbQueries(unittest.TestCase):
                                     for i in range(1, TestDbQueries._number_of_users_group_4 + 1)))
 
     def test_018_get_group_telegram_ids_3(self):
-        group_id: int = 5  # non-existent group
-        res: tuple = self.test_db.get_group_telegram_ids(group_id)
-        self.assertEqual(res, tuple())
+        """
+        non-existent groups
+        """
+        for group_id in range(5, 100):
+            res: tuple = self.test_db.get_group_telegram_ids(group_id)
+            self.assertEqual(res, tuple(), f'group_id = {group_id}')
 
     def test_019_check_user_is_group_owner_by_telegram_id_1(self):
         # Checking if there is only one user in a group
