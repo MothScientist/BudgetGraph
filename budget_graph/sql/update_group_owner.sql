@@ -1,6 +1,6 @@
 UPDATE
     "budget_graph"."groups"
 SET
-    "owner" = %s::bigint
+    "owner" = %(telegram_id)s::bigint
 WHERE
     "id" = %(group_id)s::smallint

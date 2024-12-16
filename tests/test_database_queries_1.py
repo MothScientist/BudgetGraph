@@ -1087,20 +1087,19 @@ class TestDbQueries(unittest.TestCase):
         """
         group_id: int = 3
         current_owner_username: str = self.test_db.get_group_owner_username_by_group_id(group_id)
-        current_owner_telegram_id: int = self.test_db.get_telegram_id_by_username(current_owner_username)
-        self.assertEqual(current_owner_telegram_id, TestDbQueries._data.get_user_data(group_id, 1, 'telegram_id'))
+        self.assertEqual(current_owner_username, TestDbQueries._data.get_user_data(group_id, 1, 'username'))
 
         pos: int = randint(2, TestDbQueries._number_of_users_group_3)
         new_owner: int = TestDbQueries._data.get_user_data(group_id, pos, 'telegram_id')
         res: bool = self.test_db.update_group_owner(new_owner, group_id)
-        self.assertFalse(res)
+        self.assertTrue(res)
 
         new_owner_username: str = self.test_db.get_group_owner_username_by_group_id(group_id)
         self.assertEqual(new_owner_username, TestDbQueries._data.get_user_data(group_id, pos, 'username'))
 
     def test_027_update_group_owner_2(self):
         """
-        object #1 -> unknow object (from other group)
+        object #1 -> unknown object (from other group)
         """
         group_id: int = 4
         current_owner_username: str = self.test_db.get_group_owner_username_by_group_id(group_id)

@@ -410,7 +410,6 @@ class DatabaseQueries:
                                   f"group id: {telegram_id}")
             return None
 
-
     def check_record_id_is_exist(self, group_id: int, transaction_id: int) -> bool:
         try:
             with self.__conn as conn:
@@ -722,12 +721,12 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    group_id_by_new_owner: int = self.get_group_id_by_telegram_id(telegram_id)
-                    if group_id_by_new_owner != group_id:
+                    group_id_by_new_owner_telegram_id: int = self.get_group_id_by_telegram_id(telegram_id)
+                    if group_id_by_new_owner_telegram_id != group_id:
                         logger_database.warning(f"[DB_QUERY] group_id_by_new_owner != group_id, "
-                                              f"telegram_id: {logging_hash(telegram_id)}, "
-                                              f"group_id_by_new_owner: {group_id_by_new_owner}"
-                                              f"group_id: {group_id}")
+                                                f"telegram_id: {logging_hash(telegram_id)}, "
+                                                f"group_id_by_new_owner: {group_id_by_new_owner_telegram_id}"
+                                                f"group_id: {group_id}")
                         return False
 
                     cur.execute(
