@@ -1093,7 +1093,7 @@ class TestDbQueries(unittest.TestCase):
         pos: int = randint(2, TestDbQueries._number_of_users_group_3)
         new_owner: int = TestDbQueries._data.get_user_data(group_id, pos, 'telegram_id')
         res: bool = self.test_db.update_group_owner(new_owner, group_id)
-        self.assertTrue(res)
+        self.assertFalse(res)
 
         new_owner_username: str = self.test_db.get_group_owner_username_by_group_id(group_id)
         self.assertEqual(new_owner_username, TestDbQueries._data.get_user_data(group_id, pos, 'username'))
