@@ -257,6 +257,21 @@ class TestDbQueries1(unittest.TestCase):
         res_2: int | None = self.test_db.get_user_timezone_by_telegram_id(telegram_id)
         self.assertEqual(res_2, timezone_2)
 
+    def test_003_user_timezone_to_db_6(self):
+        """
+        id = 0
+        """
+        res: int | None = self.test_db.get_user_timezone_by_telegram_id(0)
+        self.assertIsNone(res)
+
+    def test_003_user_timezone_to_db_7(self):
+        """
+        negative integers
+        """
+        for i in range(-1_000, 0):
+            res: int | None = self.test_db.get_user_timezone_by_telegram_id(0)
+            self.assertIsNone(res, f'i = {i}')
+
     def test_004_update_group_uuid_after_transaction_1(self):
         """
         check that the new group has uuid = null

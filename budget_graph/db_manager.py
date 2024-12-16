@@ -302,16 +302,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     u."username"
-                                   FROM
-                                     "budget_graph"."users" u
-                                   JOIN
-                                     "budget_graph"."users_groups" u_g
-                                   ON
-                                     u."telegram_id" = u_g."telegram_id"
-                                   WHERE
-                                     u_g."group_id" = %s::smallint""", (group_id,))
+                    cur.execute(read_sql_file('get_group_usernames'), {'group_id': group_id})
                     return tuple(str(row[0]) for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
@@ -326,12 +317,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""SELECT
-                                     "telegram_id"
-                                   FROM
-                                     "budget_graph"."users_groups"
-                                   WHERE
-                                     "group_id" = %s::smallint""", (group_id,))
+                    cur.execute(read_sql_file('get_group_telegram_ids'), {'group_id': group_id})
                     return tuple(row[0] for row in cur.fetchall())
 
         except (DatabaseError, TypeError) as err:
@@ -577,12 +563,7 @@ class DatabaseQueries:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
-                    cur.execute("""UPDATE
-                                     "budget_graph"."users"
-                                   SET
-                                     "timezone" = %s::smallint
-                                   WHERE
-                                     "telegram_id" = %s::bigint""", (timezone, telegram_id))
+                    cur.execute(read_sql_file('add_user_timezone'), {'timezone': timezone, 'telegram_id': telegram_id})
                     conn.commit()
                     return True
 
