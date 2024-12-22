@@ -820,13 +820,12 @@ def process_delete_group(db_connection, message, group_id: int, user_language: s
 
 
 # TODO reuse func
-def get_str_with_group_users(telegram_id: int, with_owner: bool) -> str:
+@connect_defer_close_db
+def get_str_with_group_users(db_connection, telegram_id: int, with_owner: bool) -> str:
     user_language: str = check_user_language(telegram_id)
-    connection = connect_db()
-    bot_db = DatabaseQueries(connection)
-    group_id: int = bot_db.get_group_id_by_telegram_id(telegram_id)
-    group_owner_username: str = bot_db.get_group_owner_username_by_group_id(group_id)
-    group_users_list: tuple = bot_db.get_group_usernames(group_id)
+    group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
+    group_owner_username: str = db_connection.get_group_owner_username_by_group_id(group_id)
+    group_users_list: tuple = db_connection.get_group_usernames(group_id)
 
     if with_owner:
         res: str = '\n'.join(
@@ -842,7 +841,6 @@ def get_str_with_group_users(telegram_id: int, with_owner: bool) -> str:
             for user in group_users_list
             if user != group_owner_username
         )
-    close_db(connection)
     return res
 
 
