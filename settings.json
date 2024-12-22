@@ -1,0 +1,6 @@
+{
+  "RedisCache": false,
+  "Bot": true,
+  "Website": false,
+  "GoStatisticsService": false
+}
