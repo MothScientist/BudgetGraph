@@ -562,7 +562,8 @@ def get_csv(db_connection, message, user_language: str) -> None:
             csv_obj.create_csv_file()
             file_size: float = csv_obj.get_file_size_kb()
             file_checksum: str = csv_obj.get_file_checksum()
-            with open(f'csv_tables/table_{group_id}.csv', 'rb') as csv_table_file:
+            group_uuid: str = db_connection.get_group_transaction_uuid(group_id)
+            with open(f'csv_tables/{group_uuid}.csv', 'rb') as csv_table_file:
                 caption: str = (f"{receive_translation(user_language, 'file_size')}: "
                                 f"{'{:.3f}'.format(file_size)} kB\n\n"
                                 f"{receive_translation(user_language, 'hashsum')} "

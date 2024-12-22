@@ -442,6 +442,61 @@ class TestCreateCSV(unittest.TestCase):
         file_checksum: str = create_csv_obj_28.get_file_checksum()
         self.assertEqual(file_checksum, 'a76a624def64f20303cbfc22ce95a77b8c79a92ca02acc079fc74291d618ac01')
 
+    def test_csv_029(self):
+        file_path: str = 'test_csv_tables/73de7a80-b9fe-4534-be66-468d64e2d5bf.csv'
+        table_headers: tuple = ('column_1', 'column_2')
+        table_data: tuple = (('1', '2'), ('1', '2'))
+        create_csv_obj_29 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_29.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_29.get_file_size_kb())
+        self.assertEqual(file_size, '0.028')
+
+        file_checksum: str = create_csv_obj_29.get_file_checksum()
+        self.assertEqual(file_checksum, '323179bc81bff55700949e4887293a16a743c2dcbf1d76f7cb062e2b3ad58cc4')
+
+    def test_csv_030(self):
+        file_path: str = 'test_csv_tables/31d2e7ab-8497-4b7e-8b51-09ba36665552.csv'
+        table_headers: tuple = ('column_1', 'column_2', 'column_3', 'column_4', 'column_5')
+        table_data: tuple = (('1', '2', '3', '4', '5'),)
+        create_csv_obj_30 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_30.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_30.get_file_size_kb())
+        self.assertEqual(file_size, '0.056')
+
+        file_checksum: str = create_csv_obj_30.get_file_checksum()
+        self.assertEqual(file_checksum, '415e456d6d95687cf868df2d3f7dbe5e01b52e186f40b1dda78a9d07482be845')
+
+    def test_csv_031(self):
+        file_path: str = 'test_csv_tables/615db441-f6b3-4799-ae2e-aab855561d16.csv'
+        table_headers: tuple = ('_',)
+        table_data: tuple = (('&',),)
+        create_csv_obj_30 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_30.create_csv_file()
+        self.assertEqual(path.exists(file_path), True)
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_30.get_file_size_kb())
+        self.assertEqual(file_size, '0.006')
+
+        file_checksum: str = create_csv_obj_30.get_file_checksum()
+        self.assertEqual(file_checksum, '52767a1ae5126da2adc66b2fe25341d9157946c2c6f59afb71af5c2944730de6')
+
+    def test_csv_032(self):
+        """ Checking that the file does not exist after invalid data validation """
+        file_path: str = 'test_csv_tables/0ce8e383-3a09-4e9d-bc18-9f82e3fc2748.csv'
+        table_headers: tuple = ('123', '123', '')
+        table_data: tuple = (('1', '2', '3'),)
+        create_csv_obj_10 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        with self.assertRaises(ValueError):
+            create_csv_obj_10.create_csv_file()
+        file_size: str = '{:.3f}'.format(create_csv_obj_10.get_file_size_kb())
+        self.assertEqual(file_size, '0.000')
+        file_checksum: str = create_csv_obj_10.get_file_checksum()
+        self.assertEqual(file_checksum, '')
+
 
 if __name__ == '__main__':
     unittest.main()
