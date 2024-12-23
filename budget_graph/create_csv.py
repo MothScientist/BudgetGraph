@@ -83,3 +83,12 @@ class CsvFileWithTable:
         # the length of each nested tuple is equal to the number of columns in the table
         if not all(len(self.table_headers) == len(_row) for _row in self.table_data):
             raise ValueError('Data tuples have different lengths and/or their lengths do not match the headers')
+
+
+def check_csv_is_actual(group_id: int, group_uuid: str) -> bool:
+    """
+    Checks for the presence of an up-to-date file, if there is one, returns True, otherwise False
+    If this group already has such a file, but its uuid is not up-to-date, then deletes it
+    """
+    if os_path.isfile(f'csv_tables/{group_id}_{group_uuid}.csv'):
+        return True

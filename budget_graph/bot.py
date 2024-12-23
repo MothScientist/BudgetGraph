@@ -14,10 +14,10 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 sys_path.append('../')
 from budget_graph.logger import setup_logger
 # from budget_graph.time_checking import timeit
-from budget_graph.create_csv import CsvFileWithTable
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
+from budget_graph.create_csv import CsvFileWithTable, check_csv_is_actual
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
@@ -553,17 +553,18 @@ def get_csv(db_connection, message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
     group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
     # to be able to call a function from any file
-    file_path: str = path.join(path.dirname(__file__), f'csv_tables/table_{group_id}.csv')
+    group_uuid: str = db_connection.get_group_transaction_uuid(group_id)
+    file_path: str = path.join(path.dirname(__file__), f'csv_tables/{group_id}_{group_uuid}.csv')
     # 10_000 row limit
     table_data: tuple[tuple, ...] = db_connection.select_data_for_household_table(group_id, 0)
     if table_data:
         try:
             csv_obj = CsvFileWithTable(file_path, table_data)
-            csv_obj.create_csv_file()
+            if not check_csv_is_actual(group_id, group_uuid):
+                csv_obj.create_csv_file()
             file_size: float = csv_obj.get_file_size_kb()
             file_checksum: str = csv_obj.get_file_checksum()
-            group_uuid: str = db_connection.get_group_transaction_uuid(group_id)
-            with open(f'csv_tables/{group_uuid}.csv', 'rb') as csv_table_file:
+            with open(f'csv_tables/{group_id}_{group_uuid}.csv', 'rb') as csv_table_file:
                 caption: str = (f"{receive_translation(user_language, 'file_size')}: "
                                 f"{'{:.3f}'.format(file_size)} kB\n\n"
                                 f"{receive_translation(user_language, 'hashsum')} "
