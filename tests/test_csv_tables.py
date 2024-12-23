@@ -3,6 +3,7 @@ from shutil import rmtree
 import unittest
 from random import randint
 from time import perf_counter
+from uuid import uuid4
 
 from budget_graph.create_csv import CsvFileWithTable
 
@@ -34,7 +35,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = (('1', '2', '3'), ('1', '2', '3'))
         create_csv_obj_1 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_1.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_1.get_file_size_kb())
         self.assertEqual(file_size, '0.041')
@@ -48,7 +49,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = (('1',),)
         create_csv_obj_2 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_2.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_2.get_file_size_kb())
         self.assertEqual(file_size, '0.013')
@@ -62,7 +63,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = (TestCreateCSV.tuple_of_1k,)
         create_csv_obj_3 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_3.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_3.get_file_size_kb())
         self.assertEqual(file_size, '14.436')
@@ -76,7 +77,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple((tuple(range(10))) for _ in TestCreateCSV.tuple_of_1k)
         create_csv_obj_4 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_4.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_4.get_file_size_kb())
         self.assertEqual(file_size, '20.597')
@@ -150,7 +151,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple((tuple(range(100))) for _ in range(250))
         create_csv_obj_11 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_11.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_11.get_file_size_kb())
         self.assertEqual(file_size, '72.013')
@@ -168,7 +169,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple(TestCreateCSV.tuple_of_500 for _ in TestCreateCSV.tuple_of_1k)
         create_csv_obj_11 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_11.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_11.get_file_size_kb())
         self.assertEqual(file_size, '1851.944')
@@ -191,7 +192,7 @@ class TestCreateCSV(unittest.TestCase):
         self.assertTrue(time < 0.1, f'Time: {time}')
 
         # due to random data, checking the file size and hash does not make sense
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
     def test_csv_014(self):
         """ Padding for 10_000 rows with default table_headers value """
@@ -205,7 +206,7 @@ class TestCreateCSV(unittest.TestCase):
         time: float = finish_generation_csv_file - start_generation_csv_file
         self.assertTrue(time < 0.05, f'Time (create_csv_file): {time}')
 
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         start_generation_csv_file: float = perf_counter()
         file_size: str = '{:.3f}'.format(create_csv_obj_14.get_file_size_kb())
@@ -235,7 +236,7 @@ class TestCreateCSV(unittest.TestCase):
         time: float = finish_generation_csv_file - start_generation_csv_file
         self.assertTrue(time < 0.5, f'Time (create_csv_file): {time}')
 
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         start_generation_csv_file: float = perf_counter()
         file_size: str = '{:.3f}'.format(create_csv_obj_15.get_file_size_kb())
@@ -287,7 +288,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_18 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         with self.assertRaises(FileNotFoundError):
             create_csv_obj_18.create_csv_file()
-        self.assertEqual(path.exists(file_path), False)
+        self.assertFalse(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_18.get_file_size_kb())
         self.assertEqual(file_size, '0.000')
@@ -301,7 +302,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_19 = CsvFileWithTable(file_path, table_data)
         with self.assertRaises(FileNotFoundError):
             create_csv_obj_19.create_csv_file()
-        self.assertEqual(path.exists(file_path), False)
+        self.assertFalse(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_19.get_file_size_kb())
         self.assertEqual(file_size, '0.000')
@@ -315,7 +316,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_20 = CsvFileWithTable(file_path, table_data)
         with self.assertRaises(FileNotFoundError):
             create_csv_obj_20.create_csv_file()
-        self.assertEqual(path.exists(file_path), False)
+        self.assertFalse(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_20.get_file_size_kb())
         self.assertEqual(file_size, '0.000')
@@ -329,7 +330,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_21 = CsvFileWithTable(file_path, table_data)
         with self.assertRaises(FileNotFoundError):
             create_csv_obj_21.create_csv_file()
-        self.assertEqual(path.exists(file_path), False)
+        self.assertFalse(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_21.get_file_size_kb())
         self.assertEqual(file_size, '0.000')
@@ -343,7 +344,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_22 = CsvFileWithTable(file_path, table_data)
         with self.assertRaises(FileNotFoundError):
             create_csv_obj_22.create_csv_file()
-        self.assertEqual(path.exists(file_path), False)
+        self.assertFalse(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_22.get_file_size_kb())
         self.assertEqual(file_size, '0.000')
@@ -357,7 +358,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple((tuple(range(7))) for _ in range(10))
         create_csv_obj_23 = CsvFileWithTable(file_path, table_data, lang='es')
         create_csv_obj_23.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_23.get_file_size_kb())
         self.assertEqual(file_size, '0.227')
@@ -371,7 +372,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple((tuple(range(7))) for _ in range(5))
         create_csv_obj_24 = CsvFileWithTable(file_path, table_data, lang='00')
         create_csv_obj_24.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_24.get_file_size_kb())
         self.assertEqual(file_size, '0.115')
@@ -384,7 +385,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple((tuple(range(7))) for _ in range(3))
         create_csv_obj_25 = CsvFileWithTable(file_path, table_data, lang='is')
         create_csv_obj_25.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_25.get_file_size_kb())
         self.assertEqual(file_size, '0.108')
@@ -397,7 +398,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = tuple((tuple(range(7))) for _ in range(3))
         create_csv_obj_26 = CsvFileWithTable(file_path, table_data, lang='ru')
         create_csv_obj_26.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_26.get_file_size_kb())
         self.assertEqual(file_size, '0.146')
@@ -412,7 +413,7 @@ class TestCreateCSV(unittest.TestCase):
         file_path_1: str = 'test_csv_tables/test_table_27_1.csv'
         create_csv_obj_27_1 = CsvFileWithTable(file_path_1, table_data)
         create_csv_obj_27_1.create_csv_file()
-        self.assertEqual(path.exists(file_path_1), True)
+        self.assertTrue(path.exists(file_path_1))
         file_size_1: str = '{:.3f}'.format(create_csv_obj_27_1.get_file_size_kb())
         self.assertEqual(file_size_1, '0.097')
         file_checksum_1: str = create_csv_obj_27_1.get_file_checksum()
@@ -436,7 +437,7 @@ class TestCreateCSV(unittest.TestCase):
         create_csv_obj_28 = CsvFileWithTable(file_path, table_data, table_headers=table_headers, lang='es')
         create_csv_obj_28.create_csv_file()
 
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
         file_size: str = '{:.3f}'.format(create_csv_obj_28.get_file_size_kb())
         self.assertEqual(file_size, '0.165')
         file_checksum: str = create_csv_obj_28.get_file_checksum()
@@ -448,7 +449,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = (('1', '2'), ('1', '2'))
         create_csv_obj_29 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_29.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_29.get_file_size_kb())
         self.assertEqual(file_size, '0.028')
@@ -462,7 +463,7 @@ class TestCreateCSV(unittest.TestCase):
         table_data: tuple = (('1', '2', '3', '4', '5'),)
         create_csv_obj_30 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_30.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_30.get_file_size_kb())
         self.assertEqual(file_size, '0.056')
@@ -474,14 +475,14 @@ class TestCreateCSV(unittest.TestCase):
         file_path: str = 'test_csv_tables/615db441-f6b3-4799-ae2e-aab855561d16.csv'
         table_headers: tuple = ('_',)
         table_data: tuple = (('&',),)
-        create_csv_obj_30 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
-        create_csv_obj_30.create_csv_file()
-        self.assertEqual(path.exists(file_path), True)
+        create_csv_obj_31 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_31.create_csv_file()
+        self.assertTrue(path.exists(file_path))
 
-        file_size: str = '{:.3f}'.format(create_csv_obj_30.get_file_size_kb())
+        file_size: str = '{:.3f}'.format(create_csv_obj_31.get_file_size_kb())
         self.assertEqual(file_size, '0.006')
 
-        file_checksum: str = create_csv_obj_30.get_file_checksum()
+        file_checksum: str = create_csv_obj_31.get_file_checksum()
         self.assertEqual(file_checksum, '52767a1ae5126da2adc66b2fe25341d9157946c2c6f59afb71af5c2944730de6')
 
     def test_csv_032(self):
@@ -489,13 +490,33 @@ class TestCreateCSV(unittest.TestCase):
         file_path: str = 'test_csv_tables/0ce8e383-3a09-4e9d-bc18-9f82e3fc2748.csv'
         table_headers: tuple = ('123', '123', '')
         table_data: tuple = (('1', '2', '3'),)
-        create_csv_obj_10 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_32 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         with self.assertRaises(ValueError):
-            create_csv_obj_10.create_csv_file()
-        file_size: str = '{:.3f}'.format(create_csv_obj_10.get_file_size_kb())
+            create_csv_obj_32.create_csv_file()
+        file_size: str = '{:.3f}'.format(create_csv_obj_32.get_file_size_kb())
         self.assertEqual(file_size, '0.000')
-        file_checksum: str = create_csv_obj_10.get_file_checksum()
+        file_checksum: str = create_csv_obj_32.get_file_checksum()
         self.assertEqual(file_checksum, '')
+
+    def test_csv_033(self):
+        for i in range(1, 1_250):
+            group_uuid: str = str(uuid4())
+            file_path: str = f'test_csv_tables/{i}_{group_uuid}.csv'
+            table_headers: tuple = ('_', 'qwerty')
+            table_data: tuple = (('&', '%'),)
+            create_csv_obj_33 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+            create_csv_obj_33.create_csv_file()
+            self.assertTrue(path.exists(file_path))
+
+            wrong_group_uuid: str = str(uuid4())
+            wrong_path: str = f'test_csv_tables/{i}_{wrong_group_uuid}.csv'
+            self.assertFalse(path.exists(wrong_path))
+
+            file_size: str = '{:.3f}'.format(create_csv_obj_33.get_file_size_kb())
+            self.assertEqual(file_size, '0.015')
+
+            file_checksum: str = create_csv_obj_33.get_file_checksum()
+            self.assertEqual(file_checksum, '84d78b707c8ca6b18bee74aad7540016d50b688dd516a6a28e3e861f51a7a697')
 
 
 if __name__ == '__main__':
