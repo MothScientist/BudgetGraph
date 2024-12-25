@@ -143,6 +143,8 @@ async def check_year_is_leap(year: int) -> bool:
 
 
 def description_validation(description: str) -> bool:  # TODO
+    if not isinstance(description, str):
+        description = str(description)
     return len(description) <= 50
 
 
