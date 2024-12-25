@@ -113,6 +113,7 @@ jobs:
       - name: Run UnitTests
         run: |
           cd tests || exit 1
+          rm -f pytest.ini # no need to run async tests
           python -m pytest test_database_queries_1.py
 
   database-queries-unit-tests-2:
@@ -173,4 +174,5 @@ jobs:
       - name: Run UnitTests
         run: |
           cd tests || exit 1
+          rm -f pytest.ini # no need to run async tests
           python -m pytest test_database_queries_2.py
