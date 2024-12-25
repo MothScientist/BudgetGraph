@@ -13,33 +13,20 @@ from budget_graph.time_checking import timeit  # noqa
 
 
 @timeit
-async def registration_validation(username: str, psw: str, telegram_id: str) -> bool:
+async def registration_validation(username: str, psw: str, telegram_id: str) -> tuple[bool, int]:
     """
     :param username: 3 to 15 characters
     :param psw: 4 to 128 characters
     :param telegram_id:
     :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
     """
-
-    username_is_valid, password_is_valid, telegram_id_is_valid = await asyncio.gather(
-        username_validation(username),
-        password_validation(psw),
-        telegram_id_validation(telegram_id)
-    )
-
-    if not username_is_valid:
-        flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
-        return False
-
-    if not password_is_valid:
-        flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter", category="error")
-        return False
-
-    if not telegram_id_is_valid:
-        flash("Error - invalid telegram ID.", category="error")
-        return False
-
-    return True
+    if not await username_validation(username):
+        return False, 1
+    if not await password_validation(psw):
+        return False, 2
+    if not await telegram_id_validation(telegram_id):
+        return False, 3
+    return True, 0
 
 
 async def username_validation(username: str) -> bool:

@@ -42,8 +42,16 @@ def registration():
         psw: str = request.form["password"]
         telegram_id: str = request.form["telegram-id"]
         token: str = request.form["token"]
-        if asyncio.run(registration_validation(username, psw, telegram_id)):
+        res = asyncio.run(registration_validation(username, psw, telegram_id))
+        if res[0]:
             registration_process(int(telegram_id), username, psw, token if token else 'None')
+        elif res[1] == 1:
+            flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
+        elif res[1] == 2:
+            flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
+                  category="error")
+        elif res[1] == 3:
+            flash("Error - invalid telegram ID.", category="error")
     return render_template("registration.html", title="Budget Graph - Registration")
 
 
