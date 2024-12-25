@@ -54,7 +54,7 @@ async def username_validation(username: str) -> bool:
 
 
 async def password_validation(psw: str) -> bool:
-    if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,32}$', psw):
+    if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&_]{8,32}$', psw):
         return True
     return False
 
@@ -124,7 +124,7 @@ async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
 
 
 async def check_day_is_correct(entered_year: int, entered_month: int, entered_day: int) -> bool:
-    if 1 > entered_day > 31:
+    if entered_day < 1 or entered_day > 31:
         return False
 
     if entered_month == 2:
