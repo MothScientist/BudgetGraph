@@ -1,9 +1,7 @@
 from sys import path as sys_path
-import asyncio
 import re
 from functools import cache
 from datetime import datetime, timezone
-from flask import flash
 
 sys_path.append('../')
 
@@ -149,7 +147,7 @@ def value_validation(value: str) -> int:
     return 0
 
 
-@timeit
+@cache
 def category_validation(lang: str, category: str) -> bool:
     categories: tuple = get_translations_for_categories(lang)
     return category in categories
