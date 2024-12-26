@@ -530,6 +530,26 @@ class TestNumberValidation(unittest.TestCase):
         res: int = value_validation('qwerty_qwerty_qwerty_qwerty_qwerty')
         self.assertEqual(res, 0)
 
+    def test_number_validation_019(self):
+        value: int = 500_000
+        res: int = value_validation(str(value))
+        self.assertEqual(res, value)
+
+    def test_number_validation_020(self):
+        value: int = 980_123
+        res: int = value_validation(str(value))
+        self.assertEqual(res, value)
+
+    def test_number_validation_021(self):
+        value: float = 100.00
+        res: int = value_validation(str(value))
+        self.assertEqual(res, 0)
+
+    def test_number_validation_022(self):
+        value: float = 1250.50
+        res: int = value_validation(str(value))
+        self.assertEqual(res, 0)
+
 
 class TestDescriptionValidator(unittest.TestCase):
     def test_description_validator_001(self):
