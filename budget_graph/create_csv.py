@@ -92,3 +92,4 @@ def check_csv_is_actual(group_id: int, group_uuid: str) -> bool:
     """
     if os_path.isfile(f'csv_tables/{group_id}_{group_uuid}.csv'):
         return True
+    return False

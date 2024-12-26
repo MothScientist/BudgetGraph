@@ -706,6 +706,7 @@ class DatabaseQueries:
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")
+            return None
 
     def update_group_owner(self, new_owner_telegram_id: int, group_id: int) -> bool:
         """

@@ -13,13 +13,12 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
-# from budget_graph.time_checking import timeit
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
 from budget_graph.create_csv import CsvFileWithTable, check_csv_is_actual
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
-from budget_graph.db_manager import DatabaseQueries, connect_db, close_db, connect_defer_close_db
+from budget_graph.db_manager import connect_defer_close_db
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
 from budget_graph.helpers import StorageMsgIdForDeleteAfterOperation, get_category_button_labels, get_bot_commands, \
