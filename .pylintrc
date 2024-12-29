@@ -1,4 +1,5 @@
 [MASTER]
+fail-under=9.9
 ignore-paths=
     tests/.*
 
