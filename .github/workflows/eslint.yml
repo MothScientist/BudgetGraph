@@ -1,0 +1,30 @@
+name: Eslint
+
+on:
+  push:
+    paths-ignore:
+      - 'tests/**'
+  pull_request:
+    paths-ignore:
+      - 'tests/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22'
+
+      - name: npm install
+        run: |
+          npm install
+
+      - name: Lint with eslint
+        run: |
+          npx eslint . --ignore-pattern 'tests/**' # Запускаем ESLint, исключая папку tests
