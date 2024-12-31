@@ -1,9 +1,10 @@
 from os import makedirs, path
 from shutil import rmtree
 import unittest
-from random import randint
+from random import randint, choice, seed
 from time import perf_counter
 from uuid import uuid4
+from string import ascii_letters, digits
 
 from budget_graph.create_csv import CsvFileWithTable
 
@@ -525,15 +526,47 @@ class TestCreateCSV(unittest.TestCase):
         file_path: str = f'test_csv_tables/{group_id}_{group_uuid}.csv'
         table_headers: tuple = tuple(f'column_{i}' for i in range(10))
         table_data: tuple = tuple((tuple(range(10))) for _ in range(1_000_000))
-        create_csv_obj_4 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
-        create_csv_obj_4.create_csv_file()
+        create_csv_obj_34 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_34.create_csv_file()
         self.assertTrue(path.exists(file_path))
 
-        file_size: str = '{:.3f}'.format(create_csv_obj_4.get_file_size_kb())
+        file_size: str = '{:.3f}'.format(create_csv_obj_34.get_file_size_kb())
         self.assertEqual(file_size, '20507.901')
 
-        file_checksum: str = create_csv_obj_4.get_file_checksum()
+        file_checksum: str = create_csv_obj_34.get_file_checksum()
         self.assertEqual(file_checksum, '046b17aedb854fcb48ecd8183e214af27db8fb4d8edb15394acbf23831a1ef94')
+
+    def test_csv_035(self):
+        """ Check for file overwriting if the same table is generated 100 times with different data """
+        iters: int = 100
+
+        group_id: int = randint(100, 1_000)
+        group_uuid: str = str(uuid4())
+        file_path: str = f'test_csv_tables/{group_id}_{group_uuid}.csv'
+
+        hash_vault: list = []  # {hash: size, ...}
+
+        for _iter in range(iters):
+            seed()  # This sets the seed based on the current time.
+            _rand_int: int = randint(1, 100)
+            rand_str: str = ''.join(choice(ascii_letters + digits) for _ in range(_rand_int))
+
+            table_headers: tuple = tuple(rand_str for _ in range(_rand_int))
+            table_data: tuple = tuple((tuple(rand_str for _ in range(_rand_int))) for _ in range(25))
+
+            create_csv_obj_35 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+            create_csv_obj_35.create_csv_file()
+            self.assertTrue(path.exists(file_path), f'iter = {_iter}')
+
+            file_size: str = '{:.3f}'.format(create_csv_obj_35.get_file_size_kb())
+            self.assertTrue(len(file_size) > 0, len(file_size))
+
+            file_checksum: str = create_csv_obj_35.get_file_checksum()
+            hash_vault.append(file_checksum)
+
+        # we check that the number of keys = iters
+        keys: int = len(hash_vault)
+        self.assertEqual(keys, iters, f'keys = {keys}')
 
 
 if __name__ == '__main__':
