@@ -74,16 +74,16 @@ class TestCreateCSV(unittest.TestCase):
     def test_csv_004(self):
         file_path: str = 'test_csv_tables/100_000_rows.csv'
         table_headers: tuple = tuple(f'column_{i}' for i in range(10))
-        table_data: tuple = tuple((tuple(range(10))) for _ in TestCreateCSV.tuple_of_1k)
+        table_data: tuple = tuple((tuple(range(10))) for _ in TestCreateCSV.tuple_of_100k)
         create_csv_obj_4 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
         create_csv_obj_4.create_csv_file()
         self.assertTrue(path.exists(file_path))
 
         file_size: str = '{:.3f}'.format(create_csv_obj_4.get_file_size_kb())
-        self.assertEqual(file_size, '20.597')
+        self.assertEqual(file_size, '2050.870')
 
         file_checksum: str = create_csv_obj_4.get_file_checksum()
-        self.assertEqual(file_checksum, 'fe8a9dc29e926f2dfa5f0a2d9d3a3ad83eb5374e43490f34ae8058bcf26733ea')
+        self.assertEqual(file_checksum, '29aa20b7dce537ebcef1bcb54ac5d8d8ee29b3d074402f6994b5294631ff95e7')
 
     def test_csv_005(self):
         """ The header tuple is longer than the length of the nested tuples """
@@ -517,6 +517,23 @@ class TestCreateCSV(unittest.TestCase):
 
             file_checksum: str = create_csv_obj_33.get_file_checksum()
             self.assertEqual(file_checksum, '84d78b707c8ca6b18bee74aad7540016d50b688dd516a6a28e3e861f51a7a697')
+
+    def test_csv_034(self):
+        """ 10 headers and 1_000_000 rows """
+        group_id: int = randint(100, 1_000)
+        group_uuid: str = str(uuid4())
+        file_path: str = f'test_csv_tables/{group_id}_{group_uuid}.csv'
+        table_headers: tuple = tuple(f'column_{i}' for i in range(10))
+        table_data: tuple = tuple((tuple(range(10))) for _ in range(1_000_000))
+        create_csv_obj_4 = CsvFileWithTable(file_path, table_data, table_headers=table_headers)
+        create_csv_obj_4.create_csv_file()
+        self.assertTrue(path.exists(file_path))
+
+        file_size: str = '{:.3f}'.format(create_csv_obj_4.get_file_size_kb())
+        self.assertEqual(file_size, '20507.901')
+
+        file_checksum: str = create_csv_obj_4.get_file_checksum()
+        self.assertEqual(file_checksum, '046b17aedb854fcb48ecd8183e214af27db8fb4d8edb15394acbf23831a1ef94')
 
 
 if __name__ == '__main__':
