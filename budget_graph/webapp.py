@@ -25,7 +25,7 @@ app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 app.teardown_appcontext(close_db_flask_g)  # Disconnects the database connection after a query
 
 # session lifetime in browser cookies
-app.permanent_session_lifetime = timedelta(days=14)  # timedelta from datetime module
+app.permanent_session_lifetime = timedelta(days=7)  # timedelta from datetime module
 
 logger_app = setup_logger("logs/AppLog.log", "app_loger")
 
@@ -42,8 +42,16 @@ def registration():
         psw: str = request.form["password"]
         telegram_id: str = request.form["telegram-id"]
         token: str = request.form["token"]
-        if asyncio.run(registration_validation(username, psw, telegram_id)):
+        res = asyncio.run(registration_validation(username, psw, telegram_id))
+        if res[0]:
             registration_process(int(telegram_id), username, psw, token if token else 'None')
+        elif res[1] == 1:
+            flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
+        elif res[1] == 2:
+            flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
+                  category="error")
+        elif res[1] == 3:
+            flash("Error - invalid telegram ID.", category="error")
     return render_template("registration.html", title="Budget Graph - Registration")
 
 
@@ -197,7 +205,7 @@ def settings(username):
     """
     page with account and group settings (view/edit/delete)
     """
-    if "userLogged" not in session or session["userLogged"] != username:
+    if 'userLogged' not in session or session['userLogged'] != username:
         abort(401)
 
     dbase = DatabaseQueries(connect_db_flask_g())
@@ -205,13 +213,13 @@ def settings(username):
     group_owner: str = dbase.get_group_owner_username_by_group_id(group_id)
     group_users_data: list = dbase.get_group_users_data(group_id)
 
-    return render_template("settings.html", title=f"Settings - {username}", token=token,
+    return render_template('settings.html', title=f'Settings - {username}', token=token,
                            group_owner=group_owner, group_users_data=group_users_data)
 
 
 @app.route('/about_premium')
 def about_premium():
-    return render_template("about_premium.html", title="About the premium subscription")
+    return render_template('about_premium.html', title='About the premium subscription')
 
 
 @app.route('/conditions')
@@ -219,12 +227,14 @@ def conditions():
     """
     privacy Policy page
     """
-    return render_template("conditions.html",
-                           title="Usage Policy",
-                           site_name="",
-                           site_url="",
-                           contact_email="",
-                           contact_url="")
+    return render_template(
+        'conditions.html',
+        title='Usage Policy',
+        site_name='',
+        site_url='',
+        contact_email='',
+        contact_url=''
+    )
 
 
 @app.route('/logout', methods=['GET'])
@@ -233,14 +243,14 @@ def logout():
     removing session from browser cookies
     """
     logger_app.info(f"Successful logout: username: {logging_hash(session['userLogged'])}.")
-    session.pop("userLogged", None)  # removing the "userLogged" key from the session (browser cookies)
+    session.pop('userLogged', None)  # removing the "userLogged" key from the session (browser cookies)
     return redirect(url_for('login'))  # redirecting the user to another page, such as the homepage
 
 
 # pylint: disable=unused-argument
 @app.errorhandler(401)
 def page_not_found_401(error):  # DO NOT REMOVE the parameter  # noqa
-    return render_template("error401.html", title="UNAUTHORIZED"), 401
+    return render_template('error401.html', title='UNAUTHORIZED'), 401
 
 
 # pylint: disable=unused-argument

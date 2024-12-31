@@ -9,13 +9,13 @@ from budget_graph.encryption import logging_hash
 logger_registration = setup_logger("logs/RegistrationLog.log", "registration_logger")
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-positional-arguments
 def user_registration(db_connection, token: str, telegram_id: int, username: str, psw_salt: str, psw_hash: str) \
         -> tuple[bool, str]:
     """
     Returns the status and a string (either with a token or an error message)
     """
-    if compare_digest(token, "None"):
+    if compare_digest(token, 'None'):
         res: str = db_connection.registration_new_user(telegram_id, username, psw_salt, psw_hash)
         if res:
             return True, res

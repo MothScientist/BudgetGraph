@@ -36,6 +36,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
+          pip install pytest-asyncio
 
       - name: Create .env file
         env:
@@ -47,9 +48,14 @@ jobs:
       - name: Run UnitTests
         run: |
           cd tests || exit 1
-          python -m pytest test_sources.py test_validators.py test_localization.py test_user_cache.py test_csv_tables.py
+          python -m pytest \
+          test_sources.py \
+          test_validators.py \
+          test_localization.py \
+          test_user_cache.py \
+          test_csv_tables.py
 
-  database-queries-unit-tests:
+  database-queries-unit-tests-1:
     runs-on: ubuntu-latest
 
     services:
@@ -107,4 +113,66 @@ jobs:
       - name: Run UnitTests
         run: |
           cd tests || exit 1
-          python -m pytest test_database_queries.py
+          rm -f pytest.ini # no need to run async tests
+          python -m pytest test_database_queries_1.py
+
+  database-queries-unit-tests-2:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16.2-alpine3.18
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+          check-latest: true
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Create .env file
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
+        run: |
+          cd budget_graph
+          echo "POSTGRES_HOST=${POSTGRES_HOST}" >> .env
+          echo "POSTGRES_PORT=${POSTGRES_PORT}" >> .env
+          echo "POSTGRES_NAME=${POSTGRES_NAME}" >> .env
+          echo "POSTGRES_USERNAME=${POSTGRES_USERNAME}" >> .env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
+
+      - name: Build infrastructure
+        run: |
+          cd tests || exit 1
+          python build_test_infrastructure.py
+
+      - name: Run UnitTests
+        run: |
+          cd tests || exit 1
+          rm -f pytest.ini # no need to run async tests
+          python -m pytest test_database_queries_2.py

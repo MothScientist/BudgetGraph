@@ -1,16 +1,20 @@
 [MASTER]
+fail-under=9.9
 ignore-paths=
     tests/.*
 
 disable=
     logging-fstring-interpolation,
-    missing-module-docstring,
     missing-function-docstring,
-    wrong-import-position,
+    missing-module-docstring,
+    consider-using-f-string,
     missing-class-docstring,
     too-few-public-methods,
+    no-value-for-parameter,
+    wrong-import-position,
     trailing-whitespace,
-    consider-using-f-string,
+    bad-indentation,
     fixme
+
 [FORMAT]
 max-line-length=120

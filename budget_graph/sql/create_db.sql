@@ -1,6 +1,8 @@
 -- Setting up the date format to eliminate errors when converting ::date
 ALTER DATABASE postgres SET datestyle TO 'iso, dmy';
 
+CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- for the uuid generation function (gen_random_uuid)
+
 -- Create a schema:
 CREATE SCHEMA IF NOT EXISTS "budget_graph";
 
@@ -32,13 +34,14 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
                                 NULL::bool, NULL::bool]       CHECK(array_length("settings", 1) = 10)
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."groups" (
-    "id"           smallserial PRIMARY KEY, -- It makes sense to add a UNIQUE or PRIMARY KEY constraint on this
+    "id"                smallserial PRIMARY KEY, -- It makes sense to add a UNIQUE or PRIMARY KEY constraint on this
                                             -- column to protect against erroneously adding duplicate values,
                                             -- but this does not happen automatically
-    "owner"        bigint      NOT NULL UNIQUE    CHECK("owner" BETWEEN 1 AND POWER(10, 12) - 1),
-    "token"        varchar(32) NOT NULL UNIQUE    CHECK(LENGTH("token") = 32),
+    "owner"             bigint      NOT NULL UNIQUE    CHECK("owner" BETWEEN 1 AND POWER(10, 12) - 1),
+    "token"             varchar(32) NOT NULL UNIQUE    CHECK(LENGTH("token") = 32),
     -- number of participants in the group (auto filling and counting)
-    "users_number" smallint    NOT NULL DEFAULT 1 CHECK(("users_number" BETWEEN 1 AND 20) OR "users_number" IS NULL)
+    "users_number"      smallint    NOT NULL DEFAULT 1 CHECK(("users_number" BETWEEN 1 AND 20) OR "users_number" IS NULL),
+    "transactions_uuid" uuid            NULL
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."users_groups" (
     "telegram_id" bigint          PRIMARY KEY CHECK("telegram_id" BETWEEN 1 AND POWER(10, 12) - 1),

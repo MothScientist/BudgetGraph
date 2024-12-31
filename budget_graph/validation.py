@@ -1,9 +1,7 @@
 from sys import path as sys_path
-import asyncio
 import re
 from functools import cache
 from datetime import datetime, timezone
-from flask import flash
 
 sys_path.append('../')
 
@@ -13,32 +11,20 @@ from budget_graph.time_checking import timeit  # noqa
 
 
 @timeit
-async def registration_validation(username: str, psw: str, telegram_id: str) -> bool:
+async def registration_validation(username: str, psw: str, telegram_id: str) -> tuple[bool, int]:
     """
     :param username: 3 to 15 characters
     :param psw: 4 to 128 characters
     :param telegram_id:
     :return: If entered correctly, it will return True, otherwise it will issue a flash message and return False
     """
-
-    username_is_valid, password_is_valid, telegram_id_is_valid = await asyncio.gather(
-        username_validation(username),
-        password_validation(psw),
-        telegram_id_validation(telegram_id)
-    )
-
-    if username_is_valid:  # TODO remove flask flash and return raise error
-        if password_is_valid:
-            if telegram_id_is_valid:
-                return True
-            flash("Error - invalid telegram ID.", category="error")
-        else:  # each error has its own flash message so that the user knows where he made a mistake
-            flash("Error - invalid password format. Use 8-32 characters / at least 1 number and 1 letter",
-                  category="error")
-    else:
-        flash("Error - invalid username format. Use 3 to 20 characters.", category="error")
-
-    return False
+    if not await username_validation(username):
+        return False, 1
+    if not await password_validation(psw):
+        return False, 2
+    if not await telegram_id_validation(telegram_id):
+        return False, 3
+    return True, 0
 
 
 async def username_validation(username: str) -> bool:
@@ -53,7 +39,7 @@ async def username_validation(username: str) -> bool:
 
 
 async def password_validation(psw: str) -> bool:
-    if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,32}$', psw):
+    if re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&_]{8,32}$', psw):
         return True
     return False
 
@@ -103,12 +89,13 @@ async def comparison_dates_unix_format(entered_date: str) -> bool:
     Time 1 day ahead is necessary due to the difference in time zones
     (since the user enters the date independently in the DD/MM/YYYY format)
     """
-    twelve_hours_in_seconds: int = 43_200  # 12 hours in seconds
-    ten_years_in_seconds: int = 315_360_000 + twelve_hours_in_seconds  # 3650 days in seconds
+    twelve_hours_in_seconds: int = 43_200  # 12 hours in seconds (time zone accounting)
+    ten_years_in_seconds: int = 315_360_000  # 3650 days in seconds (10 years)
+    time_diff: int = ten_years_in_seconds + twelve_hours_in_seconds
     current_time: int = int(datetime.now(timezone.utc).timestamp())  # unix format
     entered_date_unix: int = int(datetime.strptime(entered_date, '%d/%m/%Y').timestamp())
 
-    if current_time - ten_years_in_seconds <= entered_date_unix <= current_time + twelve_hours_in_seconds:
+    if current_time - time_diff <= entered_date_unix <= current_time + twelve_hours_in_seconds:
         return True
     return False
 
@@ -122,7 +109,7 @@ async def check_date_in_correct_format(entered_date: str) -> bool:  # DD/MM/YYYY
 
 
 async def check_day_is_correct(entered_year: int, entered_month: int, entered_day: int) -> bool:
-    if 1 > entered_day > 31:
+    if entered_day < 1 or entered_day > 31:
         return False
 
     if entered_month == 2:
@@ -141,6 +128,8 @@ async def check_year_is_leap(year: int) -> bool:
 
 
 def description_validation(description: str) -> bool:  # TODO
+    if not isinstance(description, str):
+        description = str(description)
     return len(description) <= 50
 
 
@@ -158,7 +147,7 @@ def value_validation(value: str) -> int:
     return 0
 
 
-@timeit
+@cache
 def category_validation(lang: str, category: str) -> bool:
     categories: tuple = get_translations_for_categories(lang)
     return category in categories
