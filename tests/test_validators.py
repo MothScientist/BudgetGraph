@@ -96,7 +96,7 @@ class TestDateValidation(unittest.IsolatedAsyncioTestCase):
     # There is no point in checking, since the result will differ due to time zones
 
     async def test_comparison_dates_unix_format_001(self):
-        for day_delta in range(0, 120):
+        for day_delta in range(120):
             _date = await TestDateValidation.helper_day_delta(day_delta)
             # Redefine the date in our format: DD/MM/YYYY
             redefine_date = await TestDateValidation.helper_redefine_date(_date)
@@ -219,13 +219,13 @@ class TestDateValidation(unittest.IsolatedAsyncioTestCase):
     async def test_check_date_in_correct_format_021(self):
         for day in range(1, 10):
             for month in range(1, 3):
-                for year in range(0, 4):
+                for year in range(4):
                     res = await check_date_in_correct_format(f'0{day}/0{month}/202{year}')
                     self.assertTrue(res, f'0{day}/0{month}/202{year}')
 
     async def test_check_date_in_correct_format_022(self):
-        for day in range(0, 10):
-            for month in range(0, 3):
+        for day in range(10):
+            for month in range(3):
                 for year in range(18, 23):
                     res = await check_date_in_correct_format(f'1{day}/1{month}/20{year}')
                     self.assertTrue(res, f'1{day}/1{month}/20{year}')
@@ -390,7 +390,7 @@ class TestRegistrationValidation(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(res)
 
     async def test_telegram_id_009(self):
-        for factor in range(0, 2):
+        for factor in range(2):
             res = await telegram_id_validation(str(10 ** factor))
             self.assertFalse(res, f'factor = {factor}')
 
@@ -431,7 +431,7 @@ class TestRegistrationValidation(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(res)
 
     async def test_password_006(self):
-        for length in range(0, 1_000):
+        for length in range(1_000):
             password = await TestRegistrationValidation.get_string_ascii_letters(length)
             res = await password_validation(password)
             self.assertFalse(res)
@@ -499,7 +499,7 @@ class TestNumberValidation(unittest.TestCase):
         self.assertEqual(res, 0)
 
     def test_number_validation_012(self):
-        for value in range(0, 125_000):
+        for value in range(125_000):
             res: int = value_validation(str(value))
             self.assertEqual(res, value)
 
