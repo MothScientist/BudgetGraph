@@ -518,7 +518,6 @@ class DatabaseQueries:
                                   f"telegram_id: {telegram_id}")
             return False
 
-    @timeit
     def get_user_language(self, telegram_id: int) -> str:
         """
         Gets the user's (telegram_id) language from the database.
@@ -574,7 +573,6 @@ class DatabaseQueries:
             return False
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
-    @timeit
     def add_transaction_to_db(self,
                               transaction_amount: int,
                               record_date: str,
@@ -748,6 +746,7 @@ class DatabaseQueries:
             return False
 
     def delete_username_from_group_by_telegram_id(self, telegram_id: int) -> bool:
+    def delete_user_from_group_by_telegram_id(self, telegram_id: int) -> bool:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:

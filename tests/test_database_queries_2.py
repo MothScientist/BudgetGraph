@@ -5,10 +5,10 @@ from datetime import datetime
 
 from budget_graph.db_manager import DatabaseQueries
 from budget_graph.dictionary import get_list_languages
-# from budget_graph.registration_service import user_registration
+from budget_graph.registration_service import user_registration
 from budget_graph.encryption import getting_hash, get_salt, get_token
 
-from tests.build_test_infrastructure import connect_test_db, close_test_db
+from tests.build_test_infrastructure import connect_test_db, close_test_db, prepare_db_tables_for_tests
 
 LANGUAGES: tuple = get_list_languages()
 LANG_LEN: int = len(LANGUAGES)
@@ -355,3 +355,92 @@ class TestDbQueries1(unittest.TestCase):
 
         self.assertEqual(res_1, res_2, f'res_1 = {res_1}\n'
                                        f'res_2 = {res_2}')
+
+    def test_005_get_group_users_data_1(self):
+        group_id: int = 1
+
+        res = self.test_db.get_group_users_data(group_id)
+
+        self.assertEqual(len(res), 3, f'len(res) = {len(res)}')
+        self.assertTrue(isinstance(res[0], list), f'type(res[0]) = {type(res[0])}')
+        self.assertTrue(isinstance(res[0][0], str), f'type(res[0]) = {type(res[0][0])}')
+        self.assertTrue(isinstance(res[0][1], datetime), f'type(res[0]) = {type(res[0][1])}')
+
+    def test_005_get_group_users_data_2(self):
+        group_id: int = 2
+
+        res = self.test_db.get_group_users_data(group_id)
+
+        self.assertEqual(len(res), 1, f'len(res) = {len(res)}')
+        self.assertTrue(isinstance(res[0], list), f'type(res[0]) = {type(res[0])}')
+        self.assertTrue(isinstance(res[0][0], str), f'type(res[0]) = {type(res[0][0])}')
+        self.assertTrue(isinstance(res[0][1], datetime), f'type(res[0]) = {type(res[0][1])}')
+
+    def test_005_get_group_users_data_3(self):
+        group_id: int = 3
+
+        res = self.test_db.get_group_users_data(group_id)
+
+        self.assertEqual(len(res), 0, f'len(res) = {len(res)}')
+        self.assertTrue(isinstance(res, list), f'type(res[0]) = {type(res)}')
+
+    def test_005_get_group_users_data_4(self):
+        group_id: int = 0
+
+        res = self.test_db.get_group_users_data(group_id)
+
+        self.assertEqual(len(res), 0, f'len(res) = {len(res)}')
+        self.assertTrue(isinstance(res, list), f'type(res[0]) = {type(res)}')
+
+    def test_005_get_group_users_data_5(self):
+        group_id: int = -1
+
+        res = self.test_db.get_group_users_data(group_id)
+
+        self.assertEqual(len(res), 0, f'len(res) = {len(res)}')
+        self.assertTrue(isinstance(res, list), f'type(res[0]) = {type(res)}')
+
+    def test_006_delete_user_from_group_by_telegram_id_1(self):
+        """ First we create a new one - then we delete it """
+        # let's use the universal registration service
+        telegram_id: int = randint(10000, 1000000) * randint(5, 7)
+        res: tuple[bool, str] = user_registration(
+            self.test_db,
+            TestDbQueries1.group_1_token,
+            telegram_id,
+            get_token()[:8],
+            get_salt(),
+            getting_hash(get_salt(), get_salt())
+
+        )
+
+        # check the registration status
+        self.assertTrue(res[0])
+        self.assertEqual(res[1], '', f'res = {res}')
+
+        # we check that such a user is in the group
+        group_id: int = self.test_db.get_group_id_by_telegram_id(telegram_id)
+        self.assertEqual(group_id, 1, f'group_id = {group_id}')
+
+        exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
+        self.assertTrue(exists_res)
+
+        # delete user
+        del_res: bool = self.test_db.delete_user_from_group_by_telegram_id(telegram_id)
+        self.assertTrue(del_res)
+
+        # check the user group again
+        group_id: int = self.test_db.get_group_id_by_telegram_id(telegram_id)
+        self.assertEqual(group_id, 0, f'group_id = {group_id}')
+
+        exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
+        self.assertFalse(exists_res)
+
+    def test_006_delete_user_from_group_by_telegram_id_2(self):
+        """ Removing a non-existent user """
+        pass
+
+
+if __name__ == '__main__':
+    prepare_db_tables_for_tests()  # clear the database (required for local running outside the test environment)
+    unittest.main()

@@ -8,7 +8,7 @@ from budget_graph.dictionary import get_list_languages
 from budget_graph.registration_service import user_registration
 from budget_graph.encryption import getting_hash, get_salt, get_token
 
-from tests.build_test_infrastructure import connect_test_db, close_test_db
+from tests.build_test_infrastructure import connect_test_db, close_test_db, prepare_db_tables_for_tests
 
 LANGUAGES: tuple = get_list_languages()
 LANG_LEN: int = len(LANGUAGES)
@@ -1330,4 +1330,5 @@ class TestRegistrationService(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    prepare_db_tables_for_tests()  # clear the database (required for local running outside the test environment)
     unittest.main()
