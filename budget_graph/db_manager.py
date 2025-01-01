@@ -344,7 +344,6 @@ class DatabaseQueries:
         """
         :return: list (empty or with usernames of group members and last_login row)
         """
-        # TODO - покрыть тестами
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
@@ -745,7 +744,6 @@ class DatabaseQueries:
                                   f"group_id: {group_id}")
             return False
 
-    def delete_username_from_group_by_telegram_id(self, telegram_id: int) -> bool:
     def delete_user_from_group_by_telegram_id(self, telegram_id: int) -> bool:
         try:
             with self.__conn as conn:
