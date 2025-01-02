@@ -418,12 +418,61 @@ class TestDbQueries1(unittest.TestCase):
         self.assertTrue(res[0])
         self.assertEqual(res[1], '', f'res = {res}')
 
+        res: list = self.test_db.get_group_users_data(1)
+        self.assertEqual(len(res), 4, f'len(res) = {len(res)}')
+
         # we check that such a user is in the group
         group_id: int = self.test_db.get_group_id_by_telegram_id(telegram_id)
         self.assertEqual(group_id, 1, f'group_id = {group_id}')
 
         exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
         self.assertTrue(exists_res)
+
+        # delete user
+        del_res: bool = self.test_db.delete_user_from_group_by_telegram_id(telegram_id)
+        self.assertTrue(del_res)
+
+        res: list = self.test_db.get_group_users_data(1)
+        self.assertEqual(len(res), 3, f'len(res) = {len(res)}')
+
+        # check the user group again
+        group_id: int = self.test_db.get_group_id_by_telegram_id(telegram_id)
+        self.assertEqual(group_id, 0, f'group_id = {group_id}')
+
+        exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
+        self.assertFalse(exists_res)
+
+    def test_006_delete_user_from_group_by_telegram_id_2(self):
+        """ Removing a non-existent user """
+        telegram_id: int = randint(1000000, 100000000) * randint(8, 9)
+
+        exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
+        self.assertFalse(exists_res)
+
+        del_res: bool = self.test_db.delete_user_from_group_by_telegram_id(telegram_id)
+        self.assertTrue(del_res)
+
+        exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
+        self.assertFalse(exists_res)
+
+    def test_006_delete_user_from_group_by_telegram_id_3(self):
+        """ delete existing user """
+        group_id: int = TestDbQueries1._data.get_user_data(1, 1, 'group_id')
+
+        telegram_id: int = TestDbQueries1._data.get_user_data(
+            group_id,
+            3,
+            'telegram_id'
+        )
+
+        group_id: int = self.test_db.get_group_id_by_telegram_id(telegram_id)
+        self.assertEqual(group_id, 1, f'group_id = {group_id}')
+
+        exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
+        self.assertTrue(exists_res)
+
+        res: list = self.test_db.get_group_users_data(group_id)
+        self.assertEqual(len(res), 3, f'len(res) = {len(res)}')
 
         # delete user
         del_res: bool = self.test_db.delete_user_from_group_by_telegram_id(telegram_id)
@@ -436,9 +485,8 @@ class TestDbQueries1(unittest.TestCase):
         exists_res: bool = self.test_db.check_telegram_id_is_exist(telegram_id)
         self.assertFalse(exists_res)
 
-    def test_006_delete_user_from_group_by_telegram_id_2(self):
-        """ Removing a non-existent user """
-        pass
+        res: list = self.test_db.get_group_users_data(1)
+        self.assertEqual(len(res), 2, f'len(res) = {len(res)}')
 
 
 if __name__ == '__main__':

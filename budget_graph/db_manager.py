@@ -761,7 +761,7 @@ class DatabaseQueries:
                                 """, (telegram_id, telegram_id,))
                     conn.commit()
             logger_database.info(f"Telegram ID {logging_hash(telegram_id)} has been removed from the database")
-            return True
+            return True  # this is a flag of a successful operation, the user id may not exist in the database
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
