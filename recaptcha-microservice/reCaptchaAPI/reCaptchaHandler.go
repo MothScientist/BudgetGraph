@@ -1,4 +1,4 @@
-package main
+package reCaptchaAPI
 
 import (
 	"context"
@@ -7,47 +7,17 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/joho/godotenv"
 	recaptcha "cloud.google.com/go/recaptchaenterprise/v2/apiv1"
 	recaptchapb "cloud.google.com/go/recaptchaenterprise/v2/apiv1/recaptchaenterprisepb"
 )
 
-func main() {
-	logDir := filepath.Join("logs", "go") // setting the path for logs
-
-	// Create directory if it does not exist
-	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
-		log.Fatalf("[ERROR] creating log directory: %v", err)
-	}
-
-	logFile, err := os.OpenFile(filepath.Join(logDir, "recaptcha.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("[ERROR] open log directory: %v", err)
-	}
-	defer logFile.Close()
-
-	log.SetOutput(logFile) // redirect logs to a file
-
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("[ERROR] No .env file found")
-	} else {
-		log.Println("[SUCCESS] .env file found")
-	}
-
-	http.HandleFunc("/validate-recaptcha", recaptchaHandler)
-	log.Println("[SUCCESS] Starting server on :8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("[ERROR] Error starting server: %v", err)
-	}
-}
-
-// recaptchaHandler processes reCAPTCHA validation request
-func recaptchaHandler(w http.ResponseWriter, r *http.Request) {
+// RecaptchaHandler processes reCAPTCHA validation request
+func RecaptchaHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("[INFO] recaptchaHandler init")
 	if r.Method != http.MethodPost {
-	log.Printf("[ERROR] Unsupported request method: %v", http.StatusMethodNotAllowed)
+		log.Printf("[ERROR] Unsupported request method: %v", http.StatusMethodNotAllowed)
 		http.Error(w, "Unsupported request method", http.StatusMethodNotAllowed)
 		return
 	}
@@ -57,7 +27,7 @@ func recaptchaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-		log.Printf("[ERROR] open log directory: %v", err)
+		log.Printf("[ERROR] Invalid request payload: %v", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
