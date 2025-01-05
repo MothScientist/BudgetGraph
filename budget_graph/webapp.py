@@ -121,17 +121,17 @@ def login():
         logger_app.warning(f"Failed authorization attempt: username: {logging_hash(username)}, "
                            f"user salt is exist: {len(psw_salt) != 0}")
 
-    return render_template("login.html", title="Budget Graph - Login")
+    return render_template('login.html', title='Budget Graph - Login')
 
 
 # TODO - too-many-branches
 # pylint: disable=too-many-branches
-@app.route('/household/<username>', methods=["GET", "POST"])  # user's personal account
+@app.route('/household/<username>', methods=['GET', 'POST'])  # user's personal account
 def household(username):
     """
     user's personal account with his group table
     """
-    if "userLogged" not in session or session["userLogged"] != username:
+    if "userLogged" not in session or session['userLogged'] != username:
         abort(401)
 
     dbase = DatabaseQueries(connect_db_flask_g())
@@ -150,11 +150,11 @@ def household(username):
             record_date_is_valid: bool = asyncio.run(date_validation(record_date))
             description_is_valid: bool = description_validation(description)
 
-            if "submit-button-2" in request.form:  # if this is an expense category
+            if 'submit-button-2' in request.form:  # if this is an expense category
                 value *= -1
 
             if not value:
-                flash("The value format is invalid", category="error")
+                flash('The value format is invalid', category='error')
 
             elif not record_date_is_valid:
                 flash("Date format is invalid", category="error")

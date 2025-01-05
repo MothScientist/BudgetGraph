@@ -700,7 +700,7 @@ def process_delete_account(db_connection, message, user_language: str):
     if user_choice == f"👍 {receive_translation(user_language, "YES")}":
         # removing a user from the cache
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id)
-        db_connection.delete_username_from_group_by_telegram_id(telegram_id)
+        db_connection.delete_user_from_group_by_telegram_id(telegram_id)
         bot.send_message(message.chat.id, receive_translation(user_language, 'parting'))
         bot.send_message(message.chat.id, receive_translation(user_language, 'account_is_deleted'),
                          reply_markup=markup_1)
@@ -757,7 +757,7 @@ def process_delete_user(db_connection, message, group_id: int, group_users_list:
     else:
         # removing a user from the cache
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id_user_to_delete)
-        if db_connection.delete_username_from_group_by_telegram_id(telegram_id_user_to_delete):
+        if db_connection.delete_user_from_group_by_telegram_id(telegram_id_user_to_delete):
             bot.send_message(message.chat.id, receive_translation(user_language, 'user_removed'))
             logger_bot.info(f"'User {logging_hash(username_user_to_delete)}' "
                             f"deleted by group owner from group #{group_id}")
