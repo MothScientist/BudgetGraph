@@ -344,7 +344,6 @@ class DatabaseQueries:
         """
         :return: list (empty or with usernames of group members and last_login row)
         """
-        # TODO - покрыть тестами
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
@@ -518,7 +517,6 @@ class DatabaseQueries:
                                   f"telegram_id: {telegram_id}")
             return False
 
-    @timeit
     def get_user_language(self, telegram_id: int) -> str:
         """
         Gets the user's (telegram_id) language from the database.
@@ -574,7 +572,6 @@ class DatabaseQueries:
             return False
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
-    @timeit
     def add_transaction_to_db(self,
                               transaction_amount: int,
                               record_date: str,
@@ -747,7 +744,7 @@ class DatabaseQueries:
                                   f"group_id: {group_id}")
             return False
 
-    def delete_username_from_group_by_telegram_id(self, telegram_id: int) -> bool:
+    def delete_user_from_group_by_telegram_id(self, telegram_id: int) -> bool:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
@@ -764,7 +761,7 @@ class DatabaseQueries:
                                 """, (telegram_id, telegram_id,))
                     conn.commit()
             logger_database.info(f"Telegram ID {logging_hash(telegram_id)} has been removed from the database")
-            return True
+            return True  # this is a flag of a successful operation, the user id may not exist in the database
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
