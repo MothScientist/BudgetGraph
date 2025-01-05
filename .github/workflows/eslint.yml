@@ -16,15 +16,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '22'
-
-      - name: npm install
+      - name: Install ESLint
         run: |
-          npm install
+          npm install eslint --global
 
       - name: Lint with eslint
         run: |
-          npx eslint . --ignore-pattern 'tests/**' # Запускаем ESLint, исключая папку tests
+          eslint . --ignore-pattern 'tests/**' # run ESLint, excluding the tests folder
+
