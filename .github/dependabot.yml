@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "[actions]"
+      prefix: "[dependabot-actions]"
 
   # Python
   - package-ecosystem: "pip"
@@ -14,7 +14,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "[pip]"
+      prefix: "[dependabot-pip]"
 
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
