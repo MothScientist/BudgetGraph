@@ -20,7 +20,9 @@ class GlobalConfig:
 					GlobalConfig.global_cache_enable or conf_data.get('cache').get('global_cache_enable')
 			)
 			GlobalConfig.redis_enable = (
-					GlobalConfig.redis_enable or conf_data.get('cache').get('redis_enable')
+				(GlobalConfig.redis_enable or conf_data.get('cache').get('redis_enable'))
+				# if caching is disabled, then Redis is not connected in any case
+				if GlobalConfig.global_cache_enable else False
 			)
 
 			# timeit

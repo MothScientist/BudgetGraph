@@ -1,6 +1,6 @@
 from os import makedirs, path
-from sys import path as sys_path
-sys_path.append('../')
+# from sys import path as sys_path
+# sys_path.append('../')  # TODO
 from budget_graph.db_manager import connect_db, close_db
 from budget_graph.global_config import GlobalConfig
 
@@ -54,6 +54,6 @@ def load_global_config() -> None:
 
 if __name__ == '__main__':
     load_global_config()
-    drop_tables_in_db()
     create_directories()
+    drop_tables_in_db()
     create_tables_in_db()
