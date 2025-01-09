@@ -7,13 +7,13 @@ sys_path.append('../')
 from budget_graph.build_project import create_tables_in_db, drop_tables_in_db, load_global_config
 
 load_dotenv()  # Load environment variables from .env file
-db_host = getenv("POSTGRES_HOST")
-db_port = getenv("POSTGRES_PORT")
-db_name = getenv("POSTGRES_NAME")
-db_user = getenv("POSTGRES_USERNAME")
-db_psw = getenv("POSTGRES_PASSWORD")
+db_host = getenv('POSTGRES_HOST')
+db_port = getenv('POSTGRES_PORT')
+db_name = getenv('POSTGRES_NAME')
+db_user = getenv('POSTGRES_USERNAME')
+db_psw = getenv('POSTGRES_PASSWORD')
 
-DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}"
+DSN = f'dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}'
 
 
 def prepare_db_tables_for_tests() -> None:

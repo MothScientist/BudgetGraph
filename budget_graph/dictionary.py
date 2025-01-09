@@ -7,8 +7,10 @@ from functools import cache
 from os import path, listdir
 
 from budget_graph.logger import setup_logger
+from budget_graph.global_config import GlobalConfig
 
 logger_dict = setup_logger('logs/DictLog.log', 'dict_loger')
+localization_enable: bool = GlobalConfig.timeit_enable  # create a link to the var for convenience
 
 
 class Emoji:
@@ -50,7 +52,8 @@ def receive_translation(language: str, phrase: str) -> str:
     :param phrase: string that is a key in the language dictionary.
     :return: value in the json-dictionary in the selected language.
     """
-    dict_language_obj: dict = get_translate_from_json(language)
+    # if localization is disabled - the default language is English
+    dict_language_obj: dict = get_translate_from_json(language if localization_enable else language)
     return str(dict_language_obj.get(phrase, 'Error'))
 
 

@@ -9,7 +9,7 @@ class TestLanguages(unittest.TestCase):
 
     all_keys_for_each_language_list: list = []
     for lang in languages:
-        with open(f"../budget_graph/localization/{lang}.json", encoding='utf-8') as language_json_file:
+        with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as language_json_file:
             keys_data = json.load(language_json_file)
         keys_list: list = list(keys_data.keys())
         all_keys_for_each_language_list.append(keys_list)
@@ -21,9 +21,9 @@ class TestLanguages(unittest.TestCase):
         Checking multiple keys for presence in each language dictionary
         """
         _keys: tuple = (
-            "link_github", "get_my_token", "delete_group", "services", "enter_username", "create_new_user_error",
-            "username", "current_owner_exception", "unknown_message", "unknown_user_in_group", "delete_table",
-            "category", "set_date", "YES", "get_csv", "language_changed", "misunderstanding", "my"
+            'link_github', 'get_my_token', 'delete_group', 'services', 'enter_username', 'create_new_user_error',
+            'username', 'current_owner_exception', 'unknown_message', 'unknown_user_in_group', 'delete_table',
+            'category', 'set_date', 'YES', 'get_csv', 'language_changed', 'misunderstanding', 'my'
         )
         res: bool = all(receive_translation(lang, _key) for _key in _keys for lang in TestLanguages.languages)
         self.assertTrue(res, f'Missing keys: {[(_key, lang) for _key in _keys for lang in TestLanguages.languages 
@@ -57,10 +57,10 @@ class TestLanguages(unittest.TestCase):
         """
         Checking for empty keys
         """
-        # algorithm collects all the keys within the language keys ("en", "es", etc.) into a single tuple
+        # algorithm collects all the keys within the language keys ('en', 'es', etc.) into a single tuple
         _keys = sum((tuple(i) for i in TestLanguages.all_keys_for_each_language), ())
         # exclude all spaces from the values of this tuple and check that they are not equal to the empty string
-        res = all(_key.replace(" ", "") != "" for _key in _keys)
+        res = all(_key.replace(' ', '') != '' for _key in _keys)
         self.assertTrue(res)
 
     def test_languages_5(self):
@@ -69,7 +69,7 @@ class TestLanguages(unittest.TestCase):
         """
         _values = tuple(receive_translation(lang, key) for key in TestLanguages.all_keys_for_each_language[0]
                         for lang in TestLanguages.languages)
-        res = all(_value.replace(" ", "") != "" for _value in _values)
+        res = all(_value.replace(' ', '') != '' for _value in _values)
         self.assertTrue(res)
 
     def test_languages_6(self):
@@ -93,50 +93,50 @@ class TestLanguages(unittest.TestCase):
 
     def test_languages_8(self):
         unknown_key: str = '123123'
-        res: str = receive_translation("es", unknown_key)
+        res: str = receive_translation('es', unknown_key)
         self.assertEqual(res, 'Error')
 
     def test_languages_9(self):
-        res: str = receive_translation("es", "invalid_value")
-        self.assertEqual(res, "Valor no válido")
+        res: str = receive_translation('es', 'invalid_value')
+        self.assertEqual(res, 'Valor no válido')
 
     def test_languages_10(self):
-        res: str = receive_translation("en", "none_token")
+        res: str = receive_translation('en', 'none_token')
         self.assertEqual(res, "(if you don't have one, enter \'None\')")
 
     def test_languages_11(self):
-        res: str = receive_translation("fr", "current_owner_exception")
+        res: str = receive_translation('fr', 'current_owner_exception')
         self.assertEqual(res, "C'est l'actuel propriétaire du groupe.")
 
     def test_languages_12(self):
-        res: str = receive_translation("ru", "no_description")
-        self.assertEqual(res, "без описания")
+        res: str = receive_translation('ru', 'no_description')
+        self.assertEqual(res, 'без описания')
 
     def test_languages_13(self):
         unknown_key: str = 'unknown_key_unknown_key'
-        res: str = receive_translation("en", unknown_key)
+        res: str = receive_translation('en', unknown_key)
         self.assertEqual(res, 'Error')
 
     def test_languages_14(self):
-        res: str = receive_translation("de", "change_owner")
-        self.assertEqual(res, "Besitzer wechseln")
+        res: str = receive_translation('de', 'change_owner')
+        self.assertEqual(res, 'Besitzer wechseln')
 
     def test_languages_15(self):
-        res: str = receive_translation("is", "check_correct_username")
-        self.assertEqual(res, "Athugaðu rétta stafsetningu notandanafns.")
+        res: str = receive_translation('is', 'check_correct_username')
+        self.assertEqual(res, 'Athugaðu rétta stafsetningu notandanafns.')
 
     def test_languages_16(self):
-        res: str = receive_translation("en", "start_after_change_language")
-        self.assertEqual(res, "To change the language correctly, "
-                              "please restart the bot by clicking on the /start button.")
+        res: str = receive_translation('en', 'start_after_change_language')
+        self.assertEqual(res, 'To change the language correctly, '
+                              'please restart the bot by clicking on the /start button.')
 
     def test_languages_17(self):
-        res: str = receive_translation("es", "data_is_safe")
-        self.assertEqual(res, "¡Tus datos no se verán perjudicados!")
+        res: str = receive_translation('es', 'data_is_safe')
+        self.assertEqual(res, '¡Tus datos no se verán perjudicados!')
 
     def test_languages_18(self):
         unknown_lang: str = 'gb'
-        res: str = receive_translation(unknown_lang, "data_is_safe")
+        res: str = receive_translation(unknown_lang, 'data_is_safe')
         self.assertEqual(res, 'Error')
 
     def test_languages_19(self):

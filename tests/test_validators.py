@@ -125,13 +125,13 @@ class TestDateValidation(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(res)
 
     async def test_leap_year_001(self):
-        ''' Leap years '''
+        """ Leap years """
         for leap_year in (1600, 1992, 2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2156, 2400):
             res = await check_year_is_leap(leap_year)
             self.assertTrue(res, leap_year)
 
     async def test_leap_year_002(self):
-        ''' Non-leap years '''
+        """ Non-leap years """
         for non_leap_year in (1700, 1800, 1900, 2025, 2026, 2027, 2029, 2030, 2100, 2100, 2200, 2300, 2500, 2600):
             res = await check_year_is_leap(non_leap_year)
             self.assertFalse(res, non_leap_year)

@@ -24,7 +24,7 @@ class TestSaltGeneration(unittest.TestCase):
 class TestPasswordHashing(unittest.TestCase):
     def test_getting_hash_1(self):
         res: str = getting_hash('test', 'test')
-        self.assertEqual(res, "cef5c5a0f141fa3161a580ab2f7a64f895a60c335861f9fdcef51cf84f5c9527")
+        self.assertEqual(res, 'cef5c5a0f141fa3161a580ab2f7a64f895a60c335861f9fdcef51cf84f5c9527')
 
     def test_getting_hash_2(self):
         res: str = getting_hash('1234567890', 'qwerty')
