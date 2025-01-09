@@ -61,6 +61,7 @@ jobs:
           test_csv_tables.py \
           test_unit_with_modified_toml_config.py
 
+  # --------------------------------------------------------------------------------------------------------------------
   database-queries-unit-tests-1:
     runs-on: ubuntu-latest
 
@@ -122,6 +123,7 @@ jobs:
           rm -f pytest.ini # no need to run async tests
           python -m pytest test_database_queries_1.py
 
+  # --------------------------------------------------------------------------------------------------------------------
   database-queries-unit-tests-2:
     runs-on: ubuntu-latest
 
@@ -182,3 +184,62 @@ jobs:
           cd tests || exit 1
           rm -f pytest.ini # no need to run async tests
           python -m pytest test_database_queries_2.py
+
+  # --------------------------------------------------------------------------------------------------------------------
+  unit-tests-localization-disable:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # The job will be executed for every possible combination of variables.
+        # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12' ]
+        architecture: [ 'x64' ]
+
+    steps:
+      # Action for checking out a repo - https://github.com/actions/checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # https://github.com/actions/setup-python
+      - name: Set up Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
+          check-latest: true
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+          pip install pytest-asyncio
+
+      - name: Create .env file
+        env:
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
+        run: |
+          cd budget_graph || exit 1
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
+
+      - name: Moving config .toml file
+        run: |
+          mv tests/configs/test_localization_disable.toml conf.toml # change the standard config to a test one
+          mv test_localization_disable.toml conf.toml # rename file to original name
+
+      - name: Load conf.toml
+        run: |
+          cd budget_graph || exit 1
+          python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
+
+      - name: Run UnitTests
+        run: |
+          cd tests || exit 1
+          python -m pytest \
+          test_sources.py \
+          test_validators.py \
+          test_localization.py \
+          test_user_cache.py \
+          test_csv_tables.py \
+          test_unit_with_modified_toml_config.py
