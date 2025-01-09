@@ -45,6 +45,11 @@ jobs:
           cd budget_graph || exit 1
           echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
 
+      - name: Load conf.toml
+        run: |
+          cd budget_graph || exit 1
+          python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
+
       - name: Run UnitTests
         run: |
           cd tests || exit 1
@@ -53,7 +58,8 @@ jobs:
           test_validators.py \
           test_localization.py \
           test_user_cache.py \
-          test_csv_tables.py
+          test_csv_tables.py \
+          test_unit_with_modified_toml_config.py
 
   database-queries-unit-tests-1:
     runs-on: ubuntu-latest

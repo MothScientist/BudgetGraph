@@ -4,7 +4,7 @@ from psycopg2 import connect
 from dotenv import load_dotenv
 from sys import path as sys_path
 sys_path.append('../')
-from budget_graph.build_project import create_tables_in_db, drop_tables_in_db
+from budget_graph.build_project import create_tables_in_db, drop_tables_in_db, load_global_config
 
 load_dotenv()  # Load environment variables from .env file
 db_host = getenv("POSTGRES_HOST")
@@ -21,7 +21,7 @@ def prepare_db_tables_for_tests() -> None:
     create_tables_in_db()
 
 
-def build() -> None:
+def logs_dir_delete_and_create() -> None:
     rmtree('logs', ignore_errors=True)
     makedirs('logs', exist_ok=True)
 
@@ -40,5 +40,7 @@ def close_test_db(conn) -> None:
 
 
 if __name__ == '__main__':
-    build()
-    prepare_db_tables_for_tests()
+    logs_dir_delete_and_create()
+    load_global_config()
+    drop_tables_in_db()
+    create_tables_in_db()
