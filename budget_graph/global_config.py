@@ -12,7 +12,7 @@ class GlobalConfig:
 	def set_config():
 		from sys import path as sys_path
 		sys_path.append('../')
-		with open('../conf.toml', 'rb') as f:
+		with open('conf.toml', 'rb') as f:
 			conf_data = tomllib.load(f)
 
 			# vars are written only once when the application is launched and are then immutable
