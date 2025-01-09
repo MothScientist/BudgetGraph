@@ -10,6 +10,8 @@ class GlobalConfig:
 
 	@staticmethod
 	def set_config():
+		from sys import path as sys_path
+		sys_path.append('../')
 		with open('../conf.toml', 'rb') as f:
 			conf_data = tomllib.load(f)
 
