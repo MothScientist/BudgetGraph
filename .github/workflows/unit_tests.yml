@@ -224,8 +224,8 @@ jobs:
 
       - name: Moving config .toml file
         run: |
-          mv tests/configs/test_localization_disable.toml conf.toml # change the standard config to a test one
-          mv test_localization_disable.toml conf.toml # rename file to original name
+          mv /tests/configs/test_localization_disable.toml . # move the test config to the root of the application
+          mv test_localization_disable.toml conf.toml # change the standard config to a test one
 
       - name: Load conf.toml
         run: |
