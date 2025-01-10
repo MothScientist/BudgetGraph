@@ -38,17 +38,17 @@ jobs:
           pip install pytest
           pip install pytest-asyncio
 
+      - name: Load conf.toml
+        run: |
+          cd budget_graph || exit 1
+          python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
+
       - name: Create .env file
         env:
           HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
         run: |
           cd budget_graph || exit 1
           echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
-
-      - name: Load conf.toml
-        run: |
-          cd budget_graph || exit 1
-          python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
 
       - name: Run UnitTests
         run: |
@@ -215,13 +215,6 @@ jobs:
           pip install pytest
           pip install pytest-asyncio
 
-      - name: Create .env file
-        env:
-          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
-        run: |
-          cd budget_graph || exit 1
-          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
-
       - name: Moving config .toml file
         run: |
           mv /tests/configs/test_localization_disable.toml . # move the test config to the root of the application
@@ -231,6 +224,13 @@ jobs:
         run: |
           cd budget_graph || exit 1
           python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
+
+      - name: Create .env file
+        env:
+          HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
+        run: |
+          cd budget_graph || exit 1
+          echo "HASH_LOG_SALT"=${HASH_LOG_SALT_TEST} >> .env
 
       - name: Run UnitTests
         run: |
