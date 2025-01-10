@@ -236,4 +236,4 @@ jobs:
         run: |
           cd tests || exit 1
           python -m pytest \
-          test_unit_with_modified_toml_config.py
+          test_localization_disable.py
