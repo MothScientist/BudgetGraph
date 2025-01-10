@@ -2,7 +2,6 @@ from os import makedirs, path
 from sys import path as sys_path
 sys_path.append('../')
 from budget_graph.db_manager import connect_db, close_db
-from budget_graph.global_config import GlobalConfig
 
 
 def drop_tables_in_db() -> None:
@@ -56,12 +55,7 @@ def create_tables_in_db() -> None:
         close_db(conn)
 
 
-def load_global_config() -> None:
-    GlobalConfig.set_config()
-
-
 if __name__ == '__main__':
-    load_global_config()
     create_directories()
     drop_tables_in_db()
     create_tables_in_db()

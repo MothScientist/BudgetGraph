@@ -41,6 +41,5 @@ def close_test_db(conn) -> None:
 
 if __name__ == '__main__':
     logs_dir_delete_and_create()
-    load_global_config()
     drop_tables_in_db()
     create_tables_in_db()

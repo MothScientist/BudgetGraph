@@ -6,14 +6,13 @@ from budget_graph.logger import setup_logger
 from budget_graph.global_config import GlobalConfig
 
 logger_time = setup_logger("logs/TimeLog.log", "time_logger")
-timeit_enable: bool = GlobalConfig.timeit_enable  # create a link to the var for convenience
 
 
 def timeit(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
 
-        if not timeit_enable:
+        if not GlobalConfig.timeit_enable:
             return func(*args, **kwargs)
 
         _start = perf_counter()

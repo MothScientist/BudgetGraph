@@ -1,4 +1,4 @@
-import tomllib
+from tomllib import load as tomllib_load
 
 
 class GlobalConfig:
@@ -11,7 +11,7 @@ class GlobalConfig:
 	@staticmethod
 	def set_config():
 		with open('../conf.toml', 'rb') as toml_conf_file:
-			conf_data = tomllib.load(toml_conf_file)
+			conf_data = tomllib_load(toml_conf_file)
 
 			# vars are written only once when the application is launched and are then immutable
 

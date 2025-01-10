@@ -38,11 +38,6 @@ jobs:
           pip install pytest
           pip install pytest-asyncio
 
-      - name: Load conf.toml
-        run: |
-          cd budget_graph || exit 1
-          python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
-
       - name: Create .env file
         env:
           HASH_LOG_SALT_TEST: ${{ secrets.HASH_LOG_SALT_TEST }}
@@ -219,11 +214,6 @@ jobs:
         run: |
           ls -l # log/debug
           mv tests/configs/test_localization_disable.toml conf.toml # change the standard config to a test one
-
-      - name: Load conf.toml
-        run: |
-          cd budget_graph || exit 1
-          python -c "import build_project; build_project.load_global_config(); build_project.create_directories();"
 
       - name: Create .env file
         env:
