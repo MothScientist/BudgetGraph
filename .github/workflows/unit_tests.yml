@@ -210,9 +210,8 @@ jobs:
           pip install pytest
           pip install pytest-asyncio
 
-      - name: Moving config .toml file
+      - name: Move config .toml file
         run: |
-          ls -l # log/debug
           mv tests/configs/test_localization_disable.toml conf.toml # change the standard config to a test one
 
       - name: Create .env file
