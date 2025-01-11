@@ -13,6 +13,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
+from budget_graph.global_config import GlobalConfig
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
@@ -32,14 +33,16 @@ bot = TeleBot(bot_token, skip_pending=True)
 
 logger_bot = setup_logger('logs/BotLog.log', 'bot_logger')
 
-# change the list of the bot’s commands
+GlobalConfig.set_config()
+
+# change the list of the bot’s commands --------------------------------------------------------------------------------
 bot.set_my_commands(get_bot_commands())
 # change the bot’s description, which is shown in the chat with the bot if the chat is empty
 # bot.set_my_description('Get started with the easy budgeting bot by entering the /start command')
 # change the bot’s name
 # bot.set_my_name('BudgetGraph')
 # change the bot’s short description, which is shown on the bot’s profile page
-# bot.set_my_short_description('Simple and fast budget control')
+# bot.set_my_short_description('Simple and fast budget control') -------------------------------------------------------
 
 
 def reply_menu_buttons_register(message):
@@ -242,11 +245,12 @@ def callback_query_change_timezone(db_connection, call):
 
 @bot.message_handler(commands=['change_language'])
 def change_language(message) -> None:
-    telegram_id: int = message.from_user.id
-    user_language: str = check_user_language(telegram_id)
-    markup_1 = InlineKeyboardMarkup(get_language_buttons())
-    bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
-                     reply_markup=markup_1)
+    if GlobalConfig.localization_enable:
+        telegram_id: int = message.from_user.id
+        user_language: str = check_user_language(telegram_id)
+        markup_1 = InlineKeyboardMarkup(get_language_buttons())
+        bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
+                         reply_markup=markup_1)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('change_language'))

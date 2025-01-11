@@ -4,7 +4,8 @@ from psycopg2 import connect
 from dotenv import load_dotenv
 from sys import path as sys_path
 sys_path.append('../')
-from budget_graph.build_project import create_tables_in_db, drop_tables_in_db, load_global_config
+from budget_graph.build_project import create_tables_in_db, drop_tables_in_db
+
 
 load_dotenv()  # Load environment variables from .env file
 db_host = getenv('POSTGRES_HOST')

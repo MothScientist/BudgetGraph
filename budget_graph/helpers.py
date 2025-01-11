@@ -6,6 +6,7 @@ from functools import cache
 from telebot.types import InlineKeyboardButton, BotCommand
 
 sys_path.append('../')
+from budget_graph.global_config import GlobalConfig
 from budget_graph.dictionary import receive_translation
 
 
@@ -129,7 +130,7 @@ def get_category_translate(user_language: str) -> tuple:
 
 
 def get_bot_commands() -> list:
-	return [
+	commands: list = [
 		BotCommand('start', 'Start'),
 		BotCommand('change_language', 'Change Language'),
 		BotCommand('del_msg_transaction', '[ON/OFF] Delete messages after successful transaction'),
@@ -139,3 +140,8 @@ def get_bot_commands() -> list:
 		BotCommand('help', 'Help'),
 		BotCommand('project_github', 'GitHub')
 	]
+
+	if GlobalConfig.localization_enable:
+		commands.insert(1, BotCommand('change_language', 'Change Language'))
+
+	return commands
