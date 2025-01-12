@@ -3,6 +3,7 @@ Checking some unit tests with a modified .toml config when deploying an applicat
 """
 
 import unittest
+from json import load as json_load
 from budget_graph.dictionary import receive_translation
 from budget_graph.global_config import GlobalConfig
 
@@ -13,6 +14,12 @@ class TestConfigLanguages(unittest.TestCase):
     """
     Testing application localization modules when the parameter in the .toml file localization_enable = false
     """
+    languages: tuple = ('ru', 'es', 'de', 'en', 'is', 'fr', 'pt', 'kk')
+
+    with open(f'../budget_graph/localization/en.json', encoding='utf-8') as language_json_file:
+        keys_data = json_load(language_json_file)
+    all_keys_for_each_language: tuple = tuple(keys_data.keys())
+
     def test_languages_001(self):
         self.assertFalse(GlobalConfig.localization_enable)
 
@@ -27,29 +34,11 @@ class TestConfigLanguages(unittest.TestCase):
         self.assertEqual(res, 'Error')
 
     def test_languages_004(self):
-        res: str = receive_translation('is', 'check_correct_username')
-        self.assertEqual(res, 'Check the correct spelling of the username.')
-
-    def test_languages_005(self):
-        res: str = receive_translation('en', 'start_after_change_language')
-        self.assertEqual(res, 'To change the language correctly, '
-                              'please restart the bot by clicking on the /start button.')
-
-    def test_languages_006(self):
-        res: str = receive_translation('es', 'data_is_safe')
-        self.assertEqual(res, 'Your data will not be harmed!')
-        
-    def test_languages_007(self):
-        res: str = receive_translation('de', 'change_owner')
-        self.assertNotEqual(res, 'Besitzer wechseln')
-
-    def test_languages_008(self):
-        res: str = receive_translation('kk', 'add_income')
-        self.assertNotEqual(res, 'Error')
-
-    def test_languages_009(self):
-        res: str = receive_translation('pt', 'view_table')
-        self.assertNotEqual(res, 'Ver tabela')
+        for key in TestConfigLanguages.all_keys_for_each_language:
+            answer: str = receive_translation('en', key)
+            for lang in TestConfigLanguages.languages:
+                res: str = receive_translation(lang, key)
+                self.assertEqual(res, answer, f'lang: {lang}; key: {key}')
 
 
 if __name__ == '__main__':

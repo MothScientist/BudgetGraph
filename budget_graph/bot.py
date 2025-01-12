@@ -856,16 +856,18 @@ def user_is_registered(db_connection, telegram_id: int) -> bool:
     Since the user may accidentally end up in a menu
     intended only for registered users.
     """
-    res: bool = UserRegistrationStatusCache.get_cache_data(telegram_id)
-    if not res:  # if the data is not found in the cache
-        res: bool = db_connection.check_telegram_id_is_exist(telegram_id)
-        if res:
-            # updating the data in the cache
-            UserRegistrationStatusCache.input_cache_data(telegram_id)
-    if res:  # if you found data in the cache or received a response from the database
+    user_in_cache: bool = UserRegistrationStatusCache.get_cache_data(telegram_id)
+
+    if user_in_cache:  # if you found data in the cache or received a response from the database
         # update date of the last user activity in database
         db_connection.update_user_last_login_by_telegram_id(telegram_id)
-    return res
+    else:  # if the data is not found in the cache
+        if db_connection.check_telegram_id_is_exist(telegram_id):  # found user in database
+            # updating the data in the cache
+            UserRegistrationStatusCache.input_cache_data(telegram_id)
+            user_in_cache = True
+
+    return user_in_cache
 
 
 @connect_defer_close_db

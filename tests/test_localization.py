@@ -1,5 +1,5 @@
 import unittest
-import json
+from json import load as json_load
 from time import time
 from budget_graph.dictionary import receive_translation, get_list_languages
 from budget_graph.global_config import GlobalConfig
@@ -14,9 +14,8 @@ class TestLanguages(unittest.TestCase):
     all_keys_for_each_language_list: list = []
     for lang in languages:
         with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as language_json_file:
-            keys_data = json.load(language_json_file)
-        keys_list: list = list(keys_data.keys())
-        all_keys_for_each_language_list.append(keys_list)
+            keys_data = json_load(language_json_file)
+        all_keys_for_each_language_list.append(list(keys_data.keys()))
     # immutable
     all_keys_for_each_language: tuple = tuple(all_keys_for_each_language_list)
 
@@ -53,8 +52,8 @@ class TestLanguages(unittest.TestCase):
         test_list: list = []  # here we will add information about the dictionary for load simulation
         start: float = time()
         for lang in self.languages:
-            with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as f:
-                keys_data = json.load(f)
+            with open(f'../budget_graph/localization/{lang}.json', encoding='utf-8') as json_file:
+                keys_data = json_load(json_file)
             test_list += keys_data
         finish: float = time()
         res: bool = True if finish - start < 0.05 else False
