@@ -1,8 +1,10 @@
 [cache]
 global_cache_enable = false
 redis_enable = false
+
 [timeit]
 timeit_enable = false
+
 [recaptcha]
 recaptcha_enable = false
 

@@ -180,7 +180,7 @@ jobs:
           python -m pytest test_database_queries_2.py
 
   # --------------------------------------------------------------------------------------------------------------------
-  unit-tests-localization-disable:
+  unit-tests-features-disable:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -212,7 +212,7 @@ jobs:
 
       - name: Move config .toml file
         run: |
-          mv tests/configs/test_localization_disable.toml conf.toml # change the standard config to a test one
+          mv tests/configs/test_features_disable.toml conf.toml # change the standard config to a test one
 
       - name: Create .env file
         env:
