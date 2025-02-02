@@ -47,7 +47,7 @@ class UserLanguageCache:
                 i += 1
                 _len_dict -= 1
             logger_cache.info(f"<Language> Removed {i} keys from cache")
-        UserLanguageCache.__telegram_language_cache[telegram_id] = user_language.encode()
+        UserLanguageCache.__telegram_language_cache[telegram_id] = user_language.encode('utf-8')
         logger_cache.info(f"<Language> New cache entry: telegram_id={logging_hash(telegram_id)}")
 
     @staticmethod
