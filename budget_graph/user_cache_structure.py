@@ -28,7 +28,7 @@ class UserLanguageCache:
         if telegram_id in UserLanguageCache.__telegram_language_cache:
             UserLanguageCache.update_data_position(telegram_id)
             logger_cache.info(f"<Language> Data from cache (SUCCESS): telegram_id={logging_hash(telegram_id)}")
-            return UserLanguageCache.__telegram_language_cache[telegram_id]
+            return (UserLanguageCache.__telegram_language_cache[telegram_id]).decode('utf-8')
         logger_cache.info(f"<Language> There is no data in the cache: telegram_id={logging_hash(telegram_id)}")
         return ''
 
@@ -47,7 +47,7 @@ class UserLanguageCache:
                 i += 1
                 _len_dict -= 1
             logger_cache.info(f"<Language> Removed {i} keys from cache")
-        UserLanguageCache.__telegram_language_cache[telegram_id] = user_language
+        UserLanguageCache.__telegram_language_cache[telegram_id] = user_language.encode()
         logger_cache.info(f"<Language> New cache entry: telegram_id={logging_hash(telegram_id)}")
 
     @staticmethod
