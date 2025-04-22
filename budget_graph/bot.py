@@ -103,9 +103,7 @@ def group_settings_get_buttons(message):
 
 @connect_defer_close_db
 def reply_buttons(db_connection, message):
-    telegram_id: int = message.from_user.id
-    res: str = db_connection.get_username_by_telegram_id(telegram_id)
-    if res:
+    if db_connection.get_username_by_telegram_id(message.from_user.id):
         reply_menu_buttons_register(message)
     else:
         reply_menu_buttons_not_register(message)
@@ -115,8 +113,8 @@ def reply_buttons(db_connection, message):
 def start(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    res: bool = user_is_registered(telegram_id)
-    if res:
+
+    if user_is_registered(telegram_id):
         # to send a sticker in .webp format no larger than 512x512 pixel
         # sticker = open("H:\telebot\stickers\stick_name.webp", "rb")
         # bot.send_sticker(message.chat.id, sticker)
@@ -164,12 +162,8 @@ def del_msg_transaction(db_connection, message) -> None:
     chat_id: int = message.chat.id
     user_language: str = check_user_language(telegram_id)
 
-    reg_res: bool = user_is_registered(telegram_id)
-    if not reg_res:
-        bot.send_message(chat_id, receive_translation(user_language, 'not_register'))
-        bot.send_sticker(chat_id, Stickers.get_sticker_by_id('id_5'))
-        logger_bot.info(f'[del_msg_transaction] Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
-        reply_menu_buttons_not_register(message)
+    if not user_is_registered(telegram_id):
+        get_answer_for_unregistered_user(message, telegram_id, user_language, 'del_msg_transaction')
         return
 
     old_feature_status: bool = db_connection.get_feature_status_del_msg_after_transaction(telegram_id)
@@ -205,12 +199,8 @@ def change_timezone(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
 
-    reg_res: bool = user_is_registered(telegram_id)
-    if not reg_res:
-        bot.send_message(message.chat.id, receive_translation(user_language, 'not_register'))
-        bot.send_sticker(message.chat.id, Stickers.get_sticker_by_id('id_5'))
-        logger_bot.info(f'[change_timezone] Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
-        reply_menu_buttons_not_register(message)
+    if not user_is_registered(telegram_id):
+        get_answer_for_unregistered_user(message, telegram_id, user_language, 'del_msg_transaction')
         return
 
     bot.send_message(message.chat.id, f"{receive_translation(user_language, 'select_timezone')}:",
@@ -262,8 +252,7 @@ def callback_query_change_language(db_connection, call):
     UserLanguageCache.delete_data_from_cache(telegram_id)
     new_user_language: str = call.data[-2:]
 
-    res: bool = db_connection.add_user_language(telegram_id, new_user_language)
-    if res:
+    if db_connection.add_user_language(telegram_id, new_user_language):
         # new value will be written to the cache
         user_language: str = check_user_language(telegram_id)  # change user language to new language
         bot.answer_callback_query(call.id,
@@ -883,6 +872,13 @@ def check_user_language(db_connection, telegram_id: int) -> str:
     return language
 
 
+def get_answer_for_unregistered_user(message, telegram_id: int, user_language: str, functional: str):
+    bot.send_message(message.chat.id, receive_translation(user_language, 'not_register'))
+    bot.send_sticker(message.chat.id, Stickers.get_sticker_by_id('id_5'))
+    logger_bot.info(f'{functional} Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
+    reply_menu_buttons_not_register(message)
+
+
 # pylint: disable=too-many-branches, too-many-function-args
 @bot.message_handler(content_types=['text'])
 def text(message) -> None:
@@ -927,6 +923,8 @@ def text(message) -> None:
             get_csv(message, user_language)
         elif message.text == f"🌍 {receive_translation(user_language, 'group_users')}":
             get_group_users(message, user_language)
+        elif message.text == f"📊 {receive_translation(user_language, 'get_diagram')}":
+            get_diagram(message, user_language)
         elif message.text == f"🗑️ {receive_translation(user_language, 'delete_account')}":
             delete_account(message, user_language)
         elif message.text == f"🚫 {receive_translation(user_language, 'delete_group')}":

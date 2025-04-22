@@ -74,6 +74,28 @@ def get_language_buttons() -> tuple:
 
 
 @cache
+def get_diagram_buttons(user_language: str, user_is_owner: bool) -> tuple:
+	buttons: tuple = (
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'my_budget_diagram'), callback_data='get_diagram_0'
+			)
+		],
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'budget_diagram_for_group'), callback_data='get_diagram_1'
+			)
+		],
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'specific_user_budget_diagram'), callback_data='get_diagram_2'
+			)
+		],
+	)
+	return buttons if user_is_owner else buttons[0]
+
+
+@cache
 def get_timezone_buttons() -> tuple:
 	buttons_timezone_negative: tuple = (
 		InlineKeyboardButton('UTC-12', callback_data='change_timezone_-12'),
