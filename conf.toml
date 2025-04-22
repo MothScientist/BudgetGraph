@@ -1,0 +1,12 @@
+[cache]
+global_cache_enable = true
+redis_enable = false
+
+[timeit]
+timeit_enable = false # if false, then ignores all decorators of the form @timeit
+
+[recaptcha]
+recaptcha_enable = true # if false, then does not display the captcha and does not start the server to check it
+
+[localization]
+localization_enable = true

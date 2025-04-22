@@ -32,8 +32,16 @@ def create_tables_in_db() -> None:
     Creating a Database Infrastructure
     """
     conn = connect_db()
-    sql_filenames: tuple = ('create_db', 'indexes', 'func_transaction_number', 'func_auto_count_users_of_group',
-                            'update_group_uuid_after_transaction')
+
+    # sql scripts to run before running the application
+    sql_filenames: tuple = (
+        'create_db',
+        'indexes',
+        'func_transaction_number',
+        'func_auto_count_users_of_group',
+        'update_group_uuid_after_transaction'
+    )
+
     try:
         with conn.cursor() as cur:
             for filename in sql_filenames:
@@ -48,6 +56,6 @@ def create_tables_in_db() -> None:
 
 
 if __name__ == '__main__':
-    drop_tables_in_db()
     create_directories()
+    drop_tables_in_db()
     create_tables_in_db()

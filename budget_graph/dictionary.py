@@ -7,6 +7,7 @@ from functools import cache
 from os import path, listdir
 
 from budget_graph.logger import setup_logger
+from budget_graph.global_config import GlobalConfig
 
 logger_dict = setup_logger('logs/DictLog.log', 'dict_loger')
 
@@ -50,7 +51,12 @@ def receive_translation(language: str, phrase: str) -> str:
     :param phrase: string that is a key in the language dictionary.
     :return: value in the json-dictionary in the selected language.
     """
-    dict_language_obj: dict = get_translate_from_json(language)
+    if language not in get_list_languages():
+        return 'Error'
+
+    # if localization is disabled - the default language is English
+    dict_language_obj: dict = get_translate_from_json(language if GlobalConfig.localization_enable else 'en')
+
     return str(dict_language_obj.get(phrase, 'Error'))
 
 
@@ -79,5 +85,5 @@ def get_list_languages() -> tuple:
     localization_dir_path: str = path.join(path.dirname(__file__), 'localization')
     lang_json: list = [file[:2] for file in listdir(localization_dir_path)
                        if file.endswith('.json') and file[:2] not in list_of_excluded_languages]
-    lang_json.sort()
+    lang_json.sort()  # so that the order always remains the same
     return tuple(lang_json)

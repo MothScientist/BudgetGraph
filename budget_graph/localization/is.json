@@ -133,5 +133,11 @@
     "timezone_changed": "Tímabelti fyrir reikninginn þinn hefur verið stillt",
     "del_msg_transaction_on": "Eiginleiki til að eyða skilaboðum eftir færslu virkur",
     "del_msg_transaction_of": "Aðgerðin til að eyða skilaboðum eftir færslu er óvirk",
-    "del_msg_transaction_err": "Villa kom upp við að virkja/slökkva á virkni"
+    "del_msg_transaction_err": "Villa kom upp við að virkja/slökkva á virkni",
+    "get_diagram": "Bygðu til graf",
+    "my_budget_diagram": "Línuritið mitt",
+    "budget_diagram_for_group": "Hópgraf",
+    "specific_user_budget_diagram": "Línurit eftir tiltekinn notanda",
+    "choose_diagram_type": "Veldu tiltæka línuritsgerð:",
+    "wait_diagram": "🛠 Við erum nú þegar að smíða línurit, vinsamlegast bíðið..."
 }

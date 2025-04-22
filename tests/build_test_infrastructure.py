@@ -6,14 +6,15 @@ from sys import path as sys_path
 sys_path.append('../')
 from budget_graph.build_project import create_tables_in_db, drop_tables_in_db
 
-load_dotenv()  # Load environment variables from .env file
-db_host = getenv("POSTGRES_HOST")
-db_port = getenv("POSTGRES_PORT")
-db_name = getenv("POSTGRES_NAME")
-db_user = getenv("POSTGRES_USERNAME")
-db_psw = getenv("POSTGRES_PASSWORD")
 
-DSN = f"dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}"
+load_dotenv()  # Load environment variables from .env file
+db_host = getenv('POSTGRES_HOST')
+db_port = getenv('POSTGRES_PORT')
+db_name = getenv('POSTGRES_NAME')
+db_user = getenv('POSTGRES_USERNAME')
+db_psw = getenv('POSTGRES_PASSWORD')
+
+DSN = f'dbname={db_name} user={db_user} password={db_psw} host={db_host} port={db_port}'
 
 
 def prepare_db_tables_for_tests() -> None:
@@ -21,7 +22,7 @@ def prepare_db_tables_for_tests() -> None:
     create_tables_in_db()
 
 
-def build() -> None:
+def logs_dir_delete_and_create() -> None:
     rmtree('logs', ignore_errors=True)
     makedirs('logs', exist_ok=True)
 
@@ -40,5 +41,6 @@ def close_test_db(conn) -> None:
 
 
 if __name__ == '__main__':
-    build()
-    prepare_db_tables_for_tests()
+    logs_dir_delete_and_create()
+    drop_tables_in_db()
+    create_tables_in_db()

@@ -92,20 +92,20 @@ class SmokeTestDbQueries(unittest.TestCase):
                               SmokeTestDbQueries._data.get_user_data(i, 'psw_hash'),
                               group_id=group_id)
             if group_id is None:
-                self.assertEqual(len(res), 32, f"Failed at iteration: {i}")
+                self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
             else:
-                self.assertTrue(res, f"Failed at iteration: {i}")
+                self.assertTrue(res, f'Failed at iteration: {i}')
 
     # Adding user language to the database
     def test_002_add_users_languages(self):
         for i in range(1, SmokeTestDbQueries._number_of_users + 1):
             res = self.test_db.add_user_language(SmokeTestDbQueries._data.get_user_data(i, 'telegram_id'),
                                                  SmokeTestDbQueries._data.get_user_data(i, 'language'))
-            self.assertTrue(res, f"Failed at iteration: {i}")
+            self.assertTrue(res, f'Failed at iteration: {i}')
 
     # Filling the transaction table
     def test_003_add_transaction_to_db(self):
-        current_year: int = int(datetime.now().strftime("%Y"))
+        current_year: int = int(datetime.now().strftime('%Y'))
         res: list = []
         number_of_transactions: int = SMOKE_NUMBER_OF_TRANSACTIONS
         for i in range(number_of_transactions):
@@ -416,10 +416,10 @@ class TestDbQueries(unittest.TestCase):
                 TestDbQueries._data.get_user_data(3, i, 'psw_hash'),
                 group_id=group_id)
             if group_id is None:
-                self.assertEqual(len(res), 32, f"Failed at iteration: {i}")
+                self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
                 TestDbQueries.group_3_token = res
             else:
-                self.assertEqual(res, True, f"Failed at iteration: {i}")
+                self.assertEqual(res, True, f'Failed at iteration: {i}')
 
     def test_006_add_users_to_db_2(self):
         for i in range(1, TestDbQueries._number_of_users_group_4 + 1):
@@ -431,24 +431,24 @@ class TestDbQueries(unittest.TestCase):
                 TestDbQueries._data.get_user_data(4, i, 'psw_hash'),
                 group_id=group_id)
             if group_id is None:
-                self.assertEqual(len(res), 32, f"Failed at iteration: {i}")
+                self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
                 TestDbQueries.group_4_token = res
             else:
-                self.assertTrue(res, f"Failed at iteration: {i}")
+                self.assertTrue(res, f'Failed at iteration: {i}')
 
     def test_007_add_users_languages_1(self):
         group_id: int = 3
         for i in range(1, TestDbQueries._number_of_users_group_3 + 1):
             res = self.test_db.add_user_language(TestDbQueries._data.get_user_data(group_id, i, 'telegram_id'),
                                                  TestDbQueries._data.get_user_data(group_id, i, 'language'))
-            self.assertTrue(res, f"Failed at iteration: {i}")
+            self.assertTrue(res, f'Failed at iteration: {i}')
 
     def test_007_add_users_languages_2(self):
         group_id: int = 4
         for i in range(1, TestDbQueries._number_of_users_group_4 + 1):
             res = self.test_db.add_user_language(TestDbQueries._data.get_user_data(group_id, i, 'telegram_id'),
                                                  TestDbQueries._data.get_user_data(group_id, i, 'language'))
-            self.assertTrue(res, f"Failed at iteration: {i}")
+            self.assertTrue(res, f'Failed at iteration: {i}')
 
     def test_008_add_extra_user_to_db(self):
         """
@@ -925,7 +925,7 @@ class TestDbQueries(unittest.TestCase):
         -> process_delete_transaction_record -> check_record_id_is_exist = False
         """
         group_id: int = 3
-        current_year: int = int(datetime.now().strftime("%Y"))
+        current_year: int = int(datetime.now().strftime('%Y'))
 
         for i in range(1, NUMBER_OF_TRANSACTION_CYCLE):
             if i % 2 == 0:
@@ -969,7 +969,7 @@ class TestDbQueries(unittest.TestCase):
         in this test example we remove random entries and check if the “totals” fields are recalculated correctly
         """
         group_id: int = 4
-        current_year: int = int(datetime.now().strftime("%Y"))
+        current_year: int = int(datetime.now().strftime('%Y'))
         # use set so that there are no duplicate identifiers
         random_records_to_delete: tuple = tuple({
             randint(1, NUMBER_OF_TRANSACTION_CYCLE) for _ in range(NUMBER_OF_TRANSACTION_CYCLE // 10)
@@ -1012,7 +1012,7 @@ class TestDbQueries(unittest.TestCase):
             res_4: bool = self.test_db.check_record_id_is_exist(group_id, transaction_id)
             self.assertFalse(res_4, f'Iteration number = {transaction_id}')
 
-        # check that the calculation of the "total" fields is correct:
+        # check that the calculation of the 'total' fields is correct:
         req: tuple = self.test_db.select_data_for_household_table(group_id, 0)
         res: tuple = tuple((i[2], i[3]) for i in req[::-1])  # (transfer, total)
 
@@ -1032,7 +1032,7 @@ class TestDbQueries(unittest.TestCase):
         In this test case we check the correctness of deleting records within one date
         """
         group_id: int = 3
-        test_date: str = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%d/%m/%Y")
+        test_date: str = (datetime.now(timezone.utc) - timedelta(days=7)).strftime('%d/%m/%Y')
         random_records_to_delete: tuple = tuple({
             randint(1, NUMBER_OF_TRANSACTION_CYCLE_FOR_ONE_DAY)
             for _ in range(NUMBER_OF_TRANSACTION_CYCLE_FOR_ONE_DAY // 2)
@@ -1066,7 +1066,7 @@ class TestDbQueries(unittest.TestCase):
             res_5: bool = self.test_db.check_record_id_is_exist(group_id, transaction_id)
             self.assertFalse(res_5, f'Iteration number = {transaction_id}')
 
-        # check that the calculation of the "total" fields is correct:
+        # check that the calculation of the 'total' fields is correct:
         req: tuple = self.test_db.select_data_for_household_table(group_id, 0)
         res: tuple = tuple((i[2], i[3]) for i in req[::-1])  # (transfer, total)
 

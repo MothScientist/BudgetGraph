@@ -13,6 +13,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
+from budget_graph.global_config import GlobalConfig
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
@@ -32,14 +33,16 @@ bot = TeleBot(bot_token, skip_pending=True)
 
 logger_bot = setup_logger('logs/BotLog.log', 'bot_logger')
 
-# change the list of the bot’s commands
+GlobalConfig.set_config()
+
+# change the list of the bot’s commands --------------------------------------------------------------------------------
 bot.set_my_commands(get_bot_commands())
 # change the bot’s description, which is shown in the chat with the bot if the chat is empty
 # bot.set_my_description('Get started with the easy budgeting bot by entering the /start command')
 # change the bot’s name
 # bot.set_my_name('BudgetGraph')
 # change the bot’s short description, which is shown on the bot’s profile page
-# bot.set_my_short_description('Simple and fast budget control')
+# bot.set_my_short_description('Simple and fast budget control') -------------------------------------------------------
 
 
 def reply_menu_buttons_register(message):
@@ -100,9 +103,7 @@ def group_settings_get_buttons(message):
 
 @connect_defer_close_db
 def reply_buttons(db_connection, message):
-    telegram_id: int = message.from_user.id
-    res: str = db_connection.get_username_by_telegram_id(telegram_id)
-    if res:
+    if db_connection.get_username_by_telegram_id(message.from_user.id):
         reply_menu_buttons_register(message)
     else:
         reply_menu_buttons_not_register(message)
@@ -112,8 +113,8 @@ def reply_buttons(db_connection, message):
 def start(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
-    res: bool = user_is_registered(telegram_id)
-    if res:
+
+    if user_is_registered(telegram_id):
         # to send a sticker in .webp format no larger than 512x512 pixel
         # sticker = open("H:\telebot\stickers\stick_name.webp", "rb")
         # bot.send_sticker(message.chat.id, sticker)
@@ -161,12 +162,8 @@ def del_msg_transaction(db_connection, message) -> None:
     chat_id: int = message.chat.id
     user_language: str = check_user_language(telegram_id)
 
-    reg_res: bool = user_is_registered(telegram_id)
-    if not reg_res:
-        bot.send_message(chat_id, receive_translation(user_language, 'not_register'))
-        bot.send_sticker(chat_id, Stickers.get_sticker_by_id('id_5'))
-        logger_bot.info(f'[del_msg_transaction] Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
-        reply_menu_buttons_not_register(message)
+    if not user_is_registered(telegram_id):
+        get_answer_for_unregistered_user(message, telegram_id, user_language, 'del_msg_transaction')
         return
 
     old_feature_status: bool = db_connection.get_feature_status_del_msg_after_transaction(telegram_id)
@@ -202,12 +199,8 @@ def change_timezone(message) -> None:
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
 
-    reg_res: bool = user_is_registered(telegram_id)
-    if not reg_res:
-        bot.send_message(message.chat.id, receive_translation(user_language, 'not_register'))
-        bot.send_sticker(message.chat.id, Stickers.get_sticker_by_id('id_5'))
-        logger_bot.info(f'[change_timezone] Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
-        reply_menu_buttons_not_register(message)
+    if not user_is_registered(telegram_id):
+        get_answer_for_unregistered_user(message, telegram_id, user_language, 'del_msg_transaction')
         return
 
     bot.send_message(message.chat.id, f"{receive_translation(user_language, 'select_timezone')}:",
@@ -242,11 +235,12 @@ def callback_query_change_timezone(db_connection, call):
 
 @bot.message_handler(commands=['change_language'])
 def change_language(message) -> None:
-    telegram_id: int = message.from_user.id
-    user_language: str = check_user_language(telegram_id)
-    markup_1 = InlineKeyboardMarkup(get_language_buttons())
-    bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
-                     reply_markup=markup_1)
+    if GlobalConfig.localization_enable:
+        telegram_id: int = message.from_user.id
+        user_language: str = check_user_language(telegram_id)
+        markup_1 = InlineKeyboardMarkup(get_language_buttons())
+        bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_language')}:",
+                         reply_markup=markup_1)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('change_language'))
@@ -258,8 +252,7 @@ def callback_query_change_language(db_connection, call):
     UserLanguageCache.delete_data_from_cache(telegram_id)
     new_user_language: str = call.data[-2:]
 
-    res: bool = db_connection.add_user_language(telegram_id, new_user_language)
-    if res:
+    if db_connection.add_user_language(telegram_id, new_user_language):
         # new value will be written to the cache
         user_language: str = check_user_language(telegram_id)  # change user language to new language
         bot.answer_callback_query(call.id,
@@ -852,16 +845,18 @@ def user_is_registered(db_connection, telegram_id: int) -> bool:
     Since the user may accidentally end up in a menu
     intended only for registered users.
     """
-    res: bool = UserRegistrationStatusCache.get_cache_data(telegram_id)
-    if not res:  # if the data is not found in the cache
-        res: bool = db_connection.check_telegram_id_is_exist(telegram_id)
-        if res:
-            # updating the data in the cache
-            UserRegistrationStatusCache.input_cache_data(telegram_id)
-    if res:  # if you found data in the cache or received a response from the database
+    user_in_cache: bool = UserRegistrationStatusCache.get_cache_data(telegram_id)
+
+    if user_in_cache:  # if you found data in the cache or received a response from the database
         # update date of the last user activity in database
         db_connection.update_user_last_login_by_telegram_id(telegram_id)
-    return res
+    else:  # if the data is not found in the cache
+        if db_connection.check_telegram_id_is_exist(telegram_id):  # found user in database
+            # updating the data in the cache
+            UserRegistrationStatusCache.input_cache_data(telegram_id)
+            user_in_cache = True
+
+    return user_in_cache
 
 
 @connect_defer_close_db
@@ -875,6 +870,13 @@ def check_user_language(db_connection, telegram_id: int) -> str:
         language: str = db_connection.get_user_language(telegram_id)
         UserLanguageCache.input_cache_data(telegram_id, language)
     return language
+
+
+def get_answer_for_unregistered_user(message, telegram_id: int, user_language: str, functional: str):
+    bot.send_message(message.chat.id, receive_translation(user_language, 'not_register'))
+    bot.send_sticker(message.chat.id, Stickers.get_sticker_by_id('id_5'))
+    logger_bot.info(f'{functional} Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
+    reply_menu_buttons_not_register(message)
 
 
 # pylint: disable=too-many-branches, too-many-function-args
@@ -921,6 +923,8 @@ def text(message) -> None:
             get_csv(message, user_language)
         elif message.text == f"🌍 {receive_translation(user_language, 'group_users')}":
             get_group_users(message, user_language)
+        elif message.text == f"📊 {receive_translation(user_language, 'get_diagram')}":
+            get_diagram(message, user_language)
         elif message.text == f"🗑️ {receive_translation(user_language, 'delete_account')}":
             delete_account(message, user_language)
         elif message.text == f"🚫 {receive_translation(user_language, 'delete_group')}":

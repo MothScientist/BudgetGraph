@@ -293,7 +293,7 @@ class TestDbQueries1(unittest.TestCase):
         check that uuid changes during transactions
         """
         group_id: int = 1
-        current_year: int = int(datetime.now().strftime("%Y"))
+        current_year: int = int(datetime.now().strftime('%Y'))
 
         self.test_db.add_transaction_to_db(
             randint(10, 100_000),
@@ -328,7 +328,7 @@ class TestDbQueries1(unittest.TestCase):
         """
         group_id: int = 2
         group_id_for_check: int = 1
-        current_year: int = int(datetime.now().strftime("%Y"))
+        current_year: int = int(datetime.now().strftime('%Y'))
 
         res_1: str = self.test_db.get_group_transaction_uuid(group_id_for_check)
 

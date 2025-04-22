@@ -1,0 +1,4 @@
+github.com/go-echarts/go-echarts/v2 v2.5.3 h1:5SFAA6bAIWz52VnVGlCM1UZXo8nSdN+H9E8Ysi4m5ec=
+github.com/go-echarts/go-echarts/v2 v2.5.3/go.mod h1:56YlvzhW/a+du15f3S2qUGNDfKnFOeJSThBIrVFHDtI=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=

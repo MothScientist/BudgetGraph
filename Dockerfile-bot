@@ -1,7 +1,7 @@
 FROM python:3.12.7
 
 # Copying dependencies and startup script to the /main/ directory
-COPY requirements.txt run_bot.sh /main/
+COPY requirements.txt run_bot.sh conf.toml /main/
 
 # Copying the 'budget_graph' application bot with dependencies to the /main/app directory
 COPY budget_graph /main/budget_graph

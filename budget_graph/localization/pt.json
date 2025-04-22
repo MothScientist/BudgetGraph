@@ -133,5 +133,11 @@
     "timezone_changed": "O fuso horário da sua conta foi definido com sucesso",
     "del_msg_transaction_on": "Recurso de eliminação de mensagem pós-transação ativado",
     "del_msg_transaction_of": "A função para eliminar mensagens após uma transação ser desativada",
-    "del_msg_transaction_err": "Ocorreu um erro ao ativar/desativar a funcionalidade"
+    "del_msg_transaction_err": "Ocorreu um erro ao ativar/desativar a funcionalidade",
+    "get_diagram": "Construir um gráfico",
+    "my_budget_diagram": "O meu gráfico",
+    "budget_diagram_for_group": "Gráfico de grupo",
+    "specific_user_budget_diagram": "Gráfico por utilizador específico",
+    "choose_diagram_type": "Selecione um tipo de gráfico disponível:",
+    "wait_diagram": "🛠 Já estamos a construir um gráfico, aguarde..."
 }
