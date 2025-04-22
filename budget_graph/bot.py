@@ -23,7 +23,7 @@ from budget_graph.db_manager import connect_defer_close_db
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
 from budget_graph.helpers import StorageMsgIdForDeleteAfterOperation, get_category_button_labels, get_bot_commands, \
-    get_category_translate, get_timezone_buttons, get_language_buttons
+    get_category_translate, get_timezone_buttons, get_language_buttons, get_diagram_buttons
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -77,8 +77,9 @@ def table_manage_get_buttons(message):
     btn3 = KeyboardButton(f"📉 {receive_translation(user_language, "add_expense")}")
     btn4 = KeyboardButton(f"❌ {receive_translation(user_language, "del_record")}")
     btn5 = KeyboardButton(f"🗃️ {receive_translation(user_language, "get_csv")}")
-    btn6 = KeyboardButton(f"↩️ {receive_translation(user_language, "back")}")
-    markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
+    btn6 = KeyboardButton(f"📊 {receive_translation(user_language, 'get_diagram')}")
+    btn7 = KeyboardButton(f"↩️ {receive_translation(user_language, "back")}")
+    markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "click_need_button")} "
                                       f"({receive_translation(user_language, "table_manage")})",
                      reply_markup=markup_1)
@@ -288,6 +289,31 @@ def restart_language_after_changes(call) -> None:
                      f"{receive_translation(user_language, "start_after_change_language")}\n"
                      f"{receive_translation(user_language, "data_is_safe")}",
                      reply_markup=markup_1)
+
+
+@connect_defer_close_db
+def get_diagram(db_connection, message, user_language: str) -> None:
+    telegram_id: int = message.from_user.id
+
+    # TODO - проверка на премиум
+
+    group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
+    user_is_owner: bool = db_connection.check_user_is_group_owner_by_telegram_id(telegram_id, group_id)
+    markup_1 = InlineKeyboardMarkup(get_diagram_buttons(user_language, user_is_owner))
+    bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_diagram_type')}:",
+                     reply_markup=markup_1)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('get_diagram'))
+@connect_defer_close_db
+def callback_query_get_diagram(db_connection, call):
+    telegram_id: int = call.from_user.id
+    user_language: str = check_user_language(telegram_id)
+    group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
+    diagram_type: int = int(call.data[-1])
+    build_diagram(diagram_type, call.message.chat.id, telegram_id, group_id)
+    bot.answer_callback_query(call.id, f'{receive_translation(user_language, "wait_diagram")}')
+    bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
 @connect_defer_close_db
@@ -836,6 +862,19 @@ def get_str_with_group_users(db_connection, telegram_id: int, with_owner: bool) 
             if user != group_owner_username
         )
     return res
+
+
+def build_diagram(diagram_type: int, chat_id: int, telegram_id: int | None, group_id: int | None):
+    """
+    :param diagram_type:
+        0 - по запросившему пользователю
+        1 - по группе
+        2 - по конкретному пользователю (доступно только владельцу группы)
+    :param chat_id:
+    :param telegram_id:
+    :param group_id:
+    """
+    pass
 
 
 @connect_defer_close_db
