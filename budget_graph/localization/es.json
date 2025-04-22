@@ -133,5 +133,11 @@
     "timezone_changed": "La zona horaria de su cuenta se ha configurado correctamente",
     "del_msg_transaction_on": "Función de eliminación de mensajes posteriores a la transacción habilitada",
     "del_msg_transaction_of": "La función para eliminar mensajes después de una transacción está deshabilitada",
-    "del_msg_transaction_err": "Se produjo un error al habilitar/deshabilitar la funcionalidad"
+    "del_msg_transaction_err": "Se produjo un error al habilitar/deshabilitar la funcionalidad",
+    "get_diagram": "Crear un gráfico",
+    "my_budget_diagram": "Mi gráfico",
+    "budget_diagram_for_group": "Gráfico de grupo",
+    "specific_user_budget_diagram": "Gráfico por usuario específico",
+    "choose_diagram_type": "Seleccionar un tipo de gráfico disponible:",
+    "wait_diagram": "🛠 Ya estamos creando un gráfico, por favor espere..."
 }

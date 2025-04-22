@@ -133,5 +133,11 @@
     "timezone_changed": "The time zone for your account has been successfully set",
     "del_msg_transaction_on": "The function to delete messages after a transaction is enabled",
     "del_msg_transaction_of": "The function of deleting messages after a transaction is disabled",
-    "del_msg_transaction_err": "An error occurred while enabling/disabling functionality"
+    "del_msg_transaction_err": "An error occurred while enabling/disabling functionality",
+    "get_diagram": "Build a graph",
+    "my_budget_diagram": "My graph",
+    "budget_diagram_for_group": "Group graph",
+    "specific_user_budget_diagram": "Graph by specific user",
+    "choose_diagram_type": "Select an available graph type:",
+    "wait_diagram": "🛠 We are already building a graph, please wait..."
 }

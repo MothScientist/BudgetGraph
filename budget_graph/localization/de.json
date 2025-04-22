@@ -133,5 +133,11 @@
     "timezone_changed": "Die Zeitzone für Ihr Konto wurde erfolgreich eingestellt",
     "del_msg_transaction_on": "Funktion zum Löschen von Nachrichten nach der Transaktion aktiviert",
     "del_msg_transaction_of": "Die Funktion zum Löschen von Nachrichten nach einer Transaktion ist deaktiviert",
-    "del_msg_transaction_err": "Beim Aktivieren/Deaktivieren der Funktionalität ist ein Fehler aufgetreten"
+    "del_msg_transaction_err": "Beim Aktivieren/Deaktivieren der Funktionalität ist ein Fehler aufgetreten",
+    "get_diagram": "Diagramm erstellen",
+    "my_budget_diagram": "Mein Diagramm",
+    "budget_diagram_for_group": "Graph gruppieren",
+    "specific_user_budget_diagram": "Diagramm nach bestimmtem Benutzer",
+    "choose_diagram_type": "Wählen Sie einen verfügbaren Diagrammtyp aus:",
+    "wait_diagram": "🛠 Wir erstellen bereits ein Diagramm. Bitte warten..."
 }

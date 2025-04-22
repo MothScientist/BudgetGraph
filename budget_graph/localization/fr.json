@@ -133,5 +133,11 @@
     "timezone_changed": "Le fuseau horaire de votre compte a été défini avec succès",
     "del_msg_transaction_on": "Fonction de suppression des messages post-transaction activée",
     "del_msg_transaction_of": "La fonction de suppression des messages après une transaction est désactivée",
-    "del_msg_transaction_err": "Une erreur s'est produite lors de l'activation/désactivation de la fonctionnalité"
+    "del_msg_transaction_err": "Une erreur s'est produite lors de l'activation/désactivation de la fonctionnalité",
+    "get_diagram": "Créer un graphique",
+    "my_budget_diagram": "Mon graphique",
+    "budget_diagram_for_group": "Graphique de groupe",
+    "specific_user_budget_diagram": "Graphique par utilisateur spécifique",
+    "choose_diagram_type": "Sélectionner un type de graphique disponible:",
+    "wait_diagram": "🛠 Nous créons déjà un graphique, veuillez patienter..."
 }
