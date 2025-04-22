@@ -20,8 +20,8 @@ type Task struct {
 	Data map[string][2]float32
 }
 
-var taskQueue = make(chan Task, 100)   // Channel where we store data for unprocessed requests
-var taskReady = make(chan string, 100) // Channel where UUIDs of processed requests are stored
+var taskQueue = make(chan Task, 10)   // Channel where we store data for unprocessed requests
+var taskReady = make(chan string, 10) // Channel where UUIDs of processed requests are stored
 
 func requestProcessing(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
