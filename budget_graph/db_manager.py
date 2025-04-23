@@ -381,7 +381,28 @@ class DatabaseQueries:
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
-            return ""
+            return ''
+
+    def get_data_for_plot_builder(
+            self,
+            telegram_id: int,
+            diagram_type: int,
+            dates: list | tuple = tuple([None, None])
+    ) -> dict[str, tuple]:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute(read_sql_file('get_data_for_plot_builder'), {
+                        'telegram_id': telegram_id, 'diagram_type': diagram_type,
+                        'start_date': dates[0], 'end_date': dates[1]
+                    })
+                    return {item[0]: (item[1], item[2]) for item in cur.fetchall()}
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"telegram_id: {telegram_id}, diagram_type: {diagram_type}, "
+                                  f"dates: {dates}, start_date: {dates[0]}, end_date: {dates[1]}")
+            return {}
 
     def get_group_owner_telegram_id_by_group_id(self, group_id: int) -> int:
         try:

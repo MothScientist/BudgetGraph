@@ -12,6 +12,7 @@ qodana.yaml
 **/develop
 **/docs
 **/csv_tables
+**/graphs
 
 # Databases
 *.sqlite3

@@ -21,6 +21,7 @@ def drop_tables_in_db() -> None:
 def create_directories() -> None:
     try:
         makedirs('csv_tables', exist_ok=True)
+        makedirs('graphs', exist_ok=True)
         makedirs('logs', exist_ok=True)
     # pylint: disable=broad-exception-caught
     except Exception as err:

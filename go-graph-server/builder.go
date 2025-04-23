@@ -42,8 +42,8 @@ func createReport(data map[string][2]float32, uuid string, ch chan string) {
 	bar.AddSeries("Income", compositionDataColumns(incomeElements)).
 		AddSeries("Expense", compositionDataColumns(expenseElements))
 
-	fileName := fmt.Sprintf("%s.html", uuid)
-	f, err := os.Create(fileName)
+	PathFilename := fmt.Sprintf("../budget_graph/graphs/%s.html", uuid)
+	f, err := os.Create(PathFilename)
 	if err != nil {
 		panic(err)
 	}

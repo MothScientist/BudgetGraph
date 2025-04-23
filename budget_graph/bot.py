@@ -7,12 +7,14 @@ from asyncio import run as asyncio_run
 from os import getenv, path
 from secrets import compare_digest
 from datetime import datetime, UTC
+from uuid import UUID, uuid4
 from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
+from budget_graph.plot_builder import build_diagram
 from budget_graph.global_config import GlobalConfig
 from budget_graph.registration_service import user_registration
 from budget_graph.dictionary import Stickers, receive_translation
@@ -305,15 +307,24 @@ def get_diagram(db_connection, message, user_language: str) -> None:
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('get_diagram'))
-@connect_defer_close_db
-def callback_query_get_diagram(db_connection, call):
+def callback_query_get_diagram(call):
+    # TODO - логи по всей операции
     telegram_id: int = call.from_user.id
     user_language: str = check_user_language(telegram_id)
-    group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
     diagram_type: int = int(call.data[-1])
-    build_diagram(diagram_type, call.message.chat.id, telegram_id, group_id)
-    bot.answer_callback_query(call.id, f'{receive_translation(user_language, "wait_diagram")}')
-    bot.delete_message(call.message.chat.id, call.message.message_id)
+    uuid: UUID = uuid4()
+    # TODO - поддержать 3 тип диаграммы
+    status: bool | None = build_diagram(call.message.chat.id, telegram_id, uuid, diagram_type)
+    if status:
+        bot.answer_callback_query(call.id, f'{receive_translation(user_language, "wait_diagram")}')
+        bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "feature_uuid_filename")}: {uuid}")
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+    elif status is None:
+        bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "table_is_empty")}")
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+    else:
+        bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "csv_not_found_error")}")
+        bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
 @connect_defer_close_db
@@ -862,19 +873,6 @@ def get_str_with_group_users(db_connection, telegram_id: int, with_owner: bool) 
             if user != group_owner_username
         )
     return res
-
-
-def build_diagram(diagram_type: int, chat_id: int, telegram_id: int | None, group_id: int | None):
-    """
-    :param diagram_type:
-        0 - по запросившему пользователю
-        1 - по группе
-        2 - по конкретному пользователю (доступно только владельцу группы)
-    :param chat_id:
-    :param telegram_id:
-    :param group_id:
-    """
-    pass
 
 
 @connect_defer_close_db

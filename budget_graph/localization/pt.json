@@ -139,5 +139,6 @@
     "budget_diagram_for_group": "Gráfico de grupo",
     "specific_user_budget_diagram": "Gráfico por utilizador específico",
     "choose_diagram_type": "Selecione um tipo de gráfico disponível:",
-    "wait_diagram": "🛠 Já estamos a construir um gráfico, aguarde..."
+    "wait_diagram": "🛠 Já estamos a construir um gráfico, aguarde...",
+    "feature_uuid_filename": "ID da aplicação (nome do ficheiro futuro)"
 }
