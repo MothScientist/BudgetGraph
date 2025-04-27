@@ -97,7 +97,6 @@ class CsvFileWithTable:
         csv_files_to_delete = tuple([
             file_name for file_name in listdir(csv_directory) if file_name not in actual_files
         ])
-        print(csv_files_to_delete)
         for csv_filename in csv_files_to_delete:
             path: str = f'csv_tables/{csv_filename}'
             try:
