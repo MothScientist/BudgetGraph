@@ -721,7 +721,8 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('update_user_last_login_by_telegram_id'), {'telegram_id': telegram_id})
-                    return res[0] if (res := cur.fetchone()) else None  # TODO - довести до datetime возвращаемое значение и покрыть тестами
+                    # TODO - довести до datetime возвращаемое значение и покрыть тестами
+                    return res[0] if (res := cur.fetchone()) else None
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {logging_hash(telegram_id)}")

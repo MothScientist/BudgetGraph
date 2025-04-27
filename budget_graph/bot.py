@@ -9,8 +9,8 @@ from secrets import compare_digest
 from datetime import datetime, UTC
 from time import sleep
 from uuid import UUID, uuid4
-from dotenv import load_dotenv
 from threading import Thread
+from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
@@ -1010,4 +1010,3 @@ def periodic_func(interval=5):
 if __name__ == "__main__":
     Thread(target=periodic_func, daemon=True).start()
     bot.infinity_polling(none_stop=True)
-

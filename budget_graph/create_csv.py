@@ -24,7 +24,7 @@ class CsvFileWithTable:
         self.table_headers: tuple[str, ...] = table_headers
         self.language: str = lang
 
-    actual_csv_files: dict = dict()
+    actual_csv_files: dict = {}
 
     def create_csv_file(self):
         """
@@ -90,13 +90,13 @@ class CsvFileWithTable:
 
     @staticmethod
     def delete_unused_csv_files():
-        actual_files = tuple([
+        actual_files = tuple(
             f'{group_id}_{group_uuid}.csv' for group_id, group_uuid in CsvFileWithTable.actual_csv_files.items()
-        ])
+        )
         csv_directory: str = os_path.join(os_path.dirname(__file__), 'csv_tables')
-        csv_files_to_delete = tuple([
+        csv_files_to_delete = tuple(
             file_name for file_name in listdir(csv_directory) if file_name not in actual_files
-        ])
+        )
         for csv_filename in csv_files_to_delete:
             path: str = f'csv_tables/{csv_filename}'
             try:
