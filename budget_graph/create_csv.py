@@ -1,4 +1,4 @@
-from os import path as os_path
+from os import path as os_path, remove, listdir
 from csv import writer as csv_writer, QUOTE_MINIMAL
 from hashlib import sha256
 
@@ -12,6 +12,8 @@ class CsvFileWithTable:
     """
     Class for working with *.csv files: creating, updating, obtaining the file hash, file size and validating user data
     """
+    __slots__ = ('file_path', 'table_data', 'table_headers', 'language')
+
     def __init__(self, file_path: str,
                  table_data: tuple[[tuple, ...], ...],
                  table_headers: tuple[str, ...] =
@@ -21,6 +23,8 @@ class CsvFileWithTable:
         self.table_data: tuple[tuple, ...] = table_data
         self.table_headers: tuple[str, ...] = table_headers
         self.language: str = lang
+
+    actual_csv_files: dict = dict()
 
     def create_csv_file(self):
         """
@@ -84,12 +88,31 @@ class CsvFileWithTable:
         if not all(len(self.table_headers) == len(_row) for _row in self.table_data):
             raise ValueError('Data tuples have different lengths and/or their lengths do not match the headers')
 
+    @staticmethod
+    def delete_unused_csv_files():
+        actual_files = tuple([
+            f'{group_id}_{group_uuid}.csv' for group_id, group_uuid in CsvFileWithTable.actual_csv_files.items()
+        ])
+        csv_directory: str = os_path.join(os_path.dirname(__file__), 'csv_tables')
+        csv_files_to_delete = tuple([
+            file_name for file_name in listdir(csv_directory) if file_name not in actual_files
+        ])
+        print(csv_files_to_delete)
+        for csv_filename in csv_files_to_delete:
+            path: str = f'csv_tables/{csv_filename}'
+            try:
+                remove(path)
+            except (FileNotFoundError, PermissionError) as err:
+                logger_csv_builder.warning(f"Error deleting useless csv: {err}. Path: {path};")
+            finally:
+                logger_csv_builder.info(f'The useless csv has been removed. Path: {path};')
 
-def check_csv_is_actual(group_id: int, group_uuid: str) -> bool:
-    """
-    Checks for the presence of an up-to-date file, if there is one, returns True, otherwise False
-    If this group already has such a file, but its uuid is not up-to-date, then deletes it
-    """
-    if os_path.isfile(f'csv_tables/{group_id}_{group_uuid}.csv'):
-        return True
-    return False
+    @staticmethod
+    def check_csv_is_actual(group_id: int, group_uuid: str) -> bool:
+        """
+        Checks for the presence of an up-to-date file, if there is one, returns True, otherwise False
+        If this group already has such a file, but its uuid is not up-to-date, then deletes it
+        """
+        if os_path.isfile(f'csv_tables/{group_id}_{group_uuid}.csv'):
+            return True
+        return False

@@ -1,5 +1,6 @@
 from os import makedirs, path
 from sys import path as sys_path
+
 sys_path.append('../')
 from budget_graph.db_manager import connect_db, close_db
 

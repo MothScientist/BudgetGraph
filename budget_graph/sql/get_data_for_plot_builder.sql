@@ -13,6 +13,8 @@ usernames AS (
       %(diagram_type)s::smallint = 0 AND users."telegram_id" = %(telegram_id)s::bigint
       OR
       %(diagram_type)s::smallint = 1
+      OR
+      %(diagram_type)s::smallint = 2 AND users."telegram_id" = ANY(%(users)s::bigint[])
     )
 )
 

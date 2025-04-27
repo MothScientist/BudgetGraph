@@ -1,8 +1,8 @@
 UPDATE
-    "budget_graph"."users"
+  "budget_graph"."users"
 SET
-    "last_login" = current_timestamp AT TIME ZONE 'UTC'
+  "last_login" = current_timestamp AT TIME ZONE 'UTC'
 WHERE
-    "telegram_id" = %(telegram_id)s::bigint
+  "telegram_id" = %(telegram_id)s::bigint
 RETURNING
-    "last_login"
+  "last_login"

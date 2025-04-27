@@ -1,6 +1,6 @@
 SELECT
-    "psw_salt"
+  "psw_salt"
 FROM
-    "budget_graph"."users"
+  "budget_graph"."users"
 WHERE
-    "username" = %(username)s::text
+  "username" = %(username)s::text

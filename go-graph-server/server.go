@@ -55,7 +55,7 @@ func processTasks() {
 	}
 }
 
-func sendNotification() {
+func logNotification() {
 	for task := range taskReady {
 		go func(uuid string) {
 			log.Printf("Task completed. UUID: %s", uuid)
@@ -65,17 +65,14 @@ func sendNotification() {
 
 func main() {
 	go processTasks()
-	go sendNotification()
+	go logNotification()
 
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	host := os.Getenv("PLOT_BUILDER_HOST")
-	port := os.Getenv("PLOT_BUILDER_PORT")
-
-	logFile, err := os.OpenFile("goPlotBuilderServer.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0222)
+	logFile, err := os.OpenFile("../budget_graph/logs/goPlotBuilderServer.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0222)
 	if err != nil {
 		log.Fatalf("Error opening log file: %v", err)
 	}
@@ -84,9 +81,11 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
-	log.Printf("The server is running on http://%s:%s\n", host, port)
+	log.Println("The server is running")
 
-	http.HandleFunc("/generate", requestProcessing)
+	http.HandleFunc("/api/report/generate", requestProcessing)
+
+  port := os.Getenv("PLOT_BUILDER_PORT")
 
 	portFormat := fmt.Sprintf(":%s", port)
 	if err := http.ListenAndServe(portFormat, nil); err != nil {

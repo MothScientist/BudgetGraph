@@ -387,14 +387,15 @@ class DatabaseQueries:
             self,
             telegram_id: int,
             diagram_type: int,
-            dates: list | tuple = tuple([None, None])
+            dates: list | tuple = tuple([None, None]),
+            users: list | tuple = None
     ) -> dict[str, tuple]:
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('get_data_for_plot_builder'), {
                         'telegram_id': telegram_id, 'diagram_type': diagram_type,
-                        'start_date': dates[0], 'end_date': dates[1]
+                        'start_date': dates[0], 'end_date': dates[1], 'users': users
                     })
                     return {item[0]: (item[1], item[2]) for item in cur.fetchall()}
 

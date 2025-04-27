@@ -1,6 +1,6 @@
 SELECT
-    "username"
+  "username"
 FROM
-    "budget_graph"."users"
+  "budget_graph"."users"
 WHERE
-    "telegram_id" = %(telegram_id)s::bigint
+  "telegram_id" = %(telegram_id)s::bigint

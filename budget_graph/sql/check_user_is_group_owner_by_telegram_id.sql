@@ -1,9 +1,6 @@
 SELECT
-    CASE
-        WHEN "owner" = %(owner)s::bigint THEN TRUE
-        ELSE FALSE
-    END
+  "owner" = %(owner)s::bigint
 FROM
-    "budget_graph"."groups"
+  "budget_graph"."groups"
 WHERE
-    "id" = %(group_id)s::smallint
+  "id" = %(group_id)s::smallint

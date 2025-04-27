@@ -7,19 +7,21 @@ from asyncio import run as asyncio_run
 from os import getenv, path
 from secrets import compare_digest
 from datetime import datetime, UTC
+from time import sleep
 from uuid import UUID, uuid4
 from dotenv import load_dotenv
+from threading import Thread
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 sys_path.append('../')
 from budget_graph.logger import setup_logger
-from budget_graph.plot_builder import build_diagram
+from budget_graph.plot_builder import build_diagram, Reports
 from budget_graph.global_config import GlobalConfig
 from budget_graph.registration_service import user_registration
-from budget_graph.dictionary import Stickers, receive_translation
+from budget_graph.dictionary import Emoji, Stickers, receive_translation
 from budget_graph.encryption import getting_hash, get_salt, logging_hash
-from budget_graph.create_csv import CsvFileWithTable, check_csv_is_actual
+from budget_graph.create_csv import CsvFileWithTable
 from budget_graph.user_cache_structure import UserLanguageCache, UserRegistrationStatusCache
 from budget_graph.db_manager import connect_defer_close_db
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
@@ -34,6 +36,7 @@ bot_token = getenv('BOT_TOKEN')  # Get the bot token from an environment variabl
 bot = TeleBot(bot_token, skip_pending=True)
 
 logger_bot = setup_logger('logs/BotLog.log', 'bot_logger')
+logger_periodic_func = setup_logger('logs/PeriodicFuncLog.log', 'periodic_func_logger')
 
 GlobalConfig.set_config()
 
@@ -51,10 +54,10 @@ def reply_menu_buttons_register(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"💵 {receive_translation(user_language, 'table_manage')}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('money')} {receive_translation(user_language, 'table_manage')}")
     btn2 = KeyboardButton(f"💻 {receive_translation(user_language, 'group_settings')}")
-    btn3 = KeyboardButton(f"🔐 {receive_translation(user_language, 'get_my_token')}")
-    btn4 = KeyboardButton(f"⭐ {receive_translation(user_language, 'premium')}")
+    btn3 = KeyboardButton(f"{Emoji.get_emoji('lock')} {receive_translation(user_language, 'get_my_token')}")
+    btn4 = KeyboardButton(f"{Emoji.get_emoji('premium')} {receive_translation(user_language, 'premium')}")
     markup_1.add(btn1, btn2, btn3, btn4)
     bot.send_message(message.chat.id, receive_translation(user_language, "click_need_button"), reply_markup=markup_1)
 
@@ -63,8 +66,8 @@ def reply_menu_buttons_not_register(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"📬 {receive_translation(user_language, 'register')}")
-    btn2 = KeyboardButton(f"⭐ {receive_translation(user_language, 'premium')}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('money_wings')} {receive_translation(user_language, 'register')}")
+    btn2 = KeyboardButton(f"{Emoji.get_emoji('premium')} {receive_translation(user_language, 'premium')}")
     markup_1.add(btn1, btn2)
 
     bot.send_message(message.chat.id, receive_translation(user_language, 'click_need_button'), reply_markup=markup_1)
@@ -74,13 +77,13 @@ def table_manage_get_buttons(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"📖 {receive_translation(user_language, "view_table")}")
-    btn2 = KeyboardButton(f"📈 {receive_translation(user_language, "add_income")}")
-    btn3 = KeyboardButton(f"📉 {receive_translation(user_language, "add_expense")}")
-    btn4 = KeyboardButton(f"❌ {receive_translation(user_language, "del_record")}")
-    btn5 = KeyboardButton(f"🗃️ {receive_translation(user_language, "get_csv")}")
-    btn6 = KeyboardButton(f"📊 {receive_translation(user_language, 'get_diagram')}")
-    btn7 = KeyboardButton(f"↩️ {receive_translation(user_language, "back")}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('book')} {receive_translation(user_language, "view_table")}")
+    btn2 = KeyboardButton(f"{Emoji.get_emoji('income')} {receive_translation(user_language, "add_income")}")
+    btn3 = KeyboardButton(f"{Emoji.get_emoji('expense')} {receive_translation(user_language, "add_expense")}")
+    btn4 = KeyboardButton(f"{Emoji.get_emoji('delete')} {receive_translation(user_language, "del_record")}")
+    btn5 = KeyboardButton(f"{Emoji.get_emoji('unload')} {receive_translation(user_language, "get_csv")}")
+    btn6 = KeyboardButton(f"{Emoji.get_emoji('diagram')} {receive_translation(user_language, 'get_diagram')}")
+    btn7 = KeyboardButton(f"{Emoji.get_emoji('magic')}️ {receive_translation(user_language, "back")}")
     markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
     bot.send_message(message.chat.id, f"{receive_translation(user_language, "click_need_button")} "
                                       f"({receive_translation(user_language, "table_manage")})",
@@ -91,12 +94,12 @@ def group_settings_get_buttons(message):
     telegram_id: int = message.from_user.id
     user_language: str = check_user_language(telegram_id)
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"🌍 {receive_translation(user_language, "group_users")}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('earth')} {receive_translation(user_language, "group_users")}")
     btn2 = KeyboardButton(f"🗑️ {receive_translation(user_language, "delete_account")}")
-    btn3 = KeyboardButton(f"🚫 {receive_translation(user_language, "delete_group")}")
-    btn4 = KeyboardButton(f"🔑 {receive_translation(user_language, "change_owner")}")
-    btn5 = KeyboardButton(f"🤖 {receive_translation(user_language, "delete_user")}")
-    btn6 = KeyboardButton(f"↩️ {receive_translation(user_language, "back")}")
+    btn3 = KeyboardButton(f"{Emoji.get_emoji('stop')} {receive_translation(user_language, "delete_group")}")
+    btn4 = KeyboardButton(f"{Emoji.get_emoji('key')} {receive_translation(user_language, "change_owner")}")
+    btn5 = KeyboardButton(f"{Emoji.get_emoji('robot')} {receive_translation(user_language, "delete_user")}")
+    btn6 = KeyboardButton(f"{Emoji.get_emoji('magic')}️ {receive_translation(user_language, 'back')}")
     markup_1.add(btn1, btn2, btn3, btn4, btn5, btn6)
     bot.send_message(message.chat.id,
                      f"{receive_translation(user_language, "click_need_button")} "
@@ -316,7 +319,9 @@ def callback_query_get_diagram(call):
     # TODO - поддержать 3 тип диаграммы
     status: bool | None = build_diagram(call.message.chat.id, telegram_id, uuid, diagram_type)
     if status:
-        bot.answer_callback_query(call.id, f'{receive_translation(user_language, "wait_diagram")}')
+        bot.answer_callback_query(
+            call.id, f'{Emoji.get_emoji('hourglass')} {receive_translation(user_language, "wait_diagram")}'
+        )
         bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "feature_uuid_filename")}: {uuid}")
         bot.delete_message(call.message.chat.id, call.message.message_id)
     elif status is None:
@@ -325,6 +330,16 @@ def callback_query_get_diagram(call):
     else:
         bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "csv_not_found_error")}")
         bot.delete_message(call.message.chat.id, call.message.message_id)
+
+
+def send_diagram():
+    if Reports.await_list:
+        keys: tuple = tuple(Reports.await_list.keys())
+        for uuid in keys:
+            chat_id: int = Reports.await_list.pop(uuid)
+            Reports.diagram_to_delete.append(uuid)
+            with open(f'graphs/{uuid}.html', 'rb') as html_report:
+                bot.send_document(chat_id, html_report, caption=str(uuid))
 
 
 @connect_defer_close_db
@@ -461,8 +476,8 @@ def delete_record(message, user_language: str) -> None:
 def process_delete_record(db_connection, message, user_language: str):
     telegram_id: int = message.from_user.id
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    btn1 = KeyboardButton(f"❌ {receive_translation(user_language, 'del_record')}")
-    btn2 = KeyboardButton(f"↩️ {receive_translation(user_language, 'back_to_menu')}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('delete')} {receive_translation(user_language, 'del_record')}")
+    btn2 = KeyboardButton(f"{Emoji.get_emoji('magic')}️ {receive_translation(user_language, 'back_to_menu')}")
     markup_1.add(btn1, btn2)
     transaction_id: int = value_validation(message.text)
 
@@ -586,14 +601,15 @@ def get_csv(db_connection, message, user_language: str) -> None:
     file_path: str = path.join(path.dirname(__file__), f'csv_tables/{group_id}_{group_uuid}.csv')
     # 10_000 row limit
     table_data: tuple[tuple, ...] = db_connection.select_data_for_household_table(group_id, 0)
+    csv_filename: str = f'{group_id}_{group_uuid}'
     if table_data:
         try:
             csv_obj = CsvFileWithTable(file_path, table_data)
-            if not check_csv_is_actual(group_id, group_uuid):
+            if not CsvFileWithTable.check_csv_is_actual(group_id, group_uuid):
                 csv_obj.create_csv_file()
             file_size: float = csv_obj.get_file_size_kb()
             file_checksum: str = csv_obj.get_file_checksum()
-            with open(f'csv_tables/{group_id}_{group_uuid}.csv', 'rb') as csv_table_file:
+            with open(f'csv_tables/{csv_filename}.csv', 'rb') as csv_table_file:
                 caption: str = (f"{receive_translation(user_language, 'file_size')}: "
                                 f"{'{:.3f}'.format(file_size)} kB\n\n"
                                 f"{receive_translation(user_language, 'hashsum')} "
@@ -616,6 +632,7 @@ def get_csv(db_connection, message, user_language: str) -> None:
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         else:
+            CsvFileWithTable.actual_csv_files[group_id] = group_uuid
             logger_bot.info(f"CSV: SUCCESS. "
                             f"TelegramID: {logging_hash(telegram_id)}, "
                             f"group #{group_id}. "
@@ -642,10 +659,10 @@ def get_group_users(db_connection, message, user_language: str):
     group_owner_username: str = db_connection.get_group_owner_username_by_group_id(group_id)
     group_users_list: tuple = db_connection.get_group_usernames(group_id)
     group_users_str: str = '\n'.join(
-        f"{user} ({receive_translation(user_language, 'owner')})"
+        f"{idx+1}. {user} ({receive_translation(user_language, 'owner')})"
         if user == group_owner_username
-        else f"{user}"
-        for user in group_users_list
+        else f"{idx+1}. {user}"
+        for idx, user in enumerate(group_users_list)
     )
     bot.send_message(message.chat.id, group_users_str)
 
@@ -664,7 +681,7 @@ def change_owner(db_connection, message, user_language: str):
         else:
             # List of users as a string without group owner
             group_users_str_without_owner: str = '\n'.join(
-                f"{user}" for user in group_users_list if user != group_owner_username
+                f"> {user}" for user in group_users_list if user != group_owner_username
             )
             bot.send_message(message.chat.id,
                              f"{receive_translation(user_language, 'username_new_owner')}:\n"
@@ -707,8 +724,8 @@ def process_change_owner(db_connection, message, group_id: int, user_language: s
 def delete_account(db_connection, message, user_language: str):
     telegram_id: int = message.from_user.id
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"👍 {receive_translation(user_language, 'YES')}")
-    btn2 = KeyboardButton(f"👎 {receive_translation(user_language, 'NO')}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('moon')} {receive_translation(user_language, 'YES')}")
+    btn2 = KeyboardButton(f"{Emoji.get_emoji('sun')} {receive_translation(user_language, 'NO')}")
     markup_1.add(btn1, btn2)
     group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
     user_is_owner: bool = db_connection.check_user_is_group_owner_by_telegram_id(telegram_id, group_id)
@@ -727,7 +744,7 @@ def process_delete_account(db_connection, message, user_language: str):
     markup_1.add(btn1)
     telegram_id: int = message.from_user.id
     user_choice: str = message.text
-    if user_choice == f"👍 {receive_translation(user_language, "YES")}":
+    if user_choice == f"{Emoji.get_emoji('moon')} {receive_translation(user_language, "YES")}":
         # removing a user from the cache
         UserRegistrationStatusCache.delete_data_from_cache(telegram_id)
         db_connection.delete_user_from_group_by_telegram_id(telegram_id)
@@ -737,7 +754,7 @@ def process_delete_account(db_connection, message, user_language: str):
         logger_bot.info(f"User deleted the account. TelegramID: {logging_hash(telegram_id)}")
         start(message)
 
-    elif user_choice == f"👎 {receive_translation(user_language, 'NO')}":
+    elif user_choice == f"{Emoji.get_emoji('sun')} {receive_translation(user_language, 'NO')}":
         bot.send_message(message.chat.id, receive_translation(user_language, 'stay_with_us'))
         group_settings_get_buttons(message)
 
@@ -803,8 +820,8 @@ def process_delete_user(db_connection, message, group_id: int, group_users_list:
 def delete_group(db_connection, message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
     markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    btn1 = KeyboardButton(f"🌧️ {receive_translation(user_language, 'YES')}")
-    btn2 = KeyboardButton(f"🌤️ {receive_translation(user_language, 'NO')}")
+    btn1 = KeyboardButton(f"{Emoji.get_emoji('moon')} {receive_translation(user_language, 'YES')}")
+    btn2 = KeyboardButton(f"{Emoji.get_emoji('sun')} {receive_translation(user_language, 'NO')}")
     markup_1.add(btn1, btn2)
     group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
     user_is_owner: bool = db_connection.check_user_is_group_owner_by_telegram_id(telegram_id, group_id)
@@ -824,7 +841,7 @@ def process_delete_group(db_connection, message, group_id: int, user_language: s
     telegram_id: int = message.from_user.id
     user_choice: str = message.text
     # the user confirmed the deletion of the group
-    if user_choice == f"🌧️ {receive_translation(user_language, 'YES')}":
+    if user_choice == f"{Emoji.get_emoji('moon')}️ {receive_translation(user_language, 'YES')}":
         # get a list of telegram_id for each user of the group:
         telegram_ids_of_group_users: tuple = db_connection.get_group_telegram_ids(group_id)
         # clearing group users from the cache
@@ -837,7 +854,7 @@ def process_delete_group(db_connection, message, group_id: int, user_language: s
                         f"group #{group_id}")
         start(message)
     # the user changed his mind about deleting the group
-    elif user_choice == f"🌤️ {receive_translation(user_language, 'NO')}":
+    elif user_choice == f"{Emoji.get_emoji('sun')} {receive_translation(user_language, 'NO')}":
         bot.send_message(message.chat.id, receive_translation(user_language, 'stay_with_us'))
         group_settings_get_buttons(message)
     # the user entered an unexpected message
@@ -923,13 +940,13 @@ def text(message) -> None:
     user_language: str = check_user_language(telegram_id)
     res: bool = user_is_registered(telegram_id)
 
-    if message.text == f"📬 {receive_translation(user_language, 'register')}":
+    if message.text == f"{Emoji.get_emoji('money_wings')} {receive_translation(user_language, 'register')}":
         registration(message, user_language, res)
-    elif message.text == f"⭐ {receive_translation(user_language, 'premium')}":
+    elif message.text == f"{Emoji.get_emoji('premium')} {receive_translation(user_language, 'premium')}":
         premium(message, user_language)
-    elif message.text == f"🔐 {receive_translation(user_language, 'get_my_token')}":
+    elif message.text == f"{Emoji.get_emoji('lock')} {receive_translation(user_language, 'get_my_token')}":
         get_my_token(message, user_language)
-    elif message.text == f"💵 {receive_translation(user_language, 'table_manage')}":
+    elif message.text == f"{Emoji.get_emoji('money')} {receive_translation(user_language, 'table_manage')}":
         if res:
             table_manage_get_buttons(message)
         else:
@@ -939,8 +956,8 @@ def text(message) -> None:
             group_settings_get_buttons(message)
         else:
             reply_menu_buttons_not_register(message)
-    elif message.text in (f"↩️ {receive_translation(user_language, 'back')}",
-                          f"↩️ {receive_translation(user_language, 'back_to_menu')}"):
+    elif message.text in (f"{Emoji.get_emoji('magic')}️ {receive_translation(user_language, 'back')}",
+                          f"{Emoji.get_emoji('back')} {receive_translation(user_language, 'back_to_menu')}"):
         reply_buttons(message)
     # if an unauthorized user tries to perform an action that is only available after authorization
     elif not res:
@@ -948,30 +965,49 @@ def text(message) -> None:
         bot.send_sticker(message.chat.id, Stickers.get_sticker_by_id('id_5'))
         logger_bot.info(f'Unregistered user interaction. TelegramID: {logging_hash(telegram_id)}')
     elif res:
-        if message.text == f"📖 {receive_translation(user_language, 'view_table')}":
+        if message.text == f"{Emoji.get_emoji('book')} {receive_translation(user_language, 'view_table')}":
             view_table(message, res, user_language)
-        elif message.text == f"📈 {receive_translation(user_language, 'add_income')}":
+        elif message.text == f"{Emoji.get_emoji('income')} {receive_translation(user_language, 'add_income')}":
             start_transaction(message, user_language, False)
-        elif message.text == f"📉 {receive_translation(user_language, 'add_expense')}":
+        elif message.text == f"{Emoji.get_emoji('expense')} {receive_translation(user_language, 'add_expense')}":
             start_transaction(message, user_language, True)
-        elif message.text == f"❌ {receive_translation(user_language, 'del_record')}":
+        elif message.text == f"{Emoji.get_emoji('delete')} {receive_translation(user_language, 'del_record')}":
             delete_record(message, user_language)
-        elif message.text == f"🗃️ {receive_translation(user_language, 'get_csv')}":
+        elif message.text == f"{Emoji.get_emoji('unload')} {receive_translation(user_language, 'get_csv')}":
             get_csv(message, user_language)
-        elif message.text == f"🌍 {receive_translation(user_language, 'group_users')}":
+        elif message.text == f"{Emoji.get_emoji('earth')} {receive_translation(user_language, 'group_users')}":
             get_group_users(message, user_language)
-        elif message.text == f"📊 {receive_translation(user_language, 'get_diagram')}":
+        elif message.text == f"{Emoji.get_emoji('diagram')} {receive_translation(user_language, 'get_diagram')}":
             get_diagram(message, user_language)
         elif message.text == f"🗑️ {receive_translation(user_language, 'delete_account')}":
             delete_account(message, user_language)
-        elif message.text == f"🚫 {receive_translation(user_language, 'delete_group')}":
+        elif message.text == f"{Emoji.get_emoji('stop')} {receive_translation(user_language, 'delete_group')}":
             delete_group(message, user_language)
-        elif message.text == f"🔑 {receive_translation(user_language, 'change_owner')}":
+        elif message.text == f"{Emoji.get_emoji('key')} {receive_translation(user_language, 'change_owner')}":
             change_owner(message, user_language)
-        elif message.text == f"🤖 {receive_translation(user_language, 'delete_user')}":
+        elif message.text == f"{Emoji.get_emoji('robot')} {receive_translation(user_language, 'delete_user')}":
             delete_user(message, user_language)
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'misunderstanding'))
 
 
-bot.polling(none_stop=True)
+def periodic_func(interval=5):
+    while True:
+        sleep(interval)
+        logger_periodic_func.info('Trigger for a periodic function')
+        logger_periodic_func.info(f'Reports.await_list = {Reports.await_list}')
+        logger_periodic_func.info(f'Reports.diagram_to_delete = {Reports.diagram_to_delete}')
+        if len(Reports.await_list) > interval:
+            logger_periodic_func.warning(f'Reports.await_list len = {len(Reports.await_list)}')
+        if len(Reports.diagram_to_delete) > interval:
+            logger_periodic_func.warning(f'Reports.diagram_to_delete len = {len(Reports.diagram_to_delete)}')
+        logger_periodic_func.info('->\n\n')
+        send_diagram()
+        Reports.delete_unused_diagram()
+        CsvFileWithTable.delete_unused_csv_files()
+
+
+if __name__ == "__main__":
+    Thread(target=periodic_func, daemon=True).start()
+    bot.infinity_polling(none_stop=True)
+

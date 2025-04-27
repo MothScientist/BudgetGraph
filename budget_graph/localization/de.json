@@ -139,6 +139,6 @@
     "budget_diagram_for_group": "Graph gruppieren",
     "specific_user_budget_diagram": "Diagramm nach bestimmtem Benutzer",
     "choose_diagram_type": "Wählen Sie einen verfügbaren Diagrammtyp aus:",
-    "wait_diagram": "🛠 Wir erstellen bereits ein Diagramm. Bitte warten...",
+    "wait_diagram": "Wir erstellen bereits ein Diagramm. Bitte warten...",
     "feature_uuid_filename": "Anwendungs-ID (Name der zukünftigen Datei)"
 }

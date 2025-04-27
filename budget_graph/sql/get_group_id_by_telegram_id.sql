@@ -1,6 +1,6 @@
 SELECT
-    "group_id"
+  "group_id"
 FROM
-    "budget_graph"."users_groups"
+  "budget_graph"."users_groups"
 WHERE
-    "telegram_id" = %(telegram_id)s::bigint
+  "telegram_id" = %(telegram_id)s::bigint

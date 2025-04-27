@@ -4,7 +4,7 @@ Also stores emoji and sticker codes for use inside the bot.
 """
 from json import loads
 from functools import cache
-from os import path, listdir
+from os import path as os_path, listdir
 
 from budget_graph.logger import setup_logger
 from budget_graph.global_config import GlobalConfig
@@ -15,13 +15,34 @@ logger_dict = setup_logger('logs/DictLog.log', 'dict_loger')
 class Emoji:
     __emoji_codes: dict = \
         {
-            '': '',
+            'robot':       129302,  # 🤖
+            'key':         128273,  # 🔑
+            'book':        128214,  # 📖
+            'diagram':     128202,  # 📊
+            'hourglass':   9203,    # ⏳
+            'income':      128200,  # 📈
+            'expense':     128201,  # 📉
+            'delete':      10060,   # ❌
+            'unload':      128228,  # 📤
+            'earth':       127757,  # 🌍
+            'stop':        128683,  # 🚫
+            'money':       128181,  # 💵
+            'money_wings': 128184,  # 💸
+            'premium':     11088,   # ⭐
+            'dollar':      128178,  # 💲
+            'lock':        128272,  # 🔐
+            'back':        128281,  # 🔙
+            'magic':       129668,  # 🪄
+            'sun':         127765,  # 🌕
+            'moon':        127761,  # 🌑
+            'yes':         128077,  # 👍
+            'no':          128078,  # 👎
         }
 
     @staticmethod
     @cache
-    def get_emoji(emoji):
-        return Emoji.__emoji_codes.get(emoji, '')
+    def get_emoji(emoji: str) -> str:
+        return chr(Emoji.__emoji_codes.get(emoji, 10067))  # question mark if not found
 
 
 class Stickers:
@@ -65,7 +86,7 @@ def get_translate_from_json(language: str) -> dict:
     """
     This function works with reading JSON files
     """
-    localization_dir_path: str = path.join(path.dirname(__file__), f'localization/{language}.json')
+    localization_dir_path: str = os_path.join(os_path.dirname(__file__), f'localization/{language}.json')
     try:
         with open(localization_dir_path, encoding='utf-8') as json_file:
             json_dict: str = json_file.read()
@@ -82,7 +103,7 @@ def get_list_languages() -> tuple:
     """
     # some dictionaries already exist, but are not yet available to users
     list_of_excluded_languages: tuple = ()
-    localization_dir_path: str = path.join(path.dirname(__file__), 'localization')
+    localization_dir_path: str = os_path.join(os_path.dirname(__file__), 'localization')
     lang_json: list = [file[:2] for file in listdir(localization_dir_path)
                        if file.endswith('.json') and file[:2] not in list_of_excluded_languages]
     lang_json.sort()  # so that the order always remains the same

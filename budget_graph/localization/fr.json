@@ -139,6 +139,6 @@
     "budget_diagram_for_group": "Graphique de groupe",
     "specific_user_budget_diagram": "Graphique par utilisateur spécifique",
     "choose_diagram_type": "Sélectionner un type de graphique disponible:",
-    "wait_diagram": "🛠 Nous créons déjà un graphique, veuillez patienter...",
+    "wait_diagram": "Nous créons déjà un graphique, veuillez patienter...",
     "feature_uuid_filename": "ID de l'application (nom du futur fichier)"
 }

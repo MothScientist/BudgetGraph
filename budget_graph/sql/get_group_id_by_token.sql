@@ -1,6 +1,6 @@
 SELECT
-    "id"
+  "id"
 FROM
-    "budget_graph"."groups"
+  "budget_graph"."groups"
 WHERE
-    "token" = %(token)s::text
+  "token" = %(token)s::text
