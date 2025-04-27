@@ -1,30 +1,16 @@
 const closedImagePath = "static/img/hide.png";
 const openedImagePath = "static/img/show.png";
 
-function togglePasswordVisibility() {
-  const passwordInput = document.getElementById("password");
-  const passwordImage = document.getElementById("hide-image-password");
+function toggleVisibility(inputId, imageId) {
+  const inputField = document.getElementById(inputId);
+  const imageElement = document.getElementById(imageId);
 
-  if (passwordInput.type === "password") {
-    passwordInput.type = "text";
-    passwordImage.src = openedImagePath;
+  if (inputField.type === "password") {
+    inputField.type = "text";
+    imageElement.src = openedImagePath;
   } else {
-    passwordInput.type = "password";
-    passwordImage.src = closedImagePath;
+    inputField.type = "password";
+    imageElement.src = closedImagePath;
   }
 }
-
-function toggleTokenVisibility() {
-  const tokenInput = document.getElementById("token");
-  const tokenImage = document.getElementById("hide-image-token");
-
-  if (tokenInput.type === "password") {
-    tokenInput.type = "text";
-    tokenImage.src = openedImagePath;
-  } else {
-    tokenInput.type = "password";
-    tokenImage.src = closedImagePath;
-  }
-}
-
 
