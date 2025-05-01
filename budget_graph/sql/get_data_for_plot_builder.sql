@@ -14,7 +14,7 @@ usernames AS (
       OR
       %(diagram_type)s::smallint = 1
       OR
-      %(diagram_type)s::smallint = 2 AND users."telegram_id" = ANY(%(users)s::bigint[])
+      %(diagram_type)s::smallint = 2 AND users."telegram_id" IS NOT NULL AND users."telegram_id" = ANY(%(users)s::bigint[])
     )
 )
 
@@ -25,7 +25,7 @@ SELECT
 FROM
   "budget_graph"."monetary_transactions"
 WHERE
-  "username" = ANY(SELECT "username" FROM usernames)
+  "username" IS NOT NULL AND "username" = ANY(SELECT "username" FROM usernames)
   AND
   (
     (

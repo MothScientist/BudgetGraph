@@ -19,7 +19,7 @@ class StorageMsgIdForDeleteAfterOperation:
 		self.msg_id_to_delete: list = []
 
 	def append(self, msg_id: int):
-		if self.feature_is_active:
+		if self.feature_is_active and msg_id not in self.msg_id_to_delete:
 			self.msg_id_to_delete.append(msg_id)
 
 	def delete_messages(self, bot, chat_id: int) -> None:
@@ -74,25 +74,63 @@ def get_language_buttons() -> tuple:
 
 
 @cache
-def get_diagram_buttons(user_language: str, user_is_owner: bool) -> tuple:
+def get_diagram_buttons(user_language: str, user_is_owner: bool, user_is_premium: bool) -> tuple:
+	return_buttons: list = []
 	buttons: tuple = (
 		[
 			InlineKeyboardButton(
 				receive_translation(user_language, 'my_budget_diagram'), callback_data='get_diagram_0'
-			)
+			)  # premium
 		],
 		[
 			InlineKeyboardButton(
 				receive_translation(user_language, 'budget_diagram_for_group'), callback_data='get_diagram_1'
-			)
+			)  # group_owner
 		],
 		[
 			InlineKeyboardButton(
 				receive_translation(user_language, 'specific_user_budget_diagram'), callback_data='get_diagram_2'
+			)  # group_owner + premium
+		],
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'get_diagram_info'), callback_data='get_diagram_info'
+			)  # for any user
+		]
+	)
+	# It is important that the buttons are in their original order.
+	if user_is_premium:
+		return_buttons.append(buttons[0])
+	if user_is_owner:
+		return_buttons.append(buttons[1])
+		if user_is_premium:
+			return_buttons.append(buttons[2])
+	return_buttons.append(buttons[-1])
+	return tuple(return_buttons)
+
+
+@cache
+def get_premium_buttons(user_language: str, premium_status: bool) -> tuple:
+	premium_buttons: tuple = (
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'get_premium'), callback_data='premium_get'
 			)
 		],
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'check_premium_status'), callback_data='premium_status'
+			)
+		],
+		[
+			InlineKeyboardButton(
+				receive_translation(user_language, 'about_premium'), callback_data='premium_info'
+			)
+		]
 	)
-	return buttons if user_is_owner else buttons[0]
+	if premium_status:
+		return tuple(premium_buttons[1:])
+	return tuple(premium_buttons[0:3:2])
 
 
 @cache
@@ -154,12 +192,15 @@ def get_category_translate(user_language: str) -> tuple:
 def get_bot_commands() -> list:
 	commands: list = [
 		BotCommand('start', 'Start'),
+		BotCommand('help', 'Help'),
+		BotCommand('premium', 'Premium'),
 		BotCommand('change_language', 'Change Language'),
-		BotCommand('del_msg_transaction', '[ON/OFF] Delete messages after successful transaction'),
+		BotCommand('del_msg_after_transaction', '[ON/OFF] Delete messages after successful transaction'),
+		BotCommand('skip_input_date', '[ON/OFF] Skip setting transaction date (current will be used)'),
+		BotCommand('skip_input_category', '[ON/OFF] Skip transaction category selection'),
+		BotCommand('skip_input_description', '[ON/OFF] Skip adding description to transaction'),
 		BotCommand('change_timezone', 'Change Time zone'),
 		BotCommand('get_my_id', 'Get my Telegram ID'),
-		BotCommand('premium', 'Premium'),
-		BotCommand('help', 'Help'),
 		BotCommand('project_github', 'GitHub')
 	]
 

@@ -20,6 +20,13 @@ DSN = f'dbname={db_name} user={db_user} password={db_psw} host={db_host} port={d
 
 logger_database = setup_logger('logs/DatabaseLog.log', 'db_logger')
 
+feature_ids: dict[str, int] = {
+    'del_msg_after_transaction': 1,
+    'skip_input_date': 2,
+    'skip_input_category': 3,
+    'skip_input_description': 4,
+}
+
 
 @timeit
 def connect_db():
@@ -86,7 +93,7 @@ def close_db_flask_g(error):  # DO NOT REMOVE the parameter  # noqa
 
 def read_sql_file(request_name):
     filename: str = path.join(path.dirname(__file__), f'sql/{request_name}.sql')
-    logger_database.info(f'[DB_QUERY] request to *.sql file: {filename}')
+    logger_database.info(f'[REQUEST *.SQL] File: {filename}')
     with open(filename, 'r', encoding='utf-8') as sql_file:
         return sql_file.read()
 
@@ -97,6 +104,8 @@ class DatabaseQueries:
     The class is used to query the database.
     All details of the structure of functions are indicated in the comments to the first function
     """
+    __slots__ = ('__conn',)
+
     def __init__(self, connection):
         self.__conn = connection
 
@@ -363,12 +372,27 @@ class DatabaseQueries:
                         read_sql_file('check_user_is_group_owner_by_telegram_id'),
                         {'owner': telegram_id, 'group_id': group_id}
                     )
-                    return bool(cur.fetchone()[0])
+                    return res[0] if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
-            logger_database.error(f"[DB_QUERY] {str(err)}, "
-                                  f"telegram_id: {logging_hash(telegram_id)}"
-                                  f"group id: {group_id}")
+            logger_database.error(f'[DB_QUERY] {str(err)}, '
+                                  f'telegram_id: {logging_hash(telegram_id)}'
+                                  f'group id: {group_id}')
+            return False
+
+    def check_user_is_premium_by_telegram_id(self, telegram_id: int) -> bool:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        read_sql_file('check_user_is_premium_by_telegram_id'),
+                        {'telegram_id': telegram_id}
+                    )
+                    return res[0] if (res := cur.fetchone()) else False
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f'[DB_QUERY] {str(err)}, '
+                                  f'telegram_id: {logging_hash(telegram_id)}')
             return False
 
     def get_group_owner_username_by_group_id(self, group_id: int) -> str:
@@ -422,7 +446,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('get_user_timezone_by_telegram_id'), {'telegram_id': telegram_id})
-                    return cur.fetchone()[0]
+                    return res[0] if (res := cur.fetchone()) else None
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -435,7 +459,7 @@ class DatabaseQueries:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_record_id_is_exist'),
                                 {'group_id': group_id, 'transaction_id': transaction_id})
-                    return bool(cur.fetchone()[0])
+                    return bool(res[0]) if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -451,7 +475,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_username_is_exist'), {'username': username})
-                    return bool(cur.fetchone()[0])
+                    return bool(res[0]) if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -463,7 +487,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_telegram_id_is_exist'), {'telegram_id': telegram_id})
-                    return bool(cur.fetchone()[0])
+                    return bool(res[0]) if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -478,7 +502,7 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_token_is_unique'), {'token': token})
-                    return not bool(cur.fetchone()[0])
+                    return not bool(res[0]) if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
@@ -496,42 +520,50 @@ class DatabaseQueries:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(read_sql_file('check_limit_users_in_group'), {'group_id': group_id})
-                    return bool(cur.fetchone()[0])
+                    return bool(res[0]) if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"group id: {group_id}")
             return False  # to prevent a user from being written to a non-existent group
 
-    def get_feature_status_del_msg_after_transaction(self, telegram_id: int) -> bool:
-        """
-        Checks the status whether the function is enabled
-        for the operation of the StorageMsgIdForDeleteAfterOperation class
-        """
+    def get_skip_operations_status(self, telegram_id: int) -> tuple:
+        try:
+            with self.__conn as conn:
+                with conn.cursor() as cur:
+                    cur.execute(read_sql_file('get_skip_operations_status'), {'telegram_id': telegram_id})
+                    return tuple(bool(status) for status in res[0]) if (res := cur.fetchone()) else tuple([False]*3)
+
+        except (DatabaseError, TypeError) as err:
+            logger_database.error(f"[DB_QUERY] {str(err)}, "
+                                  f"telegram_id: {telegram_id}")
+            return tuple([False]*3)  # default value - (False, False, False)
+
+    def get_feature_status(self, telegram_id: int, feature: str):
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(
-                        read_sql_file('get_feature_status_del_msg_after_transaction'),
-                        {'telegram_id': telegram_id}
+                        read_sql_file('get_feature_status'),
+                        {'telegram_id': telegram_id, 'feature': feature_ids.get(feature)}
                     )
-                    return bool(cur.fetchone()[0])
+                    return bool(res[0]) if (res := cur.fetchone()) else False
 
         except (DatabaseError, TypeError) as err:
             logger_database.error(f"[DB_QUERY] {str(err)}, "
                                   f"telegram_id: {telegram_id}")
             return False  # default value - False
 
-    def change_feature_status_del_msg_after_transaction(self, telegram_id: int) -> bool:
+    def change_feature_status(self, telegram_id: int, feature: str):
         try:
             with self.__conn as conn:
                 with conn.cursor() as cur:
                     cur.execute(
-                        read_sql_file('change_feature_status_del_msg_after_transaction'),
-                        {'telegram_id': telegram_id}
+                        read_sql_file('change_feature_status'),
+                        {'telegram_id': telegram_id, 'feature': feature_ids.get(feature)}
                     )
                     conn.commit()
-            logger_database.info(f"[del_msg_transaction] successfully changed for {logging_hash(telegram_id)}")
+            logger_database.info(f"[{feature}] successfully changed for {logging_hash(telegram_id)}")
             return True
 
         except (DatabaseError, TypeError) as err:
@@ -817,7 +849,7 @@ class DatabaseQueries:
                                     DELETE FROM
                                         "budget_graph"."users"
                                     WHERE
-                                        "telegram_id" = ANY(ARRAY(SELECT "telegram_id" FROM telegram_id_users));
+                                        "telegram_id" IS NOT NULL AND "telegram_id" = ANY(ARRAY(SELECT "telegram_id" FROM telegram_id_users));
                                     
                                     -- groups
                                     DELETE FROM

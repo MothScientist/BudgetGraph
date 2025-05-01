@@ -1,5 +1,5 @@
 SELECT
-  "settings"[1]
+  "settings"[%(feature)s::smallint]
 FROM
   "budget_graph"."users"
 WHERE

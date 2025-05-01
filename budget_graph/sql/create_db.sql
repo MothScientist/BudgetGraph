@@ -14,21 +14,21 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
     "psw_hash"    varchar(64)              NOT NULL           CHECK(LENGTH("psw_hash") = 64),
     "last_login"  timestamp with time zone     NULL,
     -- user time zone
-    "timezone"    smallint                     NULL           CHECK("timezone" IS NULL OR "timezone" >= -12 AND "timezone" <= 12),
+    "timezone"    smallint                     0              CHECK("timezone" IS NULL OR "timezone" >= -12 AND "timezone" <= 12),
     -- other settings for the user (for example, the activation status of some functionality)
-    -- 0: Status that the dialog clearing function is enabled after a successful transaction (default value - False)
-    -- 1: Reserve
-    -- 2: Reserve
-    -- 3: Reserve
-    -- 4: Reserve
+    -- 1: Status that the dialog clearing function is enabled after a successful transaction (default value - False)
+    -- 2: Function to skip date input when adding a new record to a table (default value - False)
+    -- 3: Function to skip category selection when adding a new record to a table (default value - False)
+    -- 4: Function to skip entering description when adding a new record to a table (default value - False)
     -- 5: Reserve
     -- 6: Reserve
     -- 7: Reserve
     -- 8: Reserve
     -- 9: Reserve
+    -- 10: Reserve
     "settings"    boolean[]
-                  DEFAULT ARRAY[FALSE,      NULL::bool,
-                                NULL::bool, NULL::bool,
+                  DEFAULT ARRAY[FALSE,      FALSE,
+                                FALSE,      FALSE,
                                 NULL::bool, NULL::bool,
                                 NULL::bool, NULL::bool,
                                 NULL::bool, NULL::bool]       CHECK(array_length("settings", 1) = 10)

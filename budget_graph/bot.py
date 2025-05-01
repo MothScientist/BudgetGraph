@@ -27,7 +27,7 @@ from budget_graph.db_manager import connect_defer_close_db
 from budget_graph.validation import date_validation, value_validation, description_validation, username_validation, \
     password_validation, category_validation
 from budget_graph.helpers import StorageMsgIdForDeleteAfterOperation, get_category_button_labels, get_bot_commands, \
-    get_category_translate, get_timezone_buttons, get_language_buttons, get_diagram_buttons
+    get_category_translate, get_timezone_buttons, get_language_buttons, get_diagram_buttons, get_premium_buttons
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -161,25 +161,45 @@ def get_my_id(message) -> None:
                                       f"telegram ID: {message.from_user.id}")
 
 
-@bot.message_handler(commands=['del_msg_transaction'])
+@bot.message_handler(commands=['del_msg_after_transaction'])
+def del_msg_after_transaction(message) -> None:
+    feature_switch_helper(message, 'del_msg_after_transaction')
+
+
+@bot.message_handler(commands=['skip_input_date'])
+def skip_input_date(message) -> None:
+    feature_switch_helper(message, 'skip_input_date')
+
+
+@bot.message_handler(commands=['skip_input_category'])
+def skip_input_category(message) -> None:
+    feature_switch_helper(message, 'skip_input_category')
+
+
+@bot.message_handler(commands=['skip_input_description'])
+def skip_input_description(message) -> None:
+    feature_switch_helper(message, 'skip_input_description')
+
+
 @connect_defer_close_db
-def del_msg_transaction(db_connection, message) -> None:
+def feature_switch_helper(db_connection, message, feature: str) -> None:
     telegram_id: int = message.from_user.id
     chat_id: int = message.chat.id
     user_language: str = check_user_language(telegram_id)
 
     if not user_is_registered(telegram_id):
-        get_answer_for_unregistered_user(message, telegram_id, user_language, 'del_msg_transaction')
+        get_answer_for_unregistered_user(message, telegram_id, user_language, feature)
         return
 
-    old_feature_status: bool = db_connection.get_feature_status_del_msg_after_transaction(telegram_id)
-    res: bool = db_connection.change_feature_status_del_msg_after_transaction(telegram_id)
+    old_feature_status: bool = db_connection.get_feature_status(telegram_id, feature)
+    res: bool = db_connection.change_feature_status(telegram_id, feature)
     if res and old_feature_status:  # the functionality was enabled
-        bot.send_message(chat_id, receive_translation(user_language, 'del_msg_transaction_of'))
+        bot.send_message(chat_id, receive_translation(user_language, f'{feature}_off'))
     elif res and not old_feature_status:  # the functionality was disabled
-        bot.send_message(chat_id, receive_translation(user_language, 'del_msg_transaction_on'))
+        bot.send_message(chat_id, receive_translation(user_language, f'{feature}_on'))
     else:
-        bot.send_message(chat_id, f"{receive_translation(user_language, 'del_msg_transaction_on')}\n"
+        logger_bot.error(f'res: {res}; old_feature_status: {old_feature_status}; telegram_id: {telegram_id}')
+        bot.send_message(chat_id, f"{receive_translation(user_language, 'feature_err')}\n"
                                   f"{receive_translation(user_language, 'contact_support')}")
 
 
@@ -194,10 +214,31 @@ def project_github(message) -> None:
 
 
 @bot.message_handler(commands=['premium'])
-def premium(message, user_language: str):
-    bot.send_message(message.chat.id, 'soon')
-    # TODO - пока идея, что для премиума доступна аналитика по расходам их собственным
-    # TODO - если премиум имеет владелец группы, то для всех в группе доступна общая аналитика, но не собственная
+@connect_defer_close_db
+def premium(db_connection, message, user_language: str = None):
+    telegram_id: int = message.from_user.id
+    user_language: str = check_user_language(telegram_id) if not user_language else user_language
+    user_is_premium: bool = db_connection.check_user_is_premium_by_telegram_id(telegram_id)
+    bot.send_message(
+        message.chat.id,
+        f"{receive_translation(user_language, 'choose_menu')}",
+        reply_markup=InlineKeyboardMarkup(get_premium_buttons(user_language, user_is_premium))
+    )
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('premium'))
+def callback_query_premium(call):
+    telegram_id: int = call.from_user.id
+    user_language: str = check_user_language(telegram_id)
+    selection: str = call.data.replace('premium_status_', '', 1).strip()
+
+    match selection:
+        case 'get':
+            pass  # TODO
+        case 'status':
+            pass  # TODO
+        case 'info':
+            bot.send_message(call.id, f"{receive_translation(user_language, "premium_info")}")
 
 
 @bot.message_handler(commands=['change_timezone'])
@@ -206,7 +247,7 @@ def change_timezone(message) -> None:
     user_language: str = check_user_language(telegram_id)
 
     if not user_is_registered(telegram_id):
-        get_answer_for_unregistered_user(message, telegram_id, user_language, 'del_msg_transaction')
+        get_answer_for_unregistered_user(message, telegram_id, user_language, 'change_timezone')
         return
 
     bot.send_message(message.chat.id, f"{receive_translation(user_language, 'select_timezone')}:",
@@ -299,13 +340,11 @@ def restart_language_after_changes(call) -> None:
 @connect_defer_close_db
 def get_diagram(db_connection, message, user_language: str) -> None:
     telegram_id: int = message.from_user.id
-
-    # TODO - проверка на премиум
-
     group_id: int = db_connection.get_group_id_by_telegram_id(telegram_id)
     user_is_owner: bool = db_connection.check_user_is_group_owner_by_telegram_id(telegram_id, group_id)
-    markup_1 = InlineKeyboardMarkup(get_diagram_buttons(user_language, user_is_owner))
-    bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_diagram_type')}:",
+    user_is_premium: bool = db_connection.check_user_is_premium_by_telegram_id(telegram_id)
+    markup_1 = InlineKeyboardMarkup(get_diagram_buttons(user_language, user_is_owner, user_is_premium))
+    bot.send_message(message.chat.id, f"{receive_translation(user_language, 'choose_diagram_type')}",
                      reply_markup=markup_1)
 
 
@@ -314,7 +353,13 @@ def callback_query_get_diagram(call):
     # TODO - логи по всей операции
     telegram_id: int = call.from_user.id
     user_language: str = check_user_language(telegram_id)
-    diagram_type: int = int(call.data[-1])
+    diagram_type: str = str(call.data.replace('get_diagram_', '', 1).strip())
+    if diagram_type == 'info':
+        bot.send_message(call.message.chat.id, f"{receive_translation(user_language, 'diagram_info')}")
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+        return
+    else:
+        diagram_type: int = int(diagram_type)
     uuid: UUID = uuid4()
     # TODO - поддержать 3 тип диаграммы
     status: bool | None = build_diagram(call.message.chat.id, telegram_id, uuid, diagram_type)
@@ -328,7 +373,7 @@ def callback_query_get_diagram(call):
         bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "table_is_empty")}")
         bot.delete_message(call.message.chat.id, call.message.message_id)
     else:
-        bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "csv_not_found_error")}")
+        bot.send_message(call.message.chat.id, f"{receive_translation(user_language, "error_connect_support")}")
         bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
@@ -355,13 +400,18 @@ def get_my_token(db_connection, message, user_language: str) -> None:
 def start_transaction(db_connection, message, user_language: str, is_negative: bool) -> None:
     text_key: str = 'enter_expense' if is_negative else 'enter_income'
     msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, text_key)}:")
-    feature_is_active: bool = db_connection.get_feature_status_del_msg_after_transaction(message.from_user.id)
+    skip_operations_status: tuple = db_connection.get_skip_operations_status(message.from_user.id)
+    feature_is_active: bool = db_connection.get_feature_status(message.from_user.id, 'del_msg_after_transaction')
     msg_del_obj = StorageMsgIdForDeleteAfterOperation(feature_is_active)
     msg_del_obj.append(msg.id)
-    bot.register_next_step_handler(message, process_add_date_for_transfer, is_negative, msg_del_obj)
+    bot.register_next_step_handler(
+        message, process_add_date_for_transfer, is_negative, skip_operations_status, msg_del_obj
+    )
 
 
-def process_add_date_for_transfer(message, is_negative: bool, msg_del_obj: StorageMsgIdForDeleteAfterOperation) -> None:
+def process_add_date_for_transfer(
+        message, is_negative: bool, skip_operations_status: tuple, msg_del_obj: StorageMsgIdForDeleteAfterOperation
+) -> None:
     """
     Adds income and expense to the database.
     Accepts an unvalidated value,
@@ -371,6 +421,7 @@ def process_add_date_for_transfer(message, is_negative: bool, msg_del_obj: Stora
         message:
         is_negative (bool): False if X > 0 (add_income), True if X < 0 (add_expense)
         X = 0 - will be rejected by the validator
+        skip_operations_status:
         msg_del_obj:
 
     Returns: None
@@ -380,57 +431,79 @@ def process_add_date_for_transfer(message, is_negative: bool, msg_del_obj: Stora
     user_language: str = check_user_language(telegram_id)
     value: str = message.text
     value: int = value_validation(value)
-    markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    today_date: str = datetime.now(UTC).strftime('%d/%m/%Y')
-    btn1 = KeyboardButton(today_date)
-    markup_1.add(btn1)
 
     if value:
         value *= -1 if is_negative else 1
-        msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, "set_date")} (DD/MM/YYYY)",
-                               reply_markup=markup_1)
-        msg_del_obj.append(msg.id)
-        bot.register_next_step_handler(message, process_add_category_for_transfer, value, user_language, msg_del_obj)
+        if not skip_operations_status[0]:
+            markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+            today_date: str = datetime.now(UTC).strftime('%d/%m/%Y')
+            btn1 = KeyboardButton(today_date)
+            markup_1.add(btn1)
+            msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, "set_date")} (DD/MM/YYYY)",
+                                   reply_markup=markup_1)
+            msg_del_obj.append(msg.id)
+            bot.register_next_step_handler(
+                message, process_add_category_for_transfer, value, user_language, skip_operations_status, msg_del_obj
+            )
+        else:
+            process_add_category_for_transfer(message, value, user_language, skip_operations_status, msg_del_obj)
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_value'))
 
 
-def process_add_category_for_transfer(message, value: int, user_language: str,
-                                      msg_del_obj: StorageMsgIdForDeleteAfterOperation) -> None:
+def process_add_category_for_transfer(
+        message, value: int, user_language: str,
+        skip_operations_status: tuple, msg_del_obj: StorageMsgIdForDeleteAfterOperation
+) -> None:
     msg_del_obj.append(message.message_id)
-    markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-    button_labels: tuple = get_category_button_labels(user_language)
-    buttons: list = [KeyboardButton(label) for label in button_labels]  # assembling buttons from the tuple above
-    markup_1.add(*buttons)
-
-    record_date: str = message.text
-    record_date_is_valid: bool = asyncio_run(date_validation(record_date))  # DD/MM/YYYY
+    if not skip_operations_status[0]:
+        record_date: str = message.text
+        record_date_is_valid: bool = asyncio_run(date_validation(record_date))  # DD/MM/YYYY
+    else:
+        record_date: str = datetime.now(UTC).strftime('%d/%m/%Y')
+        record_date_is_valid: bool = True
 
     if record_date_is_valid:
-        msg = bot.send_message(message.chat.id, f"{receive_translation(user_language, "select_category")}:",
-                               reply_markup=markup_1)
-        msg_del_obj.append(msg.id)
-        bot.register_next_step_handler(message, process_add_description_for_transfer, value,
-                                       record_date, user_language, msg_del_obj)
+        if not skip_operations_status[1]:
+            markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+            button_labels: tuple = get_category_button_labels(user_language)
+            buttons: list = [KeyboardButton(label) for label in button_labels]
+            markup_1.add(*buttons)
+            msg = bot.send_message(
+                message.chat.id, f"{receive_translation(user_language, "select_category")}", reply_markup=markup_1
+            )
+            msg_del_obj.append(msg.id)
+            bot.register_next_step_handler(message, process_add_description_for_transfer, value,
+                                           record_date, user_language, skip_operations_status, msg_del_obj)
+        else:
+            process_add_description_for_transfer(
+                message, value, record_date, user_language, skip_operations_status, msg_del_obj
+            )
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_date'))
         reply_buttons(message)
 
 
-def process_add_description_for_transfer(message, value: int, record_date: str, user_language: str,
-                                         msg_del_obj: StorageMsgIdForDeleteAfterOperation) -> None:
+def process_add_description_for_transfer(
+        message, value: int, record_date: str, user_language: str,
+        skip_operations_status: tuple, msg_del_obj: StorageMsgIdForDeleteAfterOperation
+) -> None:
     msg_del_obj.append(message.message_id)
-    markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-    btn1 = KeyboardButton(receive_translation(user_language, 'no_description'))
-    markup_1.add(btn1)
-    category: str = message.text
-
-    if category_validation(user_language, category):
-        msg = bot.send_message(message.chat.id, receive_translation(user_language, 'add_description'),
-                               reply_markup=markup_1)
-        msg_del_obj.append(msg.id)
-        bot.register_next_step_handler(message, process_transfer_final, value, record_date,
-                                       category, user_language, msg_del_obj)
+    category: str = message.text if not skip_operations_status[1] else ''
+    if category_validation(user_language, category) if not skip_operations_status[1] else True:
+        if not skip_operations_status[2]:
+            markup_1 = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+            btn1 = KeyboardButton(receive_translation(user_language, 'no_description'))
+            markup_1.add(btn1)
+            msg = bot.send_message(message.chat.id, receive_translation(user_language, 'add_description'),
+                                   reply_markup=markup_1)
+            msg_del_obj.append(msg.id)
+            bot.register_next_step_handler(message, process_transfer_final, value, record_date,
+                                           category, user_language, skip_operations_status, msg_del_obj)
+        else:
+            process_transfer_final(
+                message, value, record_date, category, user_language, skip_operations_status, msg_del_obj
+            )
     else:
         bot.send_message(message.chat.id, receive_translation(user_language, 'invalid_category'))
         reply_buttons(message)
@@ -445,14 +518,13 @@ def process_transfer_final(
         record_date: str,
         category: str,
         user_language: str,
+        skip_operations_status: tuple,
         msg_del_obj: StorageMsgIdForDeleteAfterOperation
 ) -> None:
     msg_del_obj.append(message.message_id)
     telegram_id: int = message.from_user.id
-    description: str = message.text
-
-    if description == receive_translation(user_language, 'no_description'):
-        description: str = ""
+    description: str = message.text if not skip_operations_status[2] else ''
+    description = '' if description == receive_translation(user_language, 'no_description') else description
 
     if description_validation(description):
         if db_connection.add_transaction_to_db(value, record_date, category, description, telegram_id=telegram_id):
@@ -616,13 +688,13 @@ def get_csv(db_connection, message, user_language: str) -> None:
                                 f"(sha-256): {file_checksum}")
                 bot.send_document(chat_id, csv_table_file, caption=caption)
         except FileNotFoundError as err:
-            bot.send_message(chat_id, receive_translation(user_language, 'csv_not_found_error'))
+            bot.send_message(chat_id, receive_translation(user_language, 'error_connect_support'))
             logger_bot.error(f"CSV FileNotFoundError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
         # when trying to run an operation without access rights
         except PermissionError as err:
-            bot.send_message(chat_id, receive_translation(user_language, 'csv_not_found_error'))
+            bot.send_message(chat_id, receive_translation(user_language, 'error_connect_support'))
             logger_bot.error(f"CSV PermissionError => {err}. "
                              f"TelegramID: {logging_hash(telegram_id)}, "
                              f"group #{group_id}")
@@ -943,7 +1015,7 @@ def text(message) -> None:
     if message.text == f"{Emoji.get_emoji('money_wings')} {receive_translation(user_language, 'register')}":
         registration(message, user_language, res)
     elif message.text == f"{Emoji.get_emoji('premium')} {receive_translation(user_language, 'premium')}":
-        premium(message, user_language)
+        premium(message, user_language=user_language)
     elif message.text == f"{Emoji.get_emoji('lock')} {receive_translation(user_language, 'get_my_token')}":
         get_my_token(message, user_language)
     elif message.text == f"{Emoji.get_emoji('money')} {receive_translation(user_language, 'table_manage')}":
