@@ -18,8 +18,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS "transactions_transaction_id_group_id" ON "bud
 
 -- to get the latest entries by date
 CREATE        INDEX IF NOT EXISTS "transactions_last_records_index"      ON "budget_graph"."monetary_transactions" USING btree ("group_id", "record_date" DESC);
-
--- Indexes for analytics
--- to collect statistics for a certain period:
-CREATE        INDEX IF NOT EXISTS "transactions_group_id_record_date"    ON "budget_graph"."monetary_transactions" USING btree ("group_id", "record_date" DESC);
-CREATE        INDEX IF NOT EXISTS "transactions_username_record_date"    ON "budget_graph"."monetary_transactions" USING btree ("group_id", "username", "record_date" DESC);
+CREATE        INDEX IF NOT EXISTS "transactions_username_record_date"    ON "budget_graph"."monetary_transactions" USING btree ("username", "record_date" DESC);

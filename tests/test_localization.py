@@ -116,7 +116,7 @@ class TestLanguages(unittest.TestCase):
 
     def test_languages_013(self):
         res: str = receive_translation('ru', 'no_description')
-        self.assertEqual(res, 'без описания')
+        self.assertEqual(res, 'Без описания')
 
     def test_languages_014(self):
         unknown_key: str = 'unknown_key_unknown_key'

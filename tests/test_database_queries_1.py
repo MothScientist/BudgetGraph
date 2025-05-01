@@ -91,7 +91,7 @@ class SmokeTestDbQueries(unittest.TestCase):
                               SmokeTestDbQueries._data.get_user_data(i, 'psw_salt'),
                               SmokeTestDbQueries._data.get_user_data(i, 'psw_hash'),
                               group_id=group_id)
-            if group_id is None:
+            if group_id is None:  # for group owners
                 self.assertEqual(len(res), 32, f'Failed at iteration: {i}')
             else:
                 self.assertTrue(res, f'Failed at iteration: {i}')

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
     "psw_hash"    varchar(64)              NOT NULL           CHECK(LENGTH("psw_hash") = 64),
     "last_login"  timestamp with time zone     NULL,
     -- user time zone
-    "timezone"    smallint                     0              CHECK("timezone" IS NULL OR "timezone" >= -12 AND "timezone" <= 12),
+    "timezone"    smallint                 DEFAULT 0          CHECK("timezone" IS NULL OR "timezone" >= -12 AND "timezone" <= 12),
     -- other settings for the user (for example, the activation status of some functionality)
     -- 1: Status that the dialog clearing function is enabled after a successful transaction (default value - False)
     -- 2: Function to skip date input when adding a new record to a table (default value - False)
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS "budget_graph"."users" (
 );
 CREATE TABLE IF NOT EXISTS "budget_graph"."groups" (
     "id"                smallserial PRIMARY KEY, -- It makes sense to add a UNIQUE or PRIMARY KEY constraint on this
-                                            -- column to protect against erroneously adding duplicate values,
-                                            -- but this does not happen automatically
+                                                 -- column to protect against erroneously adding duplicate values,
+                                                 -- but this does not happen automatically
     "owner"             bigint      NOT NULL UNIQUE    CHECK("owner" BETWEEN 1 AND POWER(10, 12) - 1),
     "token"             varchar(32) NOT NULL UNIQUE    CHECK(LENGTH("token") = 32),
     -- number of participants in the group (auto filling and counting)
