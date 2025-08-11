@@ -21,7 +21,7 @@ jobs:
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # https://github.com/actions/setup-python
       - name: Set up Python ${{ matrix.python-version }} ${{ matrix.architecture }}
@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -193,7 +193,7 @@ jobs:
     steps:
       # Action for checking out a repo - https://github.com/actions/checkout
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # https://github.com/actions/setup-python
       - name: Set up Python ${{ matrix.python-version }} ${{ matrix.architecture }}
